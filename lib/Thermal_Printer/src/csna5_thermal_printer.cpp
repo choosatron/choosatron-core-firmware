@@ -11,7 +11,7 @@
   MIT license, all text above must be included in any redistribution.
  *************************************************************************/
 
-#include "csn_thermal.h"
+#include "csna5_thermal_printer.h"
 
 // Though most of these printers are factory configured for 19200 baud
 // operation, a few rare specimens instead work at 9600.  If so, change
@@ -501,7 +501,7 @@ void CSN_Thermal::listen() {
 // Returns true for paper, false for no paper.
 bool CSN_Thermal::hasPaper() {
   writeBytes(27, 118, 0);
-  
+
   char stat;
   // Some delay while checking.
   // Could probably be done better...
@@ -511,16 +511,16 @@ bool CSN_Thermal::hasPaper() {
       break;
     }
   }
-  
+
   // Mask the 3 LSB, this seems to be the one we care about.
   stat = stat & 0b000100;
-  
+
   // If it's set, no paper, if it's clear, we have paper.
   if (stat == 0b000100) {
     return false;
   } else if (stat == 0b000000){
     return true;
-    
+
   }
   return false;
 }

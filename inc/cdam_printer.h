@@ -5,15 +5,12 @@
 #ifndef CDAM_PRINTER_H
 #define CDAM_PRINTER_H
 
-// Instead of "Arduino.h"
 #include <stdint.h>
-//#include <stddef.h>
-//#include <stdlib.h>
 #include "spark_wiring_stream.h"
 #include "spark_wiring_print.h"
 
 #include "cdam_constants.h"
-#include "csn_thermal.h"
+#include "csna5_thermal_printer.h"
 
 namespace cdam
 {

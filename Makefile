@@ -3,7 +3,7 @@ CXXFLAGS ?= -g -Wall -W -Winline -ansi
 CXXFLAGS += -Isrc -Itests/UnitTest++/src
 
 # annoying external dependency management
-CXXFLAGS += -I../core-firmware/inc
+CXXFLAGS += -I../cdam-core-firmware/inc
 
 LDFLAGS ?=
 RM = rm
