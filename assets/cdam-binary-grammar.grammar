@@ -14,26 +14,16 @@
                         <fixedvalue name="SOH" value="01"/>
                     </fixedvalues>
                 </binary>
-                <number name="Flags" id="1345" type="integer" length="2" display="binary">
-                    <mask name="Flags 1" value="0xFF">
-                        <fixedvalue name="Scripting" value="0x80"/>
-                        <fixedvalue name="Images" value="0x40"/>
-                        <fixedvalue name="Variables" value="0x20"/>
-                        <fixedvalue name="Multiplayer" value="0x10"/>
-                        <fixedvalue name="Hide Used" value="0x8"/>
-                        <fixedvalue name="Continue" value="0x4"/>
-                        <fixedvalue name="RSVD A7" value="0x2"/>
-                        <fixedvalue name="RSVD A8" value="0x0"/>
+                <number name="Flags" id="1345" type="integer" length="16" lengthunit="bit" display="binary" minval="00000000">
+                    <mask name="Features Used" value="0xFFFF">
+                        <fixedvalue name="Scripting" value="0x8000"/>
+                        <fixedvalue name="Images" value="0x4000"/>
+                        <fixedvalue name="Variables" value="0x2000"/>
                     </mask>
-                    <mask name="Flags 2" value="0xFF">
-                        <fixedvalue name="RSVD B1" value="0x80"/>
-                        <fixedvalue name="RSVD B2" value="0x40"/>
-                        <fixedvalue name="RSVD B3" value="0x20"/>
-                        <fixedvalue name="RSVD B4" value="0x10"/>
-                        <fixedvalue name="RSVD B5" value="0x8"/>
-                        <fixedvalue name="RSVD B6" value="0x4"/>
-                        <fixedvalue name="RSVD B7" value="0x2"/>
-                        <fixedvalue name="RSVD B8" value="0x0"/>
+                    <mask name="Feature Toggles" value="0xFFFF">
+                        <fixedvalue name="Continue" value="0x80"/>
+                        <fixedvalue name="Multiplayer" value="0x40"/>
+                        <fixedvalue name="Hide Used" value="0x20"/>
                     </mask>
                 </number>
                 <structure name="Variables" id="11" length="2">
@@ -54,7 +44,6 @@
                 </structure>
                 <string name="Language Code" id="1320" fillcolor="FFC756" type="fixed-length" length="3"/>
                 <structure name="Title" id="38" length="256">
-                    <number name="Title Length" id="1321" type="integer" length="1" minval="1" maxval="255"/>
                     <string name="Title Copy" id="1312" type="pascal" length="1"/>
                 </structure>
                 <structure name="Subtitle" id="54" length="0">
@@ -87,7 +76,7 @@
                 <binary name="Start of Text" mustmatch="yes" id="63" length="1">
                     <description>Start of Text byte.</description>
                     <fixedvalues>
-                        <fixedvalue name="SOT" value="02"/>
+                        <fixedvalue name="STX" value="02"/>
                     </fixedvalues>
                 </binary>
             </structure>
