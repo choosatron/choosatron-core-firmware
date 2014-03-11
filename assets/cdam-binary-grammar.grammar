@@ -46,13 +46,13 @@
                 <string name="Title" id="1312" type="pascal"/>
                 <string name="Subtitle" id="1327" type="pascal"/>
                 <string name="Author" id="1329" type="pascal"/>
-                <string name="Credits" id="1335" type="pascal" length="1"/>
+                <string name="Credits" id="1335" type="pascal"/>
                 <string name="Contact" id="1341" type="pascal"/>
                 <string name="Website" id="1337" type="pascal"/>
-                <structure name="Release Date" id="58" length="4">
-                    <string name="Year" id="1342" type="fixed-length" length="0"/>
-                    <string name="Month" id="1343" type="fixed-length" length="0"/>
-                    <string name="Day" id="1344" type="fixed-length" length="0"/>
+                <structure name="Release Date" id="58" length="8">
+                    <string name="Year" id="1342" type="fixed-length" length="4"/>
+                    <string name="Month" id="1343" type="fixed-length" length="2"/>
+                    <string name="Day" id="1344" type="fixed-length" length="2"/>
                 </structure>
             </structure>
             <structure name="Story Body" id="64">
@@ -62,10 +62,47 @@
                         <fixedvalue name="STX" value="02"/>
                     </fixedvalues>
                 </binary>
-                <structure name="Passage Value Updates" id="1350">
-                    <number name="Variable Index" id="1352" type="integer" length="1"/>
+                <structure name="Passage" id="1357" length="0" repeatmax="-1">
+                    <structure name="Value Updates" id="1350" length="5" repeatmax="8">
+                        <number name="Variable Type" mustmatch="yes" id="1356" type="integer" length="1" minval="1" maxval="3">
+                            <fixedvalues>
+                                <fixedvalue name="bool" value="1"/>
+                                <fixedvalue name="uint 8" value="2"/>
+                                <fixedvalue name="uint 16" value="3"/>
+                            </fixedvalues>
+                        </number>
+                        <number name="Variable Index" id="1352" type="integer" length="1" minval="0" maxval="255"/>
+                        <string name="Operator" mustmatch="yes" id="1353" type="fixed-length" length="1">
+                            <fixedvalues>
+                                <fixedvalue name="Plus" value="+"/>
+                                <fixedvalue name="Minus" value="-"/>
+                                <fixedvalue name="Divide" value="/"/>
+                                <fixedvalue name="Multiply" value="*"/>
+                                <fixedvalue name="Equals" value="="/>
+                            </fixedvalues>
+                        </string>
+                        <number name="Variable Value" id="1354" type="integer" length="1" minval="0" maxval="255"/>
+                        <binary name="Separator" mustmatch="yes" id="1355" length="1">
+                            <description>Record separator between variable updates, and unit separator to indicate the end of the list.</description>
+                            <fixedvalues>
+                                <fixedvalue name="RS" value="1E"/>
+                                <fixedvalue name="US" value="1F"/>
+                            </fixedvalues>
+                        </binary>
+                    </structure>
+                    <structure name="Passage Text" id="1359">
+                        <string name="Text to Substitution" id="1363" repeatmin="0" type="delimiter-terminated"/>
+                        <string name="Text to Command" id="1367" repeatmin="0" type="delimiter-terminated"/>
+                        <binary name="Delimiter" mustmatch="yes" id="1368" length="remaining">
+                            <fixedvalues>
+                                <fixedvalue name="Substitute" value="1A"/>
+                                <fixedvalue name="Enquiry" value="05"/>
+                            </fixedvalues>
+                        </binary>
+                    </structure>
                 </structure>
             </structure>
         </structure>
+        <structure name="Choice" id="1361" repeatmax="10" encoding="ISO_8859-1:1987" endian="big" signed="no"/>
     </grammar>
 </ufwb>
