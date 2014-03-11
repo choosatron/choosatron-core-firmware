@@ -43,29 +43,12 @@
                     <number name="Revision" id="1319" strokecolor="FEFFFF" fillcolor="C51A00" type="integer" length="1"/>
                 </structure>
                 <string name="Language Code" id="1320" fillcolor="FFC756" type="fixed-length" length="3"/>
-                <structure name="Title" id="38" length="256">
-                    <string name="Title Copy" id="1312" type="pascal" length="1"/>
-                </structure>
-                <structure name="Subtitle" id="54" length="0">
-                    <number name="Subtitle Length" id="1326" type="integer" length="1" minval="0" maxval="255"/>
-                    <string name="Subtitle Copy" id="1327" type="pascal" length="1"/>
-                </structure>
-                <structure name="Author" id="42">
-                    <number name="Author Length" id="1328" type="integer" length="1" minval="1" maxval="255"/>
-                    <string name="Author Copy" id="1329" type="pascal" length="1"/>
-                </structure>
-                <structure name="Credits" id="46">
-                    <number name="Credits Length" id="1334" type="integer" length="1" minval="0" maxval="255"/>
-                    <string name="Credits Copy" id="1335" type="pascal" length="1"/>
-                </structure>
-                <structure name="Contact" id="1338">
-                    <number name="Contact Length" id="1340" type="integer" length="1" minval="0" maxval="255"/>
-                    <string name="Contact Copy" id="1341" type="pascal" length="1"/>
-                </structure>
-                <structure name="Website" id="51">
-                    <number name="Website Length" id="1336" type="integer" length="1" minval="0" maxval="255"/>
-                    <string name="Website Copy" id="1337" type="pascal" length="1"/>
-                </structure>
+                <string name="Title" id="1312" type="pascal"/>
+                <string name="Subtitle" id="1327" type="pascal"/>
+                <string name="Author" id="1329" type="pascal"/>
+                <string name="Credits" id="1335" type="pascal" length="1"/>
+                <string name="Contact" id="1341" type="pascal"/>
+                <string name="Website" id="1337" type="pascal"/>
                 <structure name="Release Date" id="58" length="4">
                     <string name="Year" id="1342" type="fixed-length" length="0"/>
                     <string name="Month" id="1343" type="fixed-length" length="0"/>
@@ -79,6 +62,9 @@
                         <fixedvalue name="STX" value="02"/>
                     </fixedvalues>
                 </binary>
+                <structure name="Passage Value Updates" id="1350">
+                    <number name="Variable Index" id="1352" type="integer" length="1"/>
+                </structure>
             </structure>
         </structure>
     </grammar>
