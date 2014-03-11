@@ -63,7 +63,8 @@
                     </fixedvalues>
                 </binary>
                 <structure name="Passage" id="1357" length="0" repeatmax="-1">
-                    <structure name="Value Updates" id="1350" length="5" repeatmax="8">
+                    <number name="Update Count" id="1372" type="integer" length="1" minval="0" maxval="8"/>
+                    <structure name="Value Updates" id="1350" length="4" repeat="id:1372" repeatmin="0" repeatmax="8">
                         <number name="Variable Type" mustmatch="yes" id="1356" type="integer" length="1" minval="1" maxval="3">
                             <fixedvalues>
                                 <fixedvalue name="bool" value="1"/>
@@ -82,13 +83,6 @@
                             </fixedvalues>
                         </string>
                         <number name="Variable Value" id="1354" type="integer" length="1" minval="0" maxval="255"/>
-                        <binary name="Separator" mustmatch="yes" id="1355" length="1">
-                            <description>Record separator between variable updates, and unit separator to indicate the end of the list.</description>
-                            <fixedvalues>
-                                <fixedvalue name="RS" value="1E"/>
-                                <fixedvalue name="US" value="1F"/>
-                            </fixedvalues>
-                        </binary>
                     </structure>
                     <structure name="Passage Text" id="1359">
                         <string name="Text to Substitution" id="1363" repeatmin="0" type="delimiter-terminated"/>
@@ -100,9 +94,10 @@
                             </fixedvalues>
                         </binary>
                     </structure>
+                    <number name="Number of Choices" id="1370" type="integer" length="1" minval="0" maxval="10"/>
+                    <structure name="Choice" id="1361" repeatmin="0" repeatmax="10"/>
                 </structure>
             </structure>
         </structure>
-        <structure name="Choice" id="1361" repeatmax="10" encoding="ISO_8859-1:1987" endian="big" signed="no"/>
     </grammar>
 </ufwb>
