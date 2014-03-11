@@ -14,35 +14,28 @@
                         <fixedvalue name="SOH" value="01"/>
                     </fixedvalues>
                 </binary>
-                <structure name="Flags" id="14" length="2">
-                    <description>Flags for story settings.</description>
-                    <binary name="Scripting" id="9" fillcolor="FFE883" length="remaining" lengthunit="bit"/>
-                    <binary name="Multiplayer" id="16" length="remaining" lengthunit="bit">
-                        <description>This is a multiplayer story.</description>
-                    </binary>
-                    <binary name="Images" id="17" length="remaining" lengthunit="bit">
-                        <description>This story uses images.</description>
-                    </binary>
-                    <binary name="Variables" id="18" length="remaining" lengthunit="bit">
-                        <description>This story uses variables.</description>
-                    </binary>
-                    <binary name="Hide Used" id="19" length="remaining" lengthunit="bit">
-                        <description>Hide choices after they have been chosen.</description>
-                    </binary>
-                    <binary name="Continue" id="20" length="remaining" lengthunit="bit">
-                        <description>Continues are active or not.</description>
-                    </binary>
-                    <binary name="RSVD A7" id="21" length="remaining" lengthunit="bit"/>
-                    <binary name="RSVD A8" id="22" length="remaining" lengthunit="bit"/>
-                    <binary name="RSVD B1" id="23" length="remaining" lengthunit="bit"/>
-                    <binary name="RSVD B2" id="24" length="remaining" lengthunit="bit"/>
-                    <binary name="RSVD B3" id="25" length="remaining" lengthunit="bit"/>
-                    <binary name="RSVD B4" id="26" length="-8" lengthunit="bit"/>
-                    <binary name="RSVD B5" id="27" length="remaining"/>
-                    <binary name="RSVD B6" id="28" length="remaining"/>
-                    <binary name="RSVD B7" id="29" length="remaining"/>
-                    <binary name="RSVD B8" id="30" length="remaining"/>
-                </structure>
+                <number name="Flags" id="1345" type="integer" length="2" display="binary">
+                    <mask name="Flags 1" value="0xFF">
+                        <fixedvalue name="Scripting" value="0x80"/>
+                        <fixedvalue name="Images" value="0x40"/>
+                        <fixedvalue name="Variables" value="0x20"/>
+                        <fixedvalue name="Multiplayer" value="0x10"/>
+                        <fixedvalue name="Hide Used" value="0x8"/>
+                        <fixedvalue name="Continue" value="0x4"/>
+                        <fixedvalue name="RSVD A7" value="0x2"/>
+                        <fixedvalue name="RSVD A8" value="0x0"/>
+                    </mask>
+                    <mask name="Flags 2" value="0xFF">
+                        <fixedvalue name="RSVD B1" value="0x80"/>
+                        <fixedvalue name="RSVD B2" value="0x40"/>
+                        <fixedvalue name="RSVD B3" value="0x20"/>
+                        <fixedvalue name="RSVD B4" value="0x10"/>
+                        <fixedvalue name="RSVD B5" value="0x8"/>
+                        <fixedvalue name="RSVD B6" value="0x4"/>
+                        <fixedvalue name="RSVD B7" value="0x2"/>
+                        <fixedvalue name="RSVD B8" value="0x0"/>
+                    </mask>
+                </number>
                 <structure name="Variables" id="11" length="2">
                     <number name="Small" id="1315" type="integer" length="1" minval="0" maxval="255">
                         <description>The number of small variables to allocate space for (8 bit).</description>
