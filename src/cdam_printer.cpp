@@ -1,5 +1,5 @@
 // Choosatron Deluxe Adventure Matrix
-// Copyright (c) 2013 Monkey with a Mustache Entertainment, Inc.
+// Copyright (c) 2014 Monkey with a Mustache Entertainment, LLC
 // All rights reserved.
 
 #include "cdam_printer.h"
@@ -126,7 +126,7 @@ void Printer::printFile(const char *aPath, boolean aWrapped, boolean aLinefeed, 
   }
 
   unsigned int numToRead = 0;
-  
+
   while (fileSize > 0) {
     if (indent > 0) {
       // Read one beyond the line max in case it's a space.
@@ -177,9 +177,9 @@ void Printer::printFile(const char *aPath, boolean aWrapped, boolean aLinefeed, 
   //slog(F("Jump indent: "));
   //slogln(this->jumpIndent);
   //CSN_Thermal::sleep();
-}  
+}
 
-// 
+//
 int Printer::printWrapped(char *aMsg, byte aColumns, boolean aBufferMode) {
   slogln(aMsg);
   int length = strlen(aMsg);
@@ -346,7 +346,7 @@ void Printer::printPoints(byte aTotalPoints, byte aPerfectScore) {
     //memcpy(score + index, " Points", 7);
     //score[index+6] = '\0';
     //strcpy(score + index, " Points");
-    
+
     score[index] = ' ';
     score[index+1] = 'P';
     score[index+2] = 'o';
@@ -465,7 +465,7 @@ void Printer::bufferStatus() {
 
 void Printer::printerStatus() {
   //writeBytes(27, 118, 0);
-  
+
   char stat;
   char bit;
 
@@ -485,10 +485,10 @@ void Printer::printerStatus() {
     } else if (bit == 0b000000){
       slogln("?1: no");
     }
-    
+
     // Mask the 3 LSB, this seems to be the one we care about.
     bit = stat & 0b000100;
-    
+
     // If it's set, no paper, if it's clear, we have paper.
     if (bit == 0b000100) { // CORRECT
       slogln("Paper: no");
@@ -531,6 +531,6 @@ void Printer::printerStatus() {
       slogln("?7: no");
     }
     slogln("\n");
-    }  
+    }
   }
 }

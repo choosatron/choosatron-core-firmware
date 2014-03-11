@@ -1,5 +1,5 @@
 // Choosatron Deluxe Adventure Matrix
-// Copyright (c) 2013 Monkey with a Mustache Entertainment, Inc.
+// Copyright (c) 2014 Monkey with a Mustache Entertainment, LLC
 // All rights reserved.
 
 #include "cdam_story_load.h"
@@ -57,7 +57,7 @@ char *StoryLoad::getStringFromFile(const char *path, unsigned long length = MAX_
     if ((index != 0) && (index <= file.size())) {
       file.seek(index);
     }
-    if (file.available()) {  
+    if (file.available()) {
       file.read(text, length);
     }
     text[length] = '\0';
@@ -133,7 +133,7 @@ void StoryLoad::loadPassage() {
   this->points = getByteFromFile(psgPath);
   free(psgPath);
   this->totalPoints += this->points;
-  
+
   byte indent = 0;
   boolean linefeed = true;
   byte lastCount = this->choiceCount;
@@ -195,7 +195,7 @@ void StoryLoad::loadPassage() {
       _printer->println(PSTR("*Press buttons at the same time to add up to higher choices.*"));
     }
   }
-  
+
   // Print out choices is it isn't an end and isn't an autojump.
   if (!this->ending && !this->autoJump) {
     for (byte i = 0; i < this->choiceCount; ++i) {

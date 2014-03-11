@@ -1,7 +1,6 @@
 #ifndef CDAM_KEYPAD_H
 #define CDAM_KEYPAD_H
 
-#include "spark_wiring.h"
 #include "spark_wiring_usbserial.h"
 
 namespace cdam
@@ -85,12 +84,12 @@ private:
 	KeypadState state;
 	KeypadEvent event;
 	KeypadEvent lastEvent;
-    
+
 	volatile uint8_t buttons; // Current active buttons.
 	volatile uint8_t keypadValue; // The value of all currently active buttons.
 	volatile uint8_t lastButtons; // The last valid active buttons.
 	volatile uint8_t lastValue; // The last value of all currently active buttons.
-    
+
 	volatile uint8_t multiCount; // Holds the debounce count for multi-down & multi-up events.
 	volatile uint8_t multiUp; // Temporary holds multi-up value.
 	volatile uint8_t multiUpValue;

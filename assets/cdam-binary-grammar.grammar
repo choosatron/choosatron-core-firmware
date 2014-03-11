@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ufwb version="1.7">
+    <grammar name="CDAM" start="id:2" author="Jerry Belich" email="jerry@choosatron.com" fileextension="cdam" uti="com.choosatron">
+        <description>Grammar for the Choosatron Deluxe Adventure Matrix binary story file.</description>
+        <structure name="Choosatron Story" id="2" encoding="ISO_8859-1:1987" endian="big" signed="no">
+            <structure name="Binary Version" id="1331">
+                <number name="Major" id="1330" type="integer" length="1"/>
+                <number name="Minor" id="1333" type="integer" length="1"/>
+            </structure>
+            <structure name="Story Header" id="4">
+                <binary name="Start of Heading" mustmatch="yes" id="6" fillcolor="CECECE" length="1">
+                    <description>Start of Heading byte.</description>
+                    <fixedvalues>
+                        <fixedvalue name="SOH" value="01"/>
+                    </fixedvalues>
+                </binary>
+                <structure name="Flags" id="14" length="2">
+                    <description>Flags for story settings.</description>
+                    <binary name="Scripting" id="9" fillcolor="FFE883" length="remaining" lengthunit="bit"/>
+                    <binary name="Multiplayer" id="16" length="remaining" lengthunit="bit">
+                        <description>This is a multiplayer story.</description>
+                    </binary>
+                    <binary name="Images" id="17" length="remaining" lengthunit="bit">
+                        <description>This story uses images.</description>
+                    </binary>
+                    <binary name="Variables" id="18" length="remaining" lengthunit="bit">
+                        <description>This story uses variables.</description>
+                    </binary>
+                    <binary name="Hide Used" id="19" length="remaining" lengthunit="bit">
+                        <description>Hide choices after they have been chosen.</description>
+                    </binary>
+                    <binary name="Continue" id="20" length="remaining" lengthunit="bit">
+                        <description>Continues are active or not.</description>
+                    </binary>
+                    <binary name="RSVD A7" id="21" length="remaining" lengthunit="bit"/>
+                    <binary name="RSVD A8" id="22" length="remaining" lengthunit="bit"/>
+                    <binary name="RSVD B1" id="23" length="remaining" lengthunit="bit"/>
+                    <binary name="RSVD B2" id="24" length="remaining" lengthunit="bit"/>
+                    <binary name="RSVD B3" id="25" length="remaining" lengthunit="bit"/>
+                    <binary name="RSVD B4" id="26" length="-8" lengthunit="bit"/>
+                    <binary name="RSVD B5" id="27" length="remaining"/>
+                    <binary name="RSVD B6" id="28" length="remaining"/>
+                    <binary name="RSVD B7" id="29" length="remaining"/>
+                    <binary name="RSVD B8" id="30" length="remaining"/>
+                </structure>
+                <structure name="Variables" id="11" length="2">
+                    <number name="Small" id="1315" type="integer" length="1" minval="0" maxval="255">
+                        <description>The number of small variables to allocate space for (8 bit).</description>
+                    </number>
+                    <number name="Big" id="1316" type="integer" length="1" minval="0" maxval="255">
+                        <description>The number of big variables to allocate space for (16 bit).</description>
+                    </number>
+                </structure>
+                <number name="Story Size" id="1314" type="integer" length="4" minval="1" maxval="1572864">
+                    <description>The story size in bytes.</description>
+                </number>
+                <structure name="Story Version" id="32" length="3">
+                    <number name="Major" id="1317" strokecolor="FEFFFF" fillcolor="0227CD" type="integer" length="1"/>
+                    <number name="Minor" id="1318" strokecolor="FEFFFF" fillcolor="00AE21" type="integer" length="1"/>
+                    <number name="Revision" id="1319" strokecolor="FEFFFF" fillcolor="C51A00" type="integer" length="1"/>
+                </structure>
+                <string name="Language Code" id="1320" fillcolor="FFC756" type="fixed-length" length="3"/>
+                <structure name="Title" id="38" length="256">
+                    <number name="Title Length" id="1321" type="integer" length="1" minval="1" maxval="255"/>
+                    <string name="Title Copy" id="1312" type="pascal" length="1"/>
+                </structure>
+                <structure name="Subtitle" id="54" length="0">
+                    <number name="Subtitle Length" id="1326" type="integer" length="1" minval="0" maxval="255"/>
+                    <string name="Subtitle Copy" id="1327" type="pascal" length="1"/>
+                </structure>
+                <structure name="Author" id="42">
+                    <number name="Author Length" id="1328" type="integer" length="1" minval="1" maxval="255"/>
+                    <string name="Author Copy" id="1329" type="pascal" length="1"/>
+                </structure>
+                <structure name="Credits" id="46">
+                    <number name="Credits Length" id="1334" type="integer" length="1" minval="0" maxval="255"/>
+                    <string name="Credits Copy" id="1335" type="pascal" length="1"/>
+                </structure>
+                <structure name="Contact" id="1338">
+                    <number name="Contact Length" id="1340" type="integer" length="1" minval="0" maxval="255"/>
+                    <string name="Contact Copy" id="1341" type="pascal" length="1"/>
+                </structure>
+                <structure name="Website" id="51">
+                    <number name="Website Length" id="1336" type="integer" length="1" minval="0" maxval="255"/>
+                    <string name="Website Copy" id="1337" type="pascal" length="1"/>
+                </structure>
+                <structure name="Release Date" id="58" length="4">
+                    <string name="Year" id="1342" type="fixed-length" length="0"/>
+                    <string name="Month" id="1343" type="fixed-length" length="0"/>
+                    <string name="Day" id="1344" type="fixed-length" length="0"/>
+                </structure>
+            </structure>
+            <structure name="Story Body" id="64">
+                <binary name="Start of Text" mustmatch="yes" id="63" length="1">
+                    <description>Start of Text byte.</description>
+                    <fixedvalues>
+                        <fixedvalue name="SOT" value="02"/>
+                    </fixedvalues>
+                </binary>
+            </structure>
+        </structure>
+    </grammar>
+</ufwb>

@@ -1,5 +1,5 @@
 // Choosatron Deluxe Adventure Matrix
-// Copyright (c) 2013 Monkey with a Mustache Entertainment, Inc.
+// Copyright (c) 2014 Monkey with a Mustache Entertainment, LLC
 // All rights reserved.
 
 #ifndef CDAM_CONSTANTS_H
@@ -55,7 +55,7 @@ static const char RESET_PASS = '6';
 #define GREEN_PIN A6
 #define BLUE_PIN A7
 
-typedef enum {LED_NOT_READY, LED_READY, LED_INPUT, LED_PRINTING, LED_ERROR} LED_STATE; 
+typedef enum {LED_NOT_READY, LED_READY, LED_INPUT, LED_PRINTING, LED_ERROR} LED_STATE;
 
 //#define BAUD_RATE 9600
 #define BAUD_RATE 19200

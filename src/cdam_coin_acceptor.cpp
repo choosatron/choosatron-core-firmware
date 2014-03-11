@@ -1,5 +1,5 @@
 // Choosatron Deluxe Adventure Matrix
-// Copyright (c) 2013 Monkey with a Mustache Entertainment, Inc.
+// Copyright (c) 2014 Monkey with a Mustache Entertainment, LLC
 // All rights reserved.
 
 #include "cdam_coin_acceptor.h"
