@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ufwb version="1.7">
+    <grammar name="Choosatron Metadata" start="id:212" author="Jerry Belich" email="jerry@monkeytheater.com" fileextension="mcdam" uti="com.choosatron">
+        <description>Metadata for Choosatron settings and story table of contents.</description>
+        <structure name="Metadata" id="212" encoding="ISO_8859-1:1987" endian="big" signed="no"/>
+    </grammar>
+</ufwb>
