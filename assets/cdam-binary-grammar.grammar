@@ -14,8 +14,8 @@ def terminate():
 	print &quot;terminate&quot;
 </source>
             </script>
-            <script name="PassageBody" type="DataType" id="64">
-                <source language="Python"># custom data type script
+            <script name="TextBody" type="DataType" id="64">
+                <source language="Python"># Text Body - Used for passage body text and choice text.
 
 def parseByteRange(element, byteView, bitPos, bitLength, results):
     # this method parses data starting at bitPos, bitLength bits are remaining
@@ -157,7 +157,8 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
                     <number name="Flags3" id="185" fillcolor="BDFBA7" type="integer" length="8" lengthunit="bit" minval="0" maxval="11111111"/>
                     <number name="Flags4" id="186" fillcolor="C1FBA9" type="integer" length="8" lengthunit="bit" minval="0" maxval="11111111"/>
                 </structure>
-                <structure name="Variables" id="12" length="2">
+                <structure name="Variables" id="12" length="3">
+                    <number name="Bits" id="190" fillcolor="FFF3A6" type="integer" length="1" minval="0" maxval="255"/>
                     <number name="Small" id="13" fillcolor="FFEFA6" type="integer" length="1" minval="0" maxval="255">
                         <description>The number of small variables to allocate space for (8 bit).</description>
                     </number>
@@ -195,32 +196,66 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
                 </binary>
                 <structure name="Passage" id="37" length="0">
                     <number name="UpdateCount" id="38" fillcolor="9BFB97" type="integer" length="1" minval="0" maxval="8"/>
-                    <structure name="ValueUpdate" id="39" length="4" repeat="id:38" repeatmin="0" repeatmax="8" encoding="ISO_8859-1:1987" endian="big" signed="no">
-                        <number name="VariableTypes" mustmatch="yes" id="40" type="integer" length="1" minval="1" maxval="3">
-                            <fixedvalues>
-                                <fixedvalue name="bool" value="1"/>
-                                <fixedvalue name="uint 8" value="2"/>
-                                <fixedvalue name="uint 16" value="3"/>
-                            </fixedvalues>
+                    <structure name="ValueUpdate" id="39" length="5" repeat="id:38" repeatmin="UpdateCount" repeatmax="UpdateCount" encoding="ISO_8859-1:1987" endian="big" signed="no">
+                        <number name="VariableTypes" id="40" type="integer" length="8" lengthunit="bit" display="binary" minval="00000000" maxval="11111111">
+                            <mask name="ValueOneType" value="0xC0">
+                                <fixedvalue name="hard value" value="0x0"/>
+                                <fixedvalue name="bool" value="0x40"/>
+                                <fixedvalue name="uint 8" value="0x80"/>
+                                <fixedvalue name="uint 16" value="0xC0"/>
+                            </mask>
+                            <mask name="ValueTwoType" value="0x30">
+                                <fixedvalue name="hard value" value="0x0"/>
+                                <fixedvalue name="bool" value="0x10"/>
+                                <fixedvalue name="uint 8" value="0x20"/>
+                                <fixedvalue name="uint 16" value="0x30"/>
+                            </mask>
+                            <mask name="Operator" value="0xF">
+                                <fixedvalue name="Equals" value="0x0"/>
+                                <fixedvalue name="Plus" value="0x1"/>
+                                <fixedvalue name="Minus" value="0x2"/>
+                                <fixedvalue name="Multiple" value="0x3"/>
+                                <fixedvalue name="Divide" value="0x4"/>
+                            </mask>
                         </number>
-                        <number name="ValueOne" id="42" type="integer" length="1" minval="0" maxval="255"/>
-                        <string name="Operator" mustmatch="yes" id="41" type="fixed-length" length="1">
-                            <fixedvalues>
-                                <fixedvalue name="Plus" value="+"/>
-                                <fixedvalue name="Minus" value="-"/>
-                                <fixedvalue name="Divide" value="/"/>
-                                <fixedvalue name="Multiply" value="*"/>
-                                <fixedvalue name="Equals" value="="/>
-                            </fixedvalues>
-                        </string>
-                        <number name="ValueTwo" id="43" type="integer" length="1" minval="0" maxval="255"/>
+                        <number name="Value/Index1" id="42" type="integer" length="2" minval="0" maxval="255"/>
+                        <number name="Value/Index2" id="43" type="integer" length="2" minval="0" maxval="255"/>
                     </structure>
-                    <number name="Length" id="45" type="integer" length="2" minval="0"/>
-                    <custom name="PassageBody" id="46" length="Length" script="id:64"/>
+                    <number name="PassageLength" id="45" type="integer" length="2" minval="0"/>
+                    <custom name="PassageBody" id="46" length="PassageLength" script="id:64"/>
                     <number name="ChoiceCount" id="47" fillcolor="FFEC90" type="integer" length="1" minval="0" maxval="10"/>
-                    <number name="ConditionCount" id="189" type="integer" length="1" minval="0" maxval="8"/>
-                    <structure name="DisplayCondition" id="187" repeatmin="0"/>
-                    <structure name="Choice" id="48" repeatmin="0" repeatmax="10"/>
+                    <structure name="Choice" id="48" repeatmin="ChoiceCount" repeatmax="ChoiceCount">
+                        <number name="ConditionCount" id="189" type="integer" length="1" minval="0" maxval="8"/>
+                        <structure name="DisplayCondition" id="187" length="5" repeatmin="ConditionCount" repeatmax="ConditionCount">
+                            <number name="ValueTypes" id="191" type="integer" length="8" lengthunit="bit" display="binary" minval="00000000" maxval="11111111">
+                                <mask name="ValueOneType" value="0xC0">
+                                    <fixedvalue name="hard value" value="0x0"/>
+                                    <fixedvalue name="bool" value="0x40"/>
+                                    <fixedvalue name="uint 8" value="0x80"/>
+                                    <fixedvalue name="uint 16" value="0xC0"/>
+                                </mask>
+                                <mask name="ValueTwoType" value="0x30">
+                                    <fixedvalue name="hard value" value="0x0"/>
+                                    <fixedvalue name="bool" value="0x10"/>
+                                    <fixedvalue name="uint 8" value="0x20"/>
+                                    <fixedvalue name="uint 16" value="0x30"/>
+                                </mask>
+                                <mask name="Operator" value="0xF">
+                                    <fixedvalue name="Equal To" value="0x0"/>
+                                    <fixedvalue name="Greater Than" value="0x1"/>
+                                    <fixedvalue name="Less Than" value="0x2"/>
+                                    <fixedvalue name="Equal or Greater" value="0x3"/>
+                                    <fixedvalue name="Equal or Less" value="0x4"/>
+                                    <fixedvalue name="Mod" value="0x5"/>
+                                </mask>
+                            </number>
+                            <number name="Value/Index1" id="192" type="integer" length="2"/>
+                            <number name="Value/Index2" id="193" type="integer" length="2"/>
+                        </structure>
+                        <number name="ChoiceLength" id="196" type="integer" length="1"/>
+                        <custom name="ChoiceBody" id="195" length="ChoiceLength" script="id:64"/>
+                        <structure name="ValueUpdate" id="197"/>
+                    </structure>
                 </structure>
             </structure>
         </structure>
