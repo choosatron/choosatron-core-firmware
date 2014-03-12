@@ -2,6 +2,48 @@
 <ufwb version="1.7">
     <grammar name="Choosatron Metadata" start="id:212" author="Jerry Belich" email="jerry@monkeytheater.com" fileextension="mcdam" uti="com.choosatron">
         <description>Metadata for Choosatron settings and story table of contents.</description>
-        <structure name="Metadata" id="212" encoding="ISO_8859-1:1987" endian="big" signed="no"/>
+        <structure name="Metadata" id="212" encoding="ISO_8859-1:1987" endian="big" signed="no">
+            <binary name="StartHeader" mustmatch="yes" id="218" length="1">
+                <fixedvalues>
+                    <fixedvalue name="SOH" value="01"/>
+                </fixedvalues>
+            </binary>
+            <structure name="Flags" id="216">
+                <number name="Flags1" id="215" type="integer" length="8" lengthunit="bit" display="binary" minval="00000000" maxval="11111111">
+                    <mask name="Offline" value="0x80">
+                        <fixedvalue name="Yes" value="0x80"/>
+                        <fixedvalue name="No" value="0x0"/>
+                    </mask>
+                    <mask name="Demo" value="0x40">
+                        <fixedvalue name="Yes" value="0x0"/>
+                        <fixedvalue name="No" value="0x0"/>
+                    </mask>
+                    <mask name="SDCard" value="0x20">
+                        <fixedvalue name="Yes" value="0x20"/>
+                        <fixedvalue name="No" value="0x0"/>
+                    </mask>
+                    <mask name="Multiplayer" value="0x10">
+                        <fixedvalue name="Yes" value="0x10"/>
+                        <fixedvalue name="No" value="0x0"/>
+                    </mask>
+                </number>
+                <number name="Flags2" id="219" type="integer" length="8" lengthunit="bit" display="binary">
+                    <mask name="Logging" value="0x80">
+                        <fixedvalue name="Yes" value="0x80"/>
+                        <fixedvalue name="No" value="0x0"/>
+                    </mask>
+                    <mask name="LogLocation" value="0x40">
+                        <fixedvalue name="Yes" value="0x40"/>
+                        <fixedvalue name="No" value="0x0"/>
+                    </mask>
+                    <mask name="LogLive" value="0x20">
+                        <fixedvalue name="Yes" value="0x20"/>
+                        <fixedvalue value="0x0"/>
+                    </mask>
+                </number>
+                <number name="Flags3" id="220" type="integer" length="8" lengthunit="bit" display="binary"/>
+                <number name="Flags4" id="221" type="integer" length="8" lengthunit="bit" display="binary"/>
+            </structure>
+        </structure>
     </grammar>
 </ufwb>
