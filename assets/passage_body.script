@@ -1,0 +1,80 @@
+# custom data type script
+
+def parseByteRange(element, byteView, bitPos, bitLength, results):
+    # this method parses data starting at bitPos, bitLength bits are remaining
+    """parseByteRange method"""
+
+    textStr = ""
+    # how many bytes were processed?
+    processedBytes = 0
+    iteration = 0
+    # we are only working with bytes
+    startPos = bytePos = bitPos / 8
+    
+    processedBytes = 0
+
+    byteLength = bitLength / 8
+    print(str(byteLength))
+    while (bytePos - startPos) < byteLength:
+        byteRead = byteView.readByte(bytePos)
+        print("Byte: " + chr(byteRead))
+        bytePos += 1
+        processedBytes += 1
+        print(str(bytePos - startPos))
+        if byteRead == 0x1A or byteRead == 0x05 or (bytePos - startPos) == byteLength:
+            print("End of Text")
+            if len(textStr) > 0:
+                if (bytePos - startPos) == byteLength:
+                    textStr += chr(byteRead)
+                    processedBytes += 1
+                textValue = StringValue()
+                textValue.setString(textStr)
+                print(textStr)
+                textStr = ""
+                textElement = Element(1, "Text", True)
+                results.addElement(textElement, processedBytes - 1, iteration, textValue)
+                # The currently read byte is part of a SUB or CMD
+                processedBytes = 1
+
+        # SUB or Substitute byte means a word lookup, 3 byte address
+        if byteRead == 0x1A:
+            print("Starting SUB")
+            address = byteView.readUnsignedInt(bytePos, 3, ENDIAN_BIG)
+            addressVal = NumberValue()
+            addressVal.setName("Lookup Address")
+            addressVal.setUnsigned(address)
+            bytePos += 3
+            processedBytes += 3
+            subElement = Element(2, "Substitution", True)
+            results.addElement(subElement, processedBytes, iteration, addressVal)
+            processedBytes = 0
+        elif byteRead == 0x05:
+            print("Starting CMD")
+            commandType = byteView.readByte(bytePos)
+            commandNum = NumberValue()
+            commandNum.setUnsigned(commandType)
+            cmdTypeElement = Element(2, "Command Type", True)
+            results.addElement(cmdElement, processedBytes, iteration, commandTypeVal)
+            bytePos += 1
+            processedBytes += 1
+            length = byteView.readUnsignedInt(bytePos, 1)
+            bytePos += 1
+            processedBytes += 1
+            commandVal = StringValue()
+            commandVal.setName("Command")
+            commandVal.setString(byteView.readString(bytePos, length))
+            bytePos += length
+            processedBytes += length
+            cmdElement = Element(2, "Command", True)
+            results.addElement(cmdElement, processedBytes, iteration, commandVal)
+            processedBytes = 0
+        else:
+            textStr += chr(byteRead)
+            print(textStr)
+
+    return bytePos - startPos
+
+
+def fillByteRange(value, byteArray, bitPos, bitLength):
+    # this method translates edited values back to the file
+    """fillByteRange method"""
