@@ -125,18 +125,38 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
                         <fixedvalue name="SOH" value="01"/>
                     </fixedvalues>
                 </binary>
-                <number name="Flags" id="11" fillcolor="BCFBA2" type="integer" length="16" lengthunit="bit" display="binary" minval="00000000">
-                    <mask name="Features Used" value="0xFFFF">
-                        <fixedvalue name="Scripting" value="0x8000"/>
-                        <fixedvalue name="Images" value="0x4000"/>
-                        <fixedvalue name="Variables" value="0x2000"/>
-                    </mask>
-                    <mask name="Feature Toggles" value="0xFFFF">
-                        <fixedvalue name="Continue" value="0x80"/>
-                        <fixedvalue name="Multiplayer" value="0x40"/>
-                        <fixedvalue name="Hide Used" value="0x20"/>
-                    </mask>
-                </number>
+                <structure name="Flags" id="181" length="4">
+                    <number name="Features Used" id="180" fillcolor="BEFBA9" type="integer" length="8" lengthunit="bit" display="binary" minval="00000000" maxval="11111111">
+                        <mask name="Scripting" value="0x80">
+                            <fixedvalue name="Yes" value="0x80"/>
+                            <fixedvalue name="No" value="0x0"/>
+                        </mask>
+                        <mask name="Variables" value="0x40">
+                            <fixedvalue name="Yes" value="0x40"/>
+                            <fixedvalue name="No" value="0x0"/>
+                        </mask>
+                        <mask name="Images" value="0x20">
+                            <fixedvalue name="Yes" value="0x20"/>
+                            <fixedvalue name="No" value="0x0"/>
+                        </mask>
+                    </number>
+                    <number name="Toggles" id="11" fillcolor="BFFBA9" type="integer" length="8" lengthunit="bit" display="binary" minval="00000000">
+                        <mask name="Continue" value="0x80">
+                            <fixedvalue name="Yes" value="0x80"/>
+                            <fixedvalue name="No" value="0x0"/>
+                        </mask>
+                        <mask name="Multiplayer" value="0x40">
+                            <fixedvalue name="Yes" value="0x40"/>
+                            <fixedvalue name="No" value="0x0"/>
+                        </mask>
+                        <mask name="Hide Used" value="0x20">
+                            <fixedvalue name="Yes" value="0x20"/>
+                            <fixedvalue name="No" value="0x0"/>
+                        </mask>
+                    </number>
+                    <number name="Flags3" id="185" fillcolor="BDFBA7" type="integer" length="8" lengthunit="bit" minval="0" maxval="11111111"/>
+                    <number name="Flags4" id="186" fillcolor="C1FBA9" type="integer" length="8" lengthunit="bit" minval="0" maxval="11111111"/>
+                </structure>
                 <structure name="Variables" id="12" length="2">
                     <number name="Small" id="13" fillcolor="FFEFA6" type="integer" length="1" minval="0" maxval="255">
                         <description>The number of small variables to allocate space for (8 bit).</description>
