@@ -29,9 +29,10 @@ def parseByteRange(element, byteView, bitPos, bitLength, results):
     startPos = bytePos = bitPos / 8
     
     processedBytes = 0
-
     byteLength = bitLength / 8
-    print(str(byteLength))
+
+    results.addStructureStartAtPosition(element.getEnclosingStructure(), startPos, 0, &quot;PassageBody&quot;)
+
     while (bytePos - startPos) &lt; byteLength:
         byteRead = byteView.readByte(bytePos)
         print(&quot;Byte: &quot; + chr(byteRead))
@@ -187,9 +188,6 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
                     </structure>
                     <number name="Length" id="819" type="integer" length="2" minval="0"/>
                     <custom name="PassageBody" id="820" length="Length" script="id:64"/>
-                    <structure name="PassageBodyold" id="821" length="0" disabled="yes">
-                        <string name="Text" id="822" type="pascal"/>
-                    </structure>
                     <number name="ChoiceCount" id="824" type="integer" length="1" minval="0" maxval="10"/>
                     <structure name="Choice" id="825" repeatmin="0" repeatmax="10"/>
                 </structure>
