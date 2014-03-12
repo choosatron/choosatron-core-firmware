@@ -70,23 +70,35 @@ def parseByteRange(element, byteView, bitPos, bitLength, results):
             processedBytes = 0
         elif byteRead == 0x05:
             print(&quot;Starting CMD&quot;)
+            cmdStartElement = Element(1, &quot;Start Command&quot;, True)
+            cmdStartValue = StringValue()
+            cmdStartValue.setString(&quot;ENQ: 05&quot;)
+            results.addElement(cmdStartElement, 1, iteration, cmdStartValue)
             commandType = byteView.readByte(bytePos)
-            commandNum = NumberValue()
-            commandNum.setUnsigned(commandType)
+            bytePos += 1
             cmdTypeElement = Element(2, &quot;Command Type&quot;, True)
-            results.addElement(cmdElement, processedBytes, iteration, commandTypeVal)
+            cmdTypeValue = NumberValue()
+            cmdTypeValue.setUnsigned(commandType)
+            results.addElement(cmdTypeElement, 1, iteration, cmdTypeValue)
+            cmdBody = &quot;&quot;
+            processedBytes = 0
+            while byteRead != 0x06:
+                byteRead = byteView.readByte(bytePos)
+                if byteRead != 0x06:
+                    bytePos += 1
+                    processedBytes += 1
+                    cmdBody += chr(byteRead)
+            if len(cmdBody) &gt; 0:
+                commandVal = StringValue()
+                commandVal.setName(&quot;Command Body&quot;)
+                commandVal.setString(cmdBody)
+                cmdElement = Element(1, &quot;Command&quot;, True)
+                results.addElement(cmdElement, processedBytes, iteration, commandVal)
             bytePos += 1
-            processedBytes += 1
-            length = byteView.readUnsignedInt(bytePos, 1)
-            bytePos += 1
-            processedBytes += 1
-            commandVal = StringValue()
-            commandVal.setName(&quot;Command&quot;)
-            commandVal.setString(byteView.readString(bytePos, length))
-            bytePos += length
-            processedBytes += length
-            cmdElement = Element(2, &quot;Command&quot;, True)
-            results.addElement(cmdElement, processedBytes, iteration, commandVal)
+            cmdEndElement = Element(1, &quot;End Command&quot;, True)
+            cmdEndValue = StringValue()
+            cmdEndValue.setString(&quot;ACK: 06&quot;)
+            results.addElement(cmdEndElement, 1, iteration, cmdEndValue)
             processedBytes = 0
         else:
             textStr += chr(byteRead)
