@@ -224,8 +224,8 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
                                 <fixedvalue name="Divide" value="0x4"/>
                             </mask>
                         </number>
-                        <number name="Value/Index1" id="49" type="integer" length="2" minval="0"/>
-                        <number name="Value/Index2" id="50" type="integer" length="2" minval="0"/>
+                        <number name="ValueOrIndex1" id="49" type="integer" length="2" minval="0"/>
+                        <number name="ValueOrIndex2" id="50" type="integer" length="2" minval="0"/>
                     </structure>
                     <number name="PassageLength" id="52" type="integer" length="2" minval="0"/>
                     <custom name="PassageBody" id="53" length="PassageLength" script="id:64"/>
@@ -261,8 +261,8 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
                                     <fixedvalue name="Mod" value="0x5"/>
                                 </mask>
                             </number>
-                            <number name="Value/Index1" id="60" type="integer" length="2"/>
-                            <number name="Value/Index2" id="61" type="integer" length="2"/>
+                            <number name="ValueOrIndex1" id="60" type="integer" length="2"/>
+                            <number name="ValueOrIndex2" id="61" type="integer" length="2"/>
                         </structure>
                         <number name="ChoiceLength" id="63" type="integer" length="2"/>
                         <custom name="ChoiceBody" id="64" length="ChoiceLength" script="id:64"/>
@@ -290,8 +290,8 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
                                     <fixedvalue name="Divide" value="0x4"/>
                                 </mask>
                             </number>
-                            <number name="Value/Index1" id="69" type="integer" length="2" minval="0"/>
-                            <number name="Value/Index2" id="70" type="integer" length="2" minval="0"/>
+                            <number name="ValueOrIndex1" id="69" type="integer" length="2" minval="0"/>
+                            <number name="ValueOrIndex2" id="70" type="integer" length="2" minval="0"/>
                         </structure>
                     </structure>
                 </structure>
