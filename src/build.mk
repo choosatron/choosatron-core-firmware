@@ -19,6 +19,7 @@ CPPSRC += $(TARGET_CHOOSATRON_SRC_PATH)/cdam_story_controller.cpp
 CPPSRC += $(TARGET_CHOOSATRON_SRC_PATH)/cdam_printer.cpp
 CPPSRC += $(TARGET_CHOOSATRON_SRC_PATH)/cdam_keypad.cpp
 CPPSRC += $(TARGET_CHOOSATRON_SRC_PATH)/cdam_coin_acceptor.cpp
+CPPSRC += $(TARGET_CHOOSATRON_SRC_PATH)/cdam_error.cpp
 
 # ASM source files included in this build.
 ASRC +=
