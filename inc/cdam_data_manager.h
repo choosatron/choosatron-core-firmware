@@ -8,7 +8,7 @@
  ******************************************************************************
   Copyright (c) 2014 Monkey with a Mustache, LLC.  All rights reserved.
  ******************************************************************************
- * 
+ *
  * Limitation: Single Threaded Design
  * See: http://www.aristeia.com/Papers/DDJ_Jul_Aug_2004_revised.pdf
  *      For problems associated with locking in multi threaded applications
@@ -17,9 +17,14 @@
  * If you use this Singleton (A) within a destructor of another Singleton (B)
  * This Singleton (A) must be fully constructed before the constructor of (B)
  * is called.
- * 
+ *
  */
 
+#ifndef CDAM_DATA_MANAGER_H
+#define CDAM_DATA_MANAGER_H
+
+namespace cdam
+{
 
 class DataManager
 {
@@ -39,4 +44,13 @@ class DataManager
             static DataManager instance;
             return instance;
         }
+
+        // Check start byte and load firmware version.
+        bool loadFirmwareVersion(*aError);
+        // Load flags, values, and basic story info.
+        bool loadMetaData(*aError);
 };
+
+}
+
+#endif
