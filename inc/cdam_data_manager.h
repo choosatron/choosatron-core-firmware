@@ -23,85 +23,13 @@
 #ifndef CDAM_DATA_MANAGER_H
 #define CDAM_DATA_MANAGER_H
 
+#include "cdam_constants.h"
+
 namespace cdam
 {
 
-typedef struct Version_t
-{
-	uint8_t major;
-	uint8_t minor;
-	uint8_t revision;
-} Version;
-
-typedef struct GlobalFlags_t {
-	union {
-	    uint8_t flag1;
-	    struct {
-	        uint8_t offline			:1;
-	        uint8_t demo			:1;
-	        uint8_t sdCard			:1;
-	        uint8_t multiPlayer		:1;
-	        uint8_t arcade			:1;
-	    	uint8_t rsvd 			:3;
-	    };
-	};
-	union {
-		uint8_t flag2;
-		struct {
-			uint8_t logging 		:1;
-	        uint8_t logLocation		:1;
-	        uint8_t logLive			:1;
-	        uint8_t rsvd 			:5;
-		};
-    };
-	union {
-		uint8_t flag3;
-		struct {
-	        uint8_t dictOffsetBytes	:1;		// 0=2bytes, 1=3bytes
-	        uint8_t rsvd 			:7;
-		};
-    };
-    union {
-		uint8_t flag4;
-		struct {
-	        uint8_t rsvd 			:8;
-		};
-    };
-    union {
-		uint8_t flag5;
-		struct {
-	        uint8_t rsvd 			:8;
-		};
-    };
-    union {
-		uint8_t flag6;
-		struct {
-	        uint8_t rsvd 			:8;
-		};
-    };
-    union {
-		uint8_t flag7;
-		struct {
-	        uint8_t rsvd 			:8;
-		};
-    };
-    union {
-		uint8_t flag8;
-		struct {
-	        uint8_t rsvd 			:8;
-		};
-    };
-} GlobalFlags;
-
 class DataManager
 {
-    private:
-        // Private Constructor
-        DataManager();
-        // Stop the compiler generating methods of copy the object
-        DataManager(DataManager const& copy);            // Not Implemented
-        DataManager& operator=(DataManager const& copy); // Not Implemented
-
     public:
         static DataManager& getInstance()
         {
@@ -118,8 +46,18 @@ class DataManager
         bool loadFirmwareVersion(*aError);
         // Load flags, values, and basic story info.
         bool loadMetaData(*aError);
-
+        // A human readable string of the firmware version.
         String firmwareVersion();
+
+        Metadata metadata;
+        std::Vector<StoryHeader> storyHeaders;
+
+    private:
+        // Private Constructor
+        DataManager();
+        // Stop the compiler generating methods of copy the object
+        DataManager(DataManager const& copy);            // Not Implemented
+        DataManager& operator=(DataManager const& copy); // Not Implemented
 };
 
 }

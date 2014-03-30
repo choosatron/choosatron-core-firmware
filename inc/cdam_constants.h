@@ -2,6 +2,8 @@
 #ifndef CDAM_CONSTANTS_H
 #define CDAM_CONSTANTS_H
 
+#include "cdam_const_structs.h"
+
 namespace cdam
 {
 
