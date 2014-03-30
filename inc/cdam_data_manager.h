@@ -116,6 +116,8 @@ class DataManager
         bool loadFirmwareVersion(*aError);
         // Load flags, values, and basic story info.
         bool loadMetaData(*aError);
+
+        String firmwareVersion();
 };
 
 }
