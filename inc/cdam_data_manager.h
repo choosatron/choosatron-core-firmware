@@ -112,6 +112,8 @@ class DataManager
             return instance;
         }
 
+        bool initilize();
+
         // Check start byte and load firmware version.
         bool loadFirmwareVersion(*aError);
         // Load flags, values, and basic story info.

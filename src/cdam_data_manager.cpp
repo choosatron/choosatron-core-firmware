@@ -1,7 +1,9 @@
 
 
 
+bool initilize() {
 
+}
 
 bool loadFirmwareVersion(*aError) {
 
