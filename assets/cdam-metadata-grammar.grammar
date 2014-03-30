@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ufwb version="1.7">
-    <grammar name="Choosatron Metadata" start="id:90" author="Jerry Belich" email="jerry@monkeytheater.com" fileextension="mcdam" uti="com.choosatron">
+    <grammar name="Choosatron Metadata" start="id:484" author="Jerry Belich" email="jerry@monkeytheater.com" fileextension="mcdam" uti="com.choosatron">
         <description>Metadata for Choosatron settings and story table of contents.</description>
-        <structure name="Metadata" id="90" encoding="ISO_8859-1:1987" endian="big" signed="no">
-            <binary name="StartHeader" mustmatch="yes" id="91" length="1">
+        <structure name="Metadata" id="484" encoding="ISO_8859-1:1987" endian="big" signed="no">
+            <binary name="StartHeader" mustmatch="yes" id="485" length="1">
                 <fixedvalues>
                     <fixedvalue name="SOH" value="01"/>
                 </fixedvalues>
             </binary>
-            <structure name="FirmwareVersion" id="92" length="3">
-                <number name="Major" id="93" type="integer" length="1"/>
-                <number name="Minor" id="94" type="integer" length="1"/>
-                <number name="Revision" id="95" type="integer" length="1"/>
+            <structure name="FirmwareVersion" id="486" length="3">
+                <number name="Major" id="487" type="integer" length="1"/>
+                <number name="Minor" id="488" type="integer" length="1"/>
+                <number name="Revision" id="489" type="integer" length="1"/>
             </structure>
-            <structure name="Flags" id="97" length="8">
-                <number name="Flag1" id="98" type="integer" length="8" lengthunit="bit" display="binary" minval="00000000" maxval="101010011000101011000111">
+            <structure name="Flags" id="491" length="8">
+                <number name="Flag1" id="492" type="integer" length="8" lengthunit="bit" display="binary" minval="00000000" maxval="0111111111111111111111111111111111111111111111111111111111111111">
                     <mask name="Offline" value="0x80">
                         <fixedvalue name="Yes" value="0x80"/>
                         <fixedvalue name="No" value="0x0"/>
@@ -32,7 +32,7 @@
                         <fixedvalue name="No" value="0x0"/>
                     </mask>
                 </number>
-                <number name="Flag2" id="99" type="integer" length="8" lengthunit="bit" display="binary">
+                <number name="Flag2" id="493" type="integer" length="8" lengthunit="bit" display="binary">
                     <mask name="Logging" value="0x80">
                         <fixedvalue name="Yes" value="0x80"/>
                         <fixedvalue name="No" value="0x0"/>
@@ -46,32 +46,35 @@
                         <fixedvalue name="No" value="0x0"/>
                     </mask>
                 </number>
-                <number name="Flag3" id="100" type="integer" length="8" lengthunit="bit" display="binary"/>
-                <number name="Flag4" id="101" type="integer" length="8" lengthunit="bit" display="binary"/>
-                <number name="Flag5" id="102" type="integer" length="1"/>
-                <number name="Flag6" id="103" type="integer" length="1"/>
-                <number name="Flag7" id="104" type="integer" length="1"/>
-                <number name="Flag8" id="105" type="integer" length="1"/>
+                <number name="Flag3" id="494" type="integer" length="8" lengthunit="bit" display="binary"/>
+                <number name="Flag4" id="495" type="integer" length="8" lengthunit="bit" display="binary"/>
+                <number name="Flag5" id="496" type="integer" length="1"/>
+                <number name="Flag6" id="497" type="integer" length="1"/>
+                <number name="Flag7" id="498" type="integer" length="1"/>
+                <number name="Flag8" id="499" type="integer" length="1"/>
             </structure>
-            <structure name="Values" id="107" length="16">
-                <number name="CoinsPerCredit" id="108" type="integer" length="1"/>
-                <number name="CoinDenomination" id="109" type="integer" length="1"/>
-                <number name="Value3" id="110" type="integer" length="1"/>
-                <number name="Value4" id="111" type="integer" length="1"/>
-                <number name="Value5" id="112" type="integer" length="1"/>
-                <number name="Value6" id="113" type="integer" length="1"/>
-                <number name="Value7" id="114" type="integer" length="1"/>
-                <number name="Value8" id="115" type="integer" length="1"/>
-                <number name="Value9" id="116" type="integer" length="1"/>
-                <number name="Value10" id="117" type="integer" length="1"/>
-                <number name="Value11" id="118" type="integer" length="1"/>
-                <number name="Value12" id="119" type="integer" length="1"/>
-                <number name="Value13" id="120" type="integer" length="1"/>
-                <number name="Value14" id="121" type="integer" length="1"/>
-                <number name="Value15" id="122" type="integer" length="1"/>
-                <number name="Value16" id="123" type="integer" length="1"/>
+            <structure name="Values" id="501" length="16">
+                <number name="CoinsPerCredit" id="502" type="integer" length="1"/>
+                <number name="CoinDenomination" id="503" type="integer" length="1"/>
+                <number name="Value3" id="504" type="integer" length="1"/>
+                <number name="Value4" id="505" type="integer" length="1"/>
+                <number name="Value5" id="506" type="integer" length="1"/>
+                <number name="Value6" id="507" type="integer" length="1"/>
+                <number name="Value7" id="508" type="integer" length="1"/>
+                <number name="Value8" id="509" type="integer" length="1"/>
+                <number name="Value9" id="510" type="integer" length="1"/>
+                <number name="Value10" id="511" type="integer" length="1"/>
+                <number name="Value11" id="512" type="integer" length="1"/>
+                <number name="Value12" id="513" type="integer" length="1"/>
+                <number name="Value13" id="514" type="integer" length="1"/>
+                <number name="Value14" id="515" type="integer" length="1"/>
+                <number name="Value15" id="516" type="integer" length="1"/>
+                <number name="Value16" id="517" type="integer" length="1"/>
             </structure>
-            <number name="StoryCount" id="125" type="integer" length="1" minval="0" maxval="10"/>
+            <number name="StoryCount" id="519" type="integer" length="1" minval="0" maxval="10"/>
+            <number name="StorySize" id="525" repeatmin="StoryCount" repeatmax="StoryCount" type="integer" length="4">
+                <description>Number of bytes each story is.</description>
+            </number>
         </structure>
     </grammar>
 </ufwb>
