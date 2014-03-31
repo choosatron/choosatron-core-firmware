@@ -2,6 +2,7 @@
 #ifndef CDAM_CONSTANTS_H
 #define CDAM_CONSTANTS_H
 
+#include "spark_wiring.h"
 #include "cdam_const_structs.h"
 
 namespace cdam
@@ -9,6 +10,8 @@ namespace cdam
 
 // 0, 3, or 6 are cutoffs for rerouted buttons pins.
 #define BOARD_DOT_VERSION 6
+
+#define BAUD_RATE 19200
 
 // Game States
 typedef enum {
@@ -28,12 +31,12 @@ typedef enum {
 	PIN_BTN_TWO = D2,
 	PIN_BTN_THREE = D3,
 	PIN_BTN_FOUR = D4,
-#elsif (BOARD_DOT_VERSION >= 3)
+#elif (BOARD_DOT_VERSION >= 3)
 	PIN_BTN_ONE = D2,
 	PIN_BTN_TWO = D3,
 	PIN_BTN_THREE = D4,
 	PIN_BTN_FOUR = D5,
-#elsif (BOARD_DOT_VERSION == 0)
+#elif (BOARD_DOT_VERSION == 0)
 	PIN_BTN_ONE = D4,
 	PIN_BTN_TWO = D5,
 	PIN_BTN_THREE = D2,

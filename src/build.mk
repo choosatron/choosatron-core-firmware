@@ -13,13 +13,13 @@ INCLUDE_DIRS += inc
 CSRC +=
 
 # C++ source files included in this build.
-CPPSRC += $(TARGET_CHOOSATRON_SRC_PATH)/choosatron.cpp
+CPPSRC += $(TARGET_CHOOSATRON_SRC_PATH)/cdam_main.cpp
 CPPSRC += $(TARGET_CHOOSATRON_SRC_PATH)/cdam_data_manager.cpp
 CPPSRC += $(TARGET_CHOOSATRON_SRC_PATH)/cdam_story_controller.cpp
-CPPSRC += $(TARGET_CHOOSATRON_SRC_PATH)/cdam_printer.cpp
+#CPPSRC += $(TARGET_CHOOSATRON_SRC_PATH)/cdam_printer.cpp
 CPPSRC += $(TARGET_CHOOSATRON_SRC_PATH)/cdam_keypad.cpp
-CPPSRC += $(TARGET_CHOOSATRON_SRC_PATH)/cdam_coin_acceptor.cpp
-CPPSRC += $(TARGET_CHOOSATRON_SRC_PATH)/cdam_error.cpp
+#CPPSRC += $(TARGET_CHOOSATRON_SRC_PATH)/cdam_coin_acceptor.cpp
+#CPPSRC += $(TARGET_CHOOSATRON_SRC_PATH)/cdam_error.cpp
 
 # ASM source files included in this build.
 ASRC +=

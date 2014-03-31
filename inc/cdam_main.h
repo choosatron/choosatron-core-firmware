@@ -7,6 +7,11 @@
 
 #include "cdam_constants.h"
 
+namespace cdam
+{
+
+class Keypad;
+
 class Choosatron
 {
  public:
@@ -17,8 +22,9 @@ class Choosatron
  private:
   	void enableTimerInterrupt(void);
 
-  	void storyEnding(void);
-  	void resetGame(void);
+  	//Keypad *_keypad;
 };
+
+}
 
 #endif

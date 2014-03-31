@@ -15,41 +15,20 @@ namespace cdam
 #define BTN_THREE 0x04
 #define BTN_FOUR  0x08
 
-Keypad::Keypad() {   
+Keypad::Keypad() {
 }
 
-void Keypad::init() {
-#ifdef CHOOSATRON_2DOT0
-    pinMode(D4, INPUT_PULLUP);
-    pinMode(D5, INPUT_PULLUP);
-    pinMode(D2, INPUT_PULLUP);
-    pinMode(D3, INPUT_PULLUP);
+void Keypad::initialize() {
+    pinMode(PIN_BTN_ONE, INPUT_PULLUP);
+    pinMode(PIN_BTN_TWO, INPUT_PULLUP);
+    pinMode(PIN_BTN_THREE, INPUT_PULLUP);
+    pinMode(PIN_BTN_FOUR, INPUT_PULLUP);
 
-    ButtonData btnOne   = { D4, 1, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0 };
-    ButtonData btnTwo   = { D5, 2, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0 };
-    ButtonData btnThree = { D2, 3, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0 };
-    ButtonData btnFour  = { D3, 4, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0 };
-#elif CHOOSATRON_2DOT3
-    pinMode(D2, INPUT_PULLUP);
-    pinMode(D3, INPUT_PULLUP);
-    pinMode(D4, INPUT_PULLUP);
-    pinMode(D5, INPUT_PULLUP);
+    ButtonData btnOne   = { PIN_BTN_ONE, 1, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0 };
+    ButtonData btnTwo   = { PIN_BTN_TWO, 2, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0 };
+    ButtonData btnThree = { PIN_BTN_THREE, 3, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0 };
+    ButtonData btnFour  = { PIN_BTN_FOUR, 4, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0 };
 
-    ButtonData btnOne   = { D2, 1, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0 };
-    ButtonData btnTwo   = { D3, 2, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0 };
-    ButtonData btnThree = { D4, 3, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0 };
-    ButtonData btnFour  = { D5, 4, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0 };
-#elif CHOOSATRON_2DOT6
-    pinMode(D1, INPUT_PULLUP);
-    pinMode(D2, INPUT_PULLUP);
-    pinMode(D3, INPUT_PULLUP);
-    pinMode(D4, INPUT_PULLUP);
-
-    ButtonData btnOne   = { D1, 1, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0 };
-    ButtonData btnTwo   = { D2, 2, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0 };
-    ButtonData btnThree = { D3, 3, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0 };
-    ButtonData btnFour  = { D4, 4, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0 };
-#endif
     this->buttonData[0] = btnOne;
     this->buttonData[1] = btnTwo;
     this->buttonData[2] = btnThree;
@@ -154,7 +133,7 @@ uint8_t Keypad::keypadTotal(uint8_t aButtons) {
 void Keypad::getFilteredButtons(void) {
     //KeypadEvent keyEvent = KEYPAD_NO_EVENT;
     this->keypadValue = 0;
- 
+
     for (int i = NUM_BUTTONS - 1; i >= 0; i--) { // notice reverse count order, to accomodate left shift
         ButtonEvent event = filterButton(&buttonData[i]);
         if (buttonData[i].active) {
@@ -261,7 +240,7 @@ void Keypad::getFilteredButtons(void) {
 
     this->lastButtons = this->buttons;
     this->buttons = 0;
-    this->lastEvent = this->event; 
+    this->lastEvent = this->event;
 }
 
 //
@@ -386,7 +365,7 @@ bool Keypad::keypadEvent(KeypadEvent aEvent, uint8_t aRange) {
         //Serial.print(aRange);
         //Serial.print(", value: ");
         //Serial.println(this->keypadValue);
-        
+
         if (aRange == 0) {
             result = true;
         } else if ((0 < this->lastValue) && (this->lastValue <= aRange)) {

@@ -57,7 +57,7 @@ class Keypad {
 
 public:
 	Keypad();
-	void init();
+	void initialize();
 	void updateKeypad();
 	// Returns true if the provided event type has occurred.
 	uint8_t buttonEvent(ButtonEvent aEvent, uint8_t aRange = 0);

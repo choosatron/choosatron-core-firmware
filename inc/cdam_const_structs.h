@@ -2,6 +2,8 @@
 #ifndef CDAM_CONST_STRUCTS_H
 #define CDAM_CONST_STRUCTS_H
 
+#include <vector>
+
 namespace cdam
 {
 
@@ -95,11 +97,11 @@ typedef struct MetaValues_t {
 } MetaValues;
 
 typedef struct Metadata_t {
-	Version firmwareVersion;
+	Version firmwareVer;
 	MetaFlags flags;
 	MetaValues values;
 	uint8_t storyCount;
-	std::Vector<uint32_t> storySizes;
+	std::vector<uint32_t> storySizes;
 } Metadata;
 
 
@@ -158,7 +160,7 @@ typedef struct StoryHeader_t {
     String credits;
     String contact;
     String website;
-    Time releaseDate;
+    TimeClass releaseDate;
 } StoryHeader ;
 
 }

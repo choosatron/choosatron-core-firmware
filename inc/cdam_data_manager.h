@@ -43,14 +43,14 @@ class DataManager
         bool initilize();
 
         // Check start byte and load firmware version.
-        bool loadFirmwareVersion(*aError);
+        bool loadFirmwareVersion();
         // Load flags, values, and basic story info.
-        bool loadMetaData(*aError);
+        bool loadMetadata();
         // A human readable string of the firmware version.
         String firmwareVersion();
 
         Metadata metadata;
-        std::Vector<StoryHeader> storyHeaders;
+        std::vector<StoryHeader> storyHeaders;
 
     private:
         // Private Constructor
@@ -58,6 +58,8 @@ class DataManager
         // Stop the compiler generating methods of copy the object
         DataManager(DataManager const& copy);            // Not Implemented
         DataManager& operator=(DataManager const& copy); // Not Implemented
+
+        void setupHardwarePins();
 };
 
 }
