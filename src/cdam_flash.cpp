@@ -39,83 +39,34 @@ bool Flash::writeByte(uint32_t address, uint8_t value) {
  * @return true if successful, false otherwise
  */
 bool Flash::readBytes(uint8_t *buffer, uint32_t address, uint32_t length) {
-    // For odd addresses, read back one byte and extend the length
-    uint8_t addressOffset = address&1;
-    if (addressOffset) {
-        address--;
-        length++;
-    }
-
-    // Extend the length if it's odd
-    uint8_t lengthAdjustment = length&1;
-    if (lengthAdjustment) {
-        length++;
-    }
-
-    // Check for errors after adjustment
+    // Check for errors
     if (address + length > maxAddress) {
         return false;
     }
 
-    // Use a temporary buffer to read the data
-    uint8_t *readBuffer = new uint8_t[length];
-
     // Read the data
-    sFLASH_ReadBuffer(readBuffer, baseAddress + address, length);
+    sFLASH_ReadBuffer(buffer, baseAddress + address, length);
 
-  // Copy to destination, compensating for shifted address and adjusted length
-  memcpy(buffer, readBuffer + addressOffset, length - addressOffset - lengthAdjustment);
-
-  return true;
+    return true;
 }
 
 /**
  * Write bytes to the Flash
+ * Note: sFlash_WriteBuffer NOW SUPPORTS ODD ADDRESSES AND LENGTHS
  * @param buffer  The starting address of the data buffer to write
  * @param address The Flash address to begin writing, from 0 to 0x17FFFF
  * @param length  The number of bytes to write
  * @return true if successful, false otherwise
  */
 bool Flash::writeBytes(uint8_t *buffer, uint32_t address, uint32_t length) {
-    // For odd addresses, read back one byte and extend the length
-    uint8_t addressOffset = address&1;
-    if (addressOffset) {
-        address--;
-        length++;
-    }
-
-    // Extend the length if it's odd
-    uint8_t lengthAdjustment = length&1;
-    if (lengthAdjustment) {
-        length++;
-    }
-
     // Check for errors after adjustment
     if (address + length > maxAddress) {
         return false;
     }
 
-    // Use a temporary buffer to write the data
-    uint8_t *writeBuffer = new uint8_t[length];
+    // Write the data
+    sFLASH_WriteBuffer(buffer, baseAddress + address, length);
 
-    if (addressOffset) {
-        // Address preceeds the included data
-        // Read the existing byte so we can write it back
-        readBytes(writeBuffer, address, 2);
-    }
-
-    if (lengthAdjustment) {
-        // Length overruns the included data
-        // Read the existing byte so we can write it back
-        readBytes(writeBuffer + length - 2, address + length - 2, 2);
-    }
-
-  // Copy to write buffer, compensating for shifted address and adjusted length
-  memcpy(writeBuffer + addressOffset, buffer, length - addressOffset - lengthAdjustment);
-
-  // Write the data
-  sFLASH_WriteBuffer(writeBuffer, baseAddress + address, length);
-
-  return true;
+    return true;
 }
 
