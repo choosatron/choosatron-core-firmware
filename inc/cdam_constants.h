@@ -3,6 +3,7 @@
 #define CDAM_CONSTANTS_H
 
 #include "spark_wiring.h"
+#include "spark_wiring_usbserial.h"
 #include "cdam_const_structs.h"
 
 namespace cdam

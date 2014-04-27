@@ -40,7 +40,7 @@ class DataManager
             return instance;
         }
 
-        bool initilize();
+        bool initialize();
 
         // Check start byte and load firmware version.
         bool loadFirmwareVersion();

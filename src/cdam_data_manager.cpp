@@ -1,9 +1,12 @@
 #include "cdam_data_manager.h"
 
-void DataManager::DataManager() {
+namespace cdam
+{
+
+DataManager::DataManager() {
 }
 
-bool DataManager::initilize() {
+bool DataManager::initialize() {
 	Serial.begin(BAUD_RATE);
 	setupHardwarePins();
 }
@@ -13,6 +16,8 @@ bool DataManager::loadFirmwareVersion() {
 	this->metadata.firmwareVer.major = 1; // DEBUG
 	this->metadata.firmwareVer.minor = 2; // DEBUG
 	this->metadata.firmwareVer.revision = 3; // DEBUG
+
+	return true;
 }
 
 bool DataManager::loadMetadata() {
@@ -20,6 +25,8 @@ bool DataManager::loadMetadata() {
 
 	this->metadata.storyCount = 1; // DEBUG
 	this->metadata.storySizes[0] = 500; // DEBUG
+
+	return true;
 }
 
 String DataManager::firmwareVersion() {
@@ -33,13 +40,13 @@ String DataManager::firmwareVersion() {
 }
 
 
-
-
 // Private Methods
 
 void DataManager::setupHardwarePins() {
 	pinMode(PIN_PIEZO, OUTPUT);
-	pinMode(PIN_RED, OUTPUT);
-	pinMode(PIN_GREEN, OUTPUT);
-	pinMode(PIN_BLUE_, OUTPUT);
+	pinMode(PIN_RED_LED, OUTPUT);
+	pinMode(PIN_GREEN_LED, OUTPUT);
+	pinMode(PIN_BLUE_LED, OUTPUT);
+}
+
 }

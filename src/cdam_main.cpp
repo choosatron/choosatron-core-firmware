@@ -44,7 +44,7 @@ Choosatron::Choosatron() {
 }
 
 bool Choosatron::setup() {
-	DataManager.initilize();
+	DataManager.getInstance();
 
 	// Setup the timer interrupts for keypad updates.
 	enableTimerInterrupt();

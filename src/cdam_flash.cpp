@@ -1,6 +1,9 @@
 #include "cdam_flash.h"
 #include <cstring>
 
+namespace cdam
+{
+
 /* Global variables ----------------------------------------------------------*/
 static uint32_t baseAddress = 0x80000;
 static uint32_t maxAddress = 0x17FFFF;
@@ -70,3 +73,4 @@ bool Flash::writeBytes(uint8_t *buffer, uint32_t address, uint32_t length) {
     return true;
 }
 
+}
