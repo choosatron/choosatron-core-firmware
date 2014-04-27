@@ -5,12 +5,17 @@
 #include "spark_wiring.h"
 #include "spark_wiring_usbserial.h"
 #include "cdam_const_structs.h"
+#include "cdam_const_ascii.h"
 
 namespace cdam
 {
 
 // 0, 3, or 6 are cutoffs for rerouted buttons pins.
 #define BOARD_DOT_VERSION 6
+
+#define FIRMWARE_VERSION_MAJ 0
+#define FIRMWARE_VERSION_MIN 0
+#define FIRMWARE_VERSION_REV 1
 
 #define BAUD_RATE 19200
 
