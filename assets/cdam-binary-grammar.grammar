@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ufwb version="1.7">
-    <grammar name="Choosatron Story Binary" start="id:569" author="Jerry Belich" email="jerry@choosatron.com" fileextension="cdam" uti="com.choosatron" complete="yes">
+    <grammar name="Choosatron Story Binary" start="id:92" author="Jerry Belich" email="jerry@choosatron.com" fileextension="cdam" uti="com.choosatron" complete="yes">
         <description>Grammar for the Choosatron Deluxe Adventure Matrix binary story file.</description>
         <scripts>
             <script name="TextBody" type="DataType" id="64">
@@ -104,20 +104,20 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
     &quot;&quot;&quot;fillByteRange method&quot;&quot;&quot;</source>
             </script>
         </scripts>
-        <structure name="Story" id="569" encoding="ISO_8859-1:1987" endian="big" signed="no">
-            <structure name="StoryHeader" id="570">
-                <binary name="StartHeader" mustmatch="yes" id="571" fillcolor="BA1A00" length="1">
+        <structure name="Story" id="92" encoding="ISO_8859-1:1987" endian="big" signed="no">
+            <structure name="StoryHeader" id="93">
+                <binary name="StartHeader" mustmatch="yes" id="94" fillcolor="BA1A00" length="1">
                     <description>Start of Heading byte.</description>
                     <fixedvalues>
                         <fixedvalue name="SOH" value="01"/>
                     </fixedvalues>
                 </binary>
-                <structure name="BinaryVersion" id="572" length="2">
-                    <number name="Major" id="573" fillcolor="E7D3FF" type="integer" length="1"/>
-                    <number name="Minor" id="574" fillcolor="E6D2FF" type="integer" length="1"/>
+                <structure name="BinaryVersion" id="95" length="2">
+                    <number name="Major" id="96" fillcolor="E7D3FF" type="integer" length="1"/>
+                    <number name="Minor" id="97" fillcolor="E6D2FF" type="integer" length="1"/>
                 </structure>
-                <structure name="Flags" id="577" length="4">
-                    <number name="Features Used" id="578" fillcolor="BEFBA9" type="integer" length="8" lengthunit="bit" display="binary" minval="00000000" maxval="0111111111111111111111111111111111111111111111111111111111111111">
+                <structure name="Flags" id="99" length="4">
+                    <number name="Features Used" id="100" fillcolor="BEFBA9" type="integer" length="8" lengthunit="bit" display="binary" minval="00000000" maxval="0111111111111111111111111111111111111111111111111111111111111111">
                         <mask name="Scripting" value="0x80">
                             <fixedvalue name="Yes" value="0x80"/>
                             <fixedvalue name="No" value="0x0"/>
@@ -131,7 +131,7 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
                             <fixedvalue name="No" value="0x0"/>
                         </mask>
                     </number>
-                    <number name="Toggles" id="579" fillcolor="BFFBA9" type="integer" length="8" lengthunit="bit" display="binary" minval="00000000">
+                    <number name="Toggles" id="101" fillcolor="BFFBA9" type="integer" length="8" lengthunit="bit" display="binary" minval="00000000">
                         <mask name="Continue" value="0x80">
                             <fixedvalue name="Yes" value="0x80"/>
                             <fixedvalue name="No" value="0x0"/>
@@ -145,49 +145,49 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
                             <fixedvalue name="No" value="0x0"/>
                         </mask>
                     </number>
-                    <number name="Flags3" id="580" fillcolor="BDFBA7" type="integer" length="8" lengthunit="bit" minval="0" maxval="11111111"/>
-                    <number name="Flags4" id="581" fillcolor="C1FBA9" type="integer" length="8" lengthunit="bit" minval="0" maxval="11111111"/>
+                    <number name="Flags3" id="102" fillcolor="BDFBA7" type="integer" length="8" lengthunit="bit" minval="0" maxval="11111111"/>
+                    <number name="Flags4" id="103" fillcolor="C1FBA9" type="integer" length="8" lengthunit="bit" minval="0" maxval="11111111"/>
                 </structure>
-                <structure name="Variables" id="583" length="3">
-                    <number name="Bits" id="584" fillcolor="FFF3A6" type="integer" length="1" minval="0" maxval="255"/>
-                    <number name="Small" id="585" fillcolor="FFEFA6" type="integer" length="1" minval="0" maxval="255">
+                <structure name="Variables" id="105" length="3">
+                    <number name="Bits" id="106" fillcolor="FFF3A6" type="integer" length="1" minval="0" maxval="255"/>
+                    <number name="Small" id="107" fillcolor="FFEFA6" type="integer" length="1" minval="0" maxval="255">
                         <description>The number of small variables to allocate space for (8 bit).</description>
                     </number>
-                    <number name="Big" id="586" fillcolor="FFF67D" type="integer" length="1" minval="0" maxval="255">
+                    <number name="Big" id="108" fillcolor="FFF67D" type="integer" length="1" minval="0" maxval="255">
                         <description>The number of big variables to allocate space for (16 bit).</description>
                     </number>
                 </structure>
-                <number name="StorySize" id="588" fillcolor="B764FF" type="integer" length="4" minval="1" maxval="1572864">
+                <number name="StorySize" id="110" fillcolor="B764FF" type="integer" length="4" minval="1" maxval="1572864">
                     <description>The story size in bytes.</description>
                 </number>
-                <structure name="StoryVersion" id="589" length="3" fillcolor="F9DCFF">
-                    <number name="Major" id="590" fillcolor="E0C6FF" type="integer" length="1"/>
-                    <number name="Minor" id="591" fillcolor="E4D1FF" type="integer" length="1"/>
-                    <number name="Revision" id="592" fillcolor="DCCFFF" type="integer" length="1"/>
+                <structure name="StoryVersion" id="111" length="3" fillcolor="F9DCFF">
+                    <number name="Major" id="112" fillcolor="E0C6FF" type="integer" length="1"/>
+                    <number name="Minor" id="113" fillcolor="E4D1FF" type="integer" length="1"/>
+                    <number name="Revision" id="114" fillcolor="DCCFFF" type="integer" length="1"/>
                 </structure>
-                <string name="LanguageCode" id="594" fillcolor="FFB85D" type="fixed-length" length="3"/>
-                <string name="Title" id="595" fillcolor="FFBA68" type="pascal"/>
-                <string name="Subtitle" id="596" fillcolor="FFB24F" type="pascal"/>
-                <string name="Author" id="597" fillcolor="FFBA64" type="pascal"/>
-                <string name="Credits" id="598" fillcolor="FFB961" type="pascal"/>
-                <string name="Contact" id="599" fillcolor="FFB962" type="pascal"/>
-                <string name="Website" id="600" fillcolor="FFB957" type="pascal"/>
-                <structure name="ReleaseDate" id="601" length="4">
-                    <number name="Year" id="645" type="integer" length="2"/>
-                    <number name="Month" id="646" type="integer" length="1"/>
-                    <number name="Day" id="647" type="integer" length="1"/>
+                <string name="LanguageCode" id="116" fillcolor="FFB85D" type="fixed-length" length="3"/>
+                <string name="Title" id="117" fillcolor="FFBA68" type="pascal"/>
+                <string name="Subtitle" id="118" fillcolor="FFB24F" type="pascal"/>
+                <string name="Author" id="119" fillcolor="FFBA64" type="pascal"/>
+                <string name="Credits" id="120" fillcolor="FFB961" type="pascal"/>
+                <string name="Contact" id="121" fillcolor="FFB962" type="pascal"/>
+                <string name="Website" id="122" fillcolor="FFB957" type="pascal"/>
+                <structure name="ReleaseDate" id="123" length="4">
+                    <number name="Year" id="124" type="integer" length="2"/>
+                    <number name="Month" id="125" type="integer" length="1"/>
+                    <number name="Day" id="126" type="integer" length="1"/>
                 </structure>
             </structure>
-            <structure name="StoryBody" id="607">
-                <binary name="StartBody" mustmatch="yes" id="608" fillcolor="BE1901" length="1">
+            <structure name="StoryBody" id="129">
+                <binary name="StartBody" mustmatch="yes" id="130" fillcolor="BE1901" length="1">
                     <description>Start of Text byte.</description>
                     <fixedvalues>
                         <fixedvalue name="STX" value="02"/>
                     </fixedvalues>
                 </binary>
-                <number name="PassageCount" id="609" type="integer" length="2"/>
-                <structure name="Passage" id="610" length="0" repeatmin="PassageCount" repeatmax="PassageCount">
-                    <number name="Attributes" id="611" type="integer" length="8" lengthunit="bit" display="binary">
+                <number name="PassageCount" id="131" type="integer" length="2"/>
+                <structure name="Passage" id="132" length="0" repeatmin="PassageCount" repeatmax="PassageCount">
+                    <number name="Attributes" id="133" type="integer" length="8" lengthunit="bit" display="binary">
                         <mask name="Quality" value="0xE0">
                             <fixedvalue name="Terrible" value="0x20"/>
                             <fixedvalue name="Bad" value="0x40"/>
@@ -201,8 +201,8 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
                             <fixedvalue name="No" value="0x0"/>
                         </mask>
                     </number>
-                    <number name="UpdateCount" id="612" fillcolor="9BFB97" type="integer" length="1" minval="0" maxval="8"/>
-                    <scriptelement name="MapValueUpdates" id="613">
+                    <number name="UpdateCount" id="134" fillcolor="9BFB97" type="integer" length="1" minval="0" maxval="8"/>
+                    <scriptelement name="MapValueUpdates" id="135">
                         <script name="unnamed" type="Generic">
                             <source language="Lua">-- get collection with results so far
 results = currentMapper:getCurrentResults()
@@ -226,19 +226,19 @@ return bytes
 </source>
                         </script>
                     </scriptelement>
-                    <number name="PassageLength" id="614" type="integer" length="2" minval="0"/>
-                    <custom name="PassageBody" id="615" length="PassageLength" script="id:64"/>
-                    <number name="ChoiceCount" id="616" fillcolor="FFEC90" type="integer" length="1" minval="0" maxval="10"/>
-                    <structure name="Choice" id="617" repeatmin="ChoiceCount" repeatmax="ChoiceCount">
-                        <number name="Attributes" id="618" type="integer" length="8" lengthunit="bit" display="binary">
+                    <number name="PassageLength" id="136" type="integer" length="2" minval="0"/>
+                    <custom name="PassageBody" id="137" length="PassageLength" script="id:64"/>
+                    <number name="ChoiceCount" id="138" fillcolor="FFEC90" type="integer" length="1" minval="0" maxval="10"/>
+                    <structure name="Choice" id="139" repeatmin="ChoiceCount" repeatmax="ChoiceCount">
+                        <number name="Attributes" id="140" type="integer" length="8" lengthunit="bit" display="binary">
                             <mask name="Append" value="0x80">
                                 <fixedvalue name="Yes" value="0x80"/>
                                 <fixedvalue name="No" value="0x0"/>
                             </mask>
                         </number>
-                        <number name="ConditionCount" id="619" type="integer" length="1" minval="0" maxval="8"/>
-                        <structure name="DisplayCondition" id="620" length="5" repeatmin="ConditionCount" repeatmax="ConditionCount">
-                            <number name="ValueTypes" id="621" type="integer" length="8" lengthunit="bit" display="binary" minval="00000000" maxval="0111111111111111111111111111111111111111111111111111111111111111">
+                        <number name="ConditionCount" id="141" type="integer" length="1" minval="0" maxval="8"/>
+                        <structure name="DisplayCondition" id="142" length="5" repeatmin="ConditionCount" repeatmax="ConditionCount">
+                            <number name="ValueTypes" id="143" type="integer" length="8" lengthunit="bit" display="binary" minval="00000000" maxval="0111111111111111111111111111111111111111111111111111111111111111">
                                 <mask name="ValueOneType" value="0xC0">
                                     <fixedvalue name="hard value" value="0x0"/>
                                     <fixedvalue name="bool" value="0x40"/>
@@ -260,14 +260,14 @@ return bytes
                                     <fixedvalue name="Mod" value="0x5"/>
                                 </mask>
                             </number>
-                            <number name="ValueOrIndex1" id="622" type="integer" length="2"/>
-                            <number name="ValueOrIndex2" id="623" type="integer" length="2"/>
+                            <number name="ValueOrIndex1" id="144" type="integer" length="2"/>
+                            <number name="ValueOrIndex2" id="145" type="integer" length="2"/>
                         </structure>
-                        <number name="ChoiceLength" id="625" type="integer" length="2"/>
-                        <custom name="ChoiceBody" id="626" length="ChoiceLength" script="id:64"/>
-                        <number name="PassageOffset" id="627" type="integer" length="4" minval="0"/>
-                        <number name="UpdateCount" id="628" type="integer" length="1" minval="0" maxval="8"/>
-                        <scriptelement name="MapValueUpdates" id="629">
+                        <number name="ChoiceLength" id="147" type="integer" length="2"/>
+                        <custom name="ChoiceBody" id="148" length="ChoiceLength" script="id:64"/>
+                        <number name="PassageOffset" id="149" type="integer" length="4" minval="0"/>
+                        <number name="UpdateCount" id="150" type="integer" length="1" minval="0" maxval="8"/>
+                        <scriptelement name="MapValueUpdates" id="151">
                             <script name="unnamed" type="Generic">
                                 <source language="Lua">-- get collection with results so far
 results = currentMapper:getCurrentResults()
@@ -293,18 +293,18 @@ return bytes
                         </scriptelement>
                     </structure>
                 </structure>
-                <binary name="EndBody" mustmatch="yes" id="632" disabled="yes" length="1">
+                <binary name="EndBody" mustmatch="yes" id="154" disabled="yes" length="1">
                     <fixedvalues>
                         <fixedvalue name="ETX" value="03"/>
                     </fixedvalues>
                 </binary>
             </structure>
-            <structure name="Dictionary" id="634" repeatmax="-1">
-                <string name="Word" id="635" repeatmax="-1" type="zero-terminated"/>
+            <structure name="Dictionary" id="156" repeatmax="-1">
+                <string name="Word" id="157" repeatmax="-1" type="zero-terminated"/>
             </structure>
         </structure>
-        <structure name="ValueUpdate" id="638" length="5" alignment="1" encoding="ISO_8859-1:1987" endian="big" signed="no">
-            <number name="VariableTypes" id="639" type="integer" length="8" lengthunit="bit" display="binary" minval="00000000" maxval="0111111111111111111111111111111111111111111111111111111111111111">
+        <structure name="ValueUpdate" id="160" length="5" disabled="yes" alignment="1" encoding="ISO_8859-1:1987" endian="big" signed="no">
+            <number name="VariableTypes" id="161" type="integer" length="8" lengthunit="bit" display="binary" minval="00000000" maxval="0111111111111111111111111111111111111111111111111111111111111111">
                 <mask name="ValueOneType" value="0xC0">
                     <fixedvalue name="hard value" value="0x0"/>
                     <fixedvalue name="bool" value="0x40"/>
@@ -325,8 +325,8 @@ return bytes
                     <fixedvalue name="Divide" value="0x4"/>
                 </mask>
             </number>
-            <number name="ValueOrIndex1" id="640" type="integer" length="2" minval="0"/>
-            <number name="ValueOrIndex2" id="641" type="integer" length="2" minval="0"/>
+            <number name="ValueOrIndex1" id="162" type="integer" length="2" minval="0"/>
+            <number name="ValueOrIndex2" id="163" type="integer" length="2" minval="0"/>
         </structure>
     </grammar>
 </ufwb>
