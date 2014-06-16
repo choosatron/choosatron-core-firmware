@@ -1,0 +1,27 @@
+v1.3.6
+ * Merging in latest Spark Core code
+
+---
+v1.3.5
+ * Added randomization of story by pressing all four buttons at the menu
+ * Changed ending text to make it clearer it is over, and to tear gently
+
+---
+v1.3.4
+ * Added random menu feature: if there are more than 4 stories, it will pick 4 at random to choose from
+
+---
+v1.3.3
+ * Added coin op support.
+
+---
+v1.3.2
+ * Commented out 'while' line in cdam_printer to keep things from stalling:
+void Printer::timeoutWait() {
+  //while((long)(micros() - resumeTime) < 0L); // Rollover-proof
+}
+ * Updated makefile from core-firmware to cdam-core-firmware
+ * Upped the version #
+
+---
+v1.3.1

@@ -1,0 +1,181 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1265\cocoasubrtf200
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\margl1440\margr1440\vieww16980\viewh21000\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+
+\f0\b\fs24 \cf0 USB Upload
+\b0 \
+\
+1. Put you Core into the DFU mode by holding down the MODE button on the Core and then tapping on the RESET button once. Release the MODE button after you start to see the RGB LED flashing in yellow. It's easy to get this one wrong: Make sure you don't let go of the left button until you see flashing yellow, about 3 seconds after you release the right/RESET button. A flash of white then flashing green can happen when you get this wrong. You want flashing yellow.\
+\
+2. Open up a terminal window on your computer and type this command to find out if the Core indeed being detected correctly.\
+\
+dfu-util -l\
+you should get the following in return:\
+\
+Found DFU: [1d50:607f] devnum=0, cfg=1, intf=0, alt=0, name="@Internal Flash  /0x08000000/20*001Ka,108*001Kg" \
+Found DFU: [1d50:607f] devnum=0, cfg=1, intf=0, alt=1, name="@SPI Flash : SST25x/0x00000000/512*04Kg"\
+(Windows users will need to use the Zatig utility to replace the USB driver as described earlier)\
+\
+Now, navigate to the build folder in your core-firmware repository and use the following command to transfer the .bin file into the Core.\
+\
+dfu-util -d 1d50:607f -a 0 -s 0x08005000:leave -D cdam-core-firmware.bin\
+\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+{\field{\*\fldinst{HYPERLINK "https://community.spark.io/t/lets-get-non-volatile/2200/3"}}{\fldrslt \cf0 https://community.spark.io/t/lets-get-non-volatile/2200/3}}\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+{\field{\*\fldinst{HYPERLINK "http://docs.spark.io/#/hardware/memory-mapping-external-flash-memory-map"}}{\fldrslt \cf0 http://docs.spark.io/#/hardware/memory-mapping-external-flash-memory-map}}\
+\
+334 byte test file\
+dfu-util -d 1d50:607f -a 1 -s 0x00080000 -v -D cdam-test-in.cdam\
+dfu-util -d 1d50:607f -a 1 -s 0x80000:0x0014e -U cdam-test-out.cdam\
+\
+D3-D7 JTAG PINS\
+\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+
+\b \cf0 WiFi Upload
+\b0 \
+\
+Jerry Belich\
+Access Token: d2da4f176549ff659f058a25febc4d860075c162\
+\
+\
+Dan Kane\
+Access Token: b3c719169dcbca128beffbfae543962f9096883b\
+\
+\
+alfred\
+Core ID: 48ff6f065067555046281587\
+\
+curl -X PUT https://api.spark.io/v1/devices/48ff6f065067555046281587\\?access_token=d2da4f176549ff659f058a25febc4d860075c162 -F file=@cdam-core-firmware.bin\
+\
+\
+belvedere\
+Core ID: 53ff6b065067544813371287\
+\
+curl -X PUT https://api.spark.io/v1/devices/53ff6b065067544813371287\\?access_token=d2da4f176549ff659f058a25febc4d860075c162 -F file=@cdam-core-firmware.bin\
+\
+\
+coraline\
+Core ID: 48ff6c065067555050271587\
+\
+curl -X PUT https://api.spark.io/v1/devices/48ff6c065067555050271587\\?access_token=d2da4f176549ff659f058a25febc4d860075c162 -F file=@cdam-core-firmware.bin\
+\
+\
+dandroid\
+Core ID: 51ff6b065067545714490187\
+\
+curl -X PUT https://api.spark.io/v1/devices/51ff6b065067545714490187\\?access_token=b3c719169dcbca128beffbfae543962f9096883b -F file=@cdam-core-firmware.bin\
+\
+\
+ender\
+Core ID: 48ff6b065067555045541587\
+\
+curl -X PUT https://api.spark.io/v1/devices/48ff6b065067555045541587\\?access_token=b3c719169dcbca128beffbfae543962f9096883b -F file=@cdam-core-firmware.bin\
+\
+\
+fidget\
+Core ID: 48ff70065067555020101587\
+\
+curl -X PUT https://api.spark.io/v1/devices/48ff70065067555020101587\\?access_token=b3c719169dcbca128beffbfae543962f9096883b -F file=@cdam-core-firmware.bin\
+\
+\
+grendel\
+Core ID: 55ff71064989495317442587\
+\
+curl -X PUT https://api.spark.io/v1/devices/55ff71064989495317442587\\?access_token=d2da4f176549ff659f058a25febc4d860075c162 -F file=@cdam-core-firmware.bin\
+\
+\
+hildegard\
+Core ID: 48ff6b065067555042101587\
+\
+curl -X PUT https://api.spark.io/v1/devices/48ff6b065067555042101587\\?access_token=d2da4f176549ff659f058a25febc4d860075c162 -F file=@cdam-core-firmware.bin\
+\
+\
+istanbul\
+Core ID: 51ff6c065067545717380687\
+\
+curl -X PUT https://api.spark.io/v1/devices/51ff6c065067545717380687\\?access_token=d2da4f176549ff659f058a25febc4d860075c162 -F file=@cdam-core-firmware.bin\
+\
+\
+jellybean\
+Core ID: 48ff6a065067555060331387\
+\
+curl -X PUT https://api.spark.io/v1/devices/48ff6a065067555060331387\\?access_token=d2da4f176549ff659f058a25febc4d860075c162 -F file=@cdam-core-firmware.bin\
+\
+\
+kilroy\
+Core ID: 53ff6e065067544845371287\
+\
+curl -X PUT https://api.spark.io/v1/devices/53ff6e065067544845371287\\?access_token=d2da4f176549ff659f058a25febc4d860075c162 -F file=@cdam-core-firmware.bin\
+\
+\
+larrick\
+Core ID: 48ff6d065067555038391187\
+\
+curl -X PUT https://api.spark.io/v1/devices/48ff6d065067555038391187\\?access_token=d2da4f176549ff659f058a25febc4d860075c162 -F file=@cdam-core-firmware.bin\
+\
+\
+monet\
+Core ID: 48ff73065067555047561287\
+\
+curl -X PUT https://api.spark.io/v1/devices/48ff73065067555047561287\\?access_token=d2da4f176549ff659f058a25febc4d860075c162 -F file=@cdam-core-firmware.bin\
+\
+\
+natalie\
+Core ID: 48ff6f065067555019501287\
+\
+curl -X PUT https://api.spark.io/v1/devices/48ff6f065067555019501287\\?access_token=d2da4f176549ff659f058a25febc4d860075c162 -F file=@cdam-core-firmware.bin\
+\
+\
+olivia\
+Core ID: 53ff6c065067544835590687\
+\
+curl -X PUT https://api.spark.io/v1/devices/53ff6c065067544835590687\\?access_token=d2da4f176549ff659f058a25febc4d860075c162 -F file=@cdam-core-firmware.bin\
+\
+\
+pilk\
+Core ID: 50ff6a065067545626240587\
+\
+curl -X PUT https://api.spark.io/v1/devices/50ff6a065067545626240587\\?access_token=d2da4f176549ff659f058a25febc4d860075c162 -F file=@cdam-core-firmware.bin\
+\
+----------------------\
+\
+msminotaur\
+Core ID: 51ff6c065067545752380687\
+\
+curl -X PUT https://api.spark.io/v1/devices/51ff6c065067545752380687\\?access_token=d2da4f176549ff659f058a25febc4d860075c162 -F file=@choosatron_v1.3.3-pcb_v2.0.bin\
+\
+\
+gsc_one\
+Core ID: 53ff6f065067544841431087\
+\
+curl -X PUT https://api.spark.io/v1/devices/53ff6f065067544841431087\\?access_token=d2da4f176549ff659f058a25febc4d860075c162 -F file=@choosatron_v1.3.3-pcb_v2.3.bin\
+\
+\
+gsc_two\
+Core ID: 48ff70065067555031281587\
+\
+curl -X PUT https://api.spark.io/v1/devices/48ff70065067555031281587\\?access_token=d2da4f176549ff659f058a25febc4d860075c162 -F file=@choosatron_v1.3.3-pcb_v2.3.bin\
+\
+\
+gsc_three\
+Core ID: 48ff6e065067555043531587\
+\
+curl -X PUT https://api.spark.io/v1/devices/48ff6e065067555043531587\\?access_token=d2da4f176549ff659f058a25febc4d860075c162 -F file=@choosatron_v1.3.3-pcb_v2.3.bin\
+\
+\
+gsc_four\
+Core ID: 48ff6a065067555028101587\
+\
+curl -X PUT https://api.spark.io/v1/devices/48ff6a065067555028101587\\?access_token=d2da4f176549ff659f058a25febc4d860075c162 -F file=@choosatron_v1.3.3-pcb_v2.3.bin\
+\
+\
+gsc_five\
+Core ID: 53ff6c065067544834361287\
+\
+curl -X PUT https://api.spark.io/v1/devices/53ff6c065067544834361287\\?access_token=d2da4f176549ff659f058a25febc4d860075c162 -F file=@choosatron_v1.3.3-pcb_v2.3.bin}
