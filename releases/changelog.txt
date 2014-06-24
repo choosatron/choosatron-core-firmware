@@ -1,3 +1,9 @@
+v1.3.7
+ * Merging in the latest Spark Core code
+ * Integrating use of the SparkIntervalTimer library
+ * 
+
+---
 v1.3.6
  * Merging in latest Spark Core code
 
