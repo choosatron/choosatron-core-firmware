@@ -6,6 +6,7 @@
 #include "spark_wiring_usbserial.h"
 #include "cdam_const_structs.h"
 #include "cdam_const_ascii.h"
+#include "cdam_errors.h"
 
 namespace cdam
 {
@@ -18,6 +19,8 @@ namespace cdam
 #define FIRMWARE_VERSION_REV 1
 
 #define BAUD_RATE 19200
+
+const unsigned int kKeypadIntervalMillis = 500;
 
 // Game States
 typedef enum {

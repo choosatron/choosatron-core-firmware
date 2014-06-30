@@ -20,49 +20,63 @@
  *
  */
 
-#ifndef CDAM_DATA_MANAGER_H
-#define CDAM_DATA_MANAGER_H
+#ifndef CDAM_HARDWARE_MANAGER_H
+#define CDAM_HARDWARE_MANAGER_H
 
 #include "cdam_constants.h"
+#include "elapsed_time.h"
 
 namespace cdam
 {
 
-class DataManager
+class Keypad;
+
+class HardwareManager
 {
     public:
         /* Public Methods */
-        static DataManager& getInstance()
+        static HardwareManager& getInstance()
         {
             // The only instance
             // Guaranteed to be lazy initialized
             // Guaranteed that it will be destroyed correctly
-            static DataManager instance;
+            static HardwareManager instance;
             return instance;
         }
 
         bool initialize();
 
-        // A human readable string of the firmware version.
-        String firmwareVersionString();
+        // Accessors
+        Keypad* keypad();
+
+        // Call once per loop, check intervals.
+        void updateIntervalTimers();
 
         /* Public Variables */
-        // The hard-coded firmware version
-        Version firmwareVersion;
-        Metadata metadata;
-        std::vector<StoryHeader> storyHeaders;
 
     private:
         /* Private Methods */
-        DataManager();
+        HardwareManager();
         // Stop the compiler generating methods of copy the object
-        DataManager(DataManager const& copy);            // Not Implemented
-        DataManager& operator=(DataManager const& copy); // Not Implemented
+        HardwareManager(HardwareManager const& copy);            // Not Implemented
+        HardwareManager& operator=(HardwareManager const& copy); // Not Implemented
 
+        // Assign the Spark Core pins.
+        void setupHardwarePins();
         // Check start byte and load firmware version.
         bool loadFirmwareVersion();
         // Load flags, values, and basic story info.
         bool loadMetadata();
+        // Setup hardware communication objects.
+        void initHardware();
+        // Setup interval timers for loop control.
+        void initLoopControl();
+        // Check the keypad elapse time interval, react.
+        void keypadIntervalUpdate();
+
+        /* Private Variables */
+        Keypad *_keypad;
+        ElapsedMillis _keypadElapsed;
 
 };
 

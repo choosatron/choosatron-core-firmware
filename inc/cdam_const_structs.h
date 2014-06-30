@@ -7,6 +7,15 @@
 namespace cdam
 {
 
+#define METADATA_BASE_ADDRESS       0
+#define METADATA_FIRMWARE_OFFSET    1
+#define METADATA_FLAGS_OFFSET       (METADATA_FIRMWARE_OFFSET+3)
+#define METADATA_FLAGS_COUNT        8 // bytes
+#define METADATA_VALUES_OFFSET      (METADATA_FLAGS_OFFSET + METADATA_FLAGS_COUNT)
+#define METADATA_VALUES_COUNT       16 // bytes
+#define METADATA_STORYCOUNT_OFFSET  (METADATA_VALUES_OFFSET + METADATA_VALUES_COUNT)
+#define METADATA_STORYSIZES_OFFSET  (METADATA_STORYCOUNT_OFFSET + 1)
+
 /* Generic Structures */
 
 typedef struct Version_t {
@@ -41,7 +50,7 @@ typedef struct MetaFlags_t {
 	union {
 		uint8_t flag3;
 		struct {
-	        uint8_t dictOffsetBytes	:1;		// 0=2bytes, 1=3bytes
+	        uint8_t dictOffsetBytes	:1; // 0 = 2byte length dict codes, 1 = 3 bytes
 	        uint8_t rsvd3 			:7;
 		};
     };
