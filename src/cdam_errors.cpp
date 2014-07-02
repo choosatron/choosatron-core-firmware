@@ -19,14 +19,14 @@ struct ErrorDesc_t {
 	{ E_METADATA_WRITE_SOH_FAIL, "Failed to write 'start of header'." }
 };
 
-ErrorCode _lastError = E_NO_ERROR;
+ErrorCode Errors::lastError = E_NO_ERROR;
 
 void Errors::setError(ErrorCode aCode) {
-	_lastError = aCode;
+	Errors::lastError = aCode;
 }
 
 const char *Errors::errorString() {
-	return ErrorDesc[_lastError].message;
+	return ErrorDesc[Errors::lastError].message;
 }
 
 const char *Errors::errorString(ErrorCode aCode) {

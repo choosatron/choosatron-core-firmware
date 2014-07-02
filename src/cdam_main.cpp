@@ -31,8 +31,6 @@ bool Choosatron::setup() {
 
 	HardwareManager::getInstance().initialize();
 	HardwareManager::getInstance().keypad()->active = true;
-	LOG("HI");
-	DEBUG("MEOW");
 
 	// Setup the timer interrupts for keypad updates.
 	//_timer.begin(updateKeypad, 10, hmSec);
@@ -52,14 +50,6 @@ int Choosatron::loop() {
 	HardwareManager::getInstance().updateIntervalTimers();
 	//uint16_t newMillis = millis();
 	//uint16_t diff = newMillis - _lastMillis;
-	LOG("YUM");
-	DEBUG("Test TCP BAD Every %d Usage!",1);
-    LOG("The following 4 mmessages are a test of the logger....");
-    LOG("Want %d more cores",2);
-    WARN("Running %s on cores only %d more left","Low",3);
-    DEBUG("connection closed %d",4);
-    ERROR("Flash write Failed @0x%0x",5);
-    LOG("Logger test Done");
 
 	/*Serial.print(newMillis);
 	Serial.print(" - ");

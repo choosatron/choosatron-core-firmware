@@ -26,11 +26,10 @@ public:
 	static const char *errorString();
     static const char *errorString(ErrorCode aCode);
 
+    static ErrorCode lastError;
 protected:
 
 private:
-	static ErrorCode _lastError;
-
 	ErrorCode* _errors;
 
 };
