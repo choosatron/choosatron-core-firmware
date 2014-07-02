@@ -7,14 +7,23 @@
 namespace cdam
 {
 
-#define METADATA_BASE_ADDRESS       0
+/*#define METADATA_BASE_ADDRESS       0
 #define METADATA_FIRMWARE_OFFSET    1
 #define METADATA_FLAGS_OFFSET       (METADATA_FIRMWARE_OFFSET+3)
 #define METADATA_FLAGS_COUNT        8 // bytes
 #define METADATA_VALUES_OFFSET      (METADATA_FLAGS_OFFSET + METADATA_FLAGS_COUNT)
 #define METADATA_VALUES_COUNT       16 // bytes
 #define METADATA_STORYCOUNT_OFFSET  (METADATA_VALUES_OFFSET + METADATA_VALUES_COUNT)
-#define METADATA_STORYSIZES_OFFSET  (METADATA_STORYCOUNT_OFFSET + 1)
+#define METADATA_STORYSIZES_OFFSET  (METADATA_STORYCOUNT_OFFSET + 1)*/
+
+const uint32_t kMetadataBaseAddress = 0;
+const uint32_t kMetadataFirmwareOffset = 1;
+const uint32_t kMetadataFlagsOffset = (kMetadataFirmwareOffset + 3);
+const uint32_t kMetadataFlagsCount = 8; // bytes
+const uint32_t kMetadataValuesOffset = (kMetadataFlagsOffset + kMetadataFlagsCount);
+const uint32_t kMetadataValuesCount = 16; // bytes
+const uint32_t kMetadataStoryCountOffset = (kMetadataValuesOffset + kMetadataValuesCount);
+const uint32_t kMetadataStorySizesOffset = (kMetadataStoryCountOffset+ 1);
 
 /* Generic Structures */
 

@@ -49,8 +49,9 @@ void HardwareManager::initLoopControl() {
 
 void HardwareManager::keypadIntervalUpdate() {
 	if (_keypadElapsed > kKeypadIntervalMillis) {
-		Serial.println(millis());
 		_keypad->updateKeypad();
 		_keypadElapsed = 0;
 	}
+}
+
 }

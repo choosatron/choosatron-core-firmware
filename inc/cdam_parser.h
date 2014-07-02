@@ -1,5 +1,4 @@
 
-
 #ifndef CDAM_PARSER_H
 #define CDAM_PARSER_H
 
@@ -11,6 +10,8 @@ class Parser {
 public:
     Parser();
     ~Parser();
+
+    static void readMetadata(Metadata *metadata);
 
 protected:
 

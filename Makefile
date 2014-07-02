@@ -1,6 +1,11 @@
 CXX ?= g++
 CXXFLAGS ?= -g -Wall -W -Winline -ansi
-CXXFLAGS += -Isrc -Itests/UnitTest++/src
+CXXFLAGS += -Iinc -Isrc -Itests/UnitTest++/src
+CXXFLAGS += -Ilib/elapsed_time/inc
+CXXFLAGS += -Ilib/interval_timer/inc
+CXXFLAGS += -Ilib/memory_free/inc
+CXXFLAGS += -Ilib/sd/inc
+CXXFLAGS += -Ilib/thermal_printer/inc
 
 # annoying external dependency management
 CXXFLAGS += -I../cdam-core-firmware/inc
@@ -19,7 +24,8 @@ testrunner  = tests/Main.cpp
 
 objects = src/Choosatron.o
 
-testobjects = tests/TestChoosatron.o
+testobjects = tests/TestChoosatron.o \
+			  tests/TestParser.o
 
 
 all: $(lib)

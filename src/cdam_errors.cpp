@@ -1,23 +1,36 @@
 
+#include "cdam_errors.h"
+
 namespace cdam
 {
 
-lastError = E_NO_ERROR;
+struct ErrorDesc_t {
+	ErrorCode code;
+	const char *message;
+} ErrorDesc[] = {
+	{ E_NO_ERROR, "No error." },
+	{ E_METADATA_READ_FAIL, "Failed to read from flash." },
+	{ E_METADATA_READ_VERSION_FAIL, "Failed to read firmware version." },
+	{ E_METADATA_READ_FLAGS_FAIL, "Failed to read metadata flags." },
+	{ E_METADATA_READ_VALUES_FAIL, "Failed to read metadata values." },
+	{ E_METADATA_READ_STORY_COUNT_FAIL, "Failed to read story count." },
+	{ E_METADATA_READ_STORY_SIZE_FAIL, "Failed to read the size of a story." },
+	{ E_METADATA_WRITE_FAIL, "Failed to write to flash." },
+	{ E_METADATA_WRITE_SOH_FAIL, "Failed to write 'start of header'." }
+};
 
-Errors::~ErrorManager() {
-	//delete _errors [];
-}
+ErrorCode _lastError = E_NO_ERROR;
 
 void Errors::setError(ErrorCode aCode) {
 	_lastError = aCode;
 }
 
 const char *Errors::errorString() {
-	return ErrorDesc[_lastError];
+	return ErrorDesc[_lastError].message;
 }
 
 const char *Errors::errorString(ErrorCode aCode) {
-	return ErrorDesc[aCode];
+	return ErrorDesc[aCode].message;
 }
 
 

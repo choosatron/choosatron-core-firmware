@@ -63,6 +63,12 @@ class DataManager
         bool loadFirmwareVersion();
         // Load flags, values, and basic story info.
         bool loadMetadata();
+        // Write metadata to flash.
+        bool writeMetadata(Metadata *aMetadata);
+        // Read metadata from flash.
+        bool readMetadata(Metadata *aMetadata);
+        // For debugging: print out all the metadata values.
+        void printMetadata();
 
 };
 
