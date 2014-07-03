@@ -11,7 +11,7 @@ DataManager::DataManager() {
 }
 
 bool DataManager::initialize() {
-	Serial.begin(BAUD_RATE);
+	//Serial.begin(BAUD_RATE);
 	Flash::init();
 
 	if (!loadFirmwareVersion()) {
@@ -48,21 +48,22 @@ bool DataManager::loadFirmwareVersion() {
 
 bool DataManager::loadMetadata() {
 	// Load and set metadata.
-	Errors::setError(E_METADATA_WRITE_SOH_FAIL);
+
 	// Check for SOH
 	if (Flash::readByte(kMetadataBaseAddress) != ASCII_SOH) {
+		LOG("Write Metadata");
 		if (!writeMetadata(&this->metadata)) {
 			ERROR(Errors::errorString());
 			return false;
 		}
 	} else {
 		// Data exists. Read it!
+		LOG("Read Metadata");
 		if (!readMetadata(&this->metadata)) {
 			ERROR(Errors::errorString());
 			return false;
 		}
 	}
-	ERROR(Errors::errorString());
 
 	return true;
 }
