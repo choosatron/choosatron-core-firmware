@@ -15,11 +15,11 @@ namespace cdam
 // 0, 3, or 6 are cutoffs for rerouted buttons pins.
 #define BOARD_DOT_VERSION 6
 
-#define FIRMWARE_VERSION_MAJ 0
-#define FIRMWARE_VERSION_MIN 0
-#define FIRMWARE_VERSION_REV 1
-
 #define BAUD_RATE 19200
+
+const uint8_t kFirmwareVersionMajor = 5;
+const uint8_t kFirmwareVersionMinor = 9;
+const uint8_t kFirmwareVersionRevision = 134;
 
 const unsigned int kKeypadIntervalMillis = 500;
 

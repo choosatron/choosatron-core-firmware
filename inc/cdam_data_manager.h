@@ -24,9 +24,12 @@
 #define CDAM_DATA_MANAGER_H
 
 #include "cdam_constants.h"
+#include "flashee-eeprom.h"
+
 
 namespace cdam
 {
+
 
 class DataManager
 {
@@ -42,10 +45,6 @@ class DataManager
         }
 
         bool initialize();
-
-        // A human readable string of the firmware version.
-        String firmwareVersionString();
-        char *firmwareVersionStr(char *aVersion);
 
         /* Public Variables */
         // The hard-coded firmware version
@@ -70,6 +69,9 @@ class DataManager
         bool readMetadata(Metadata *aMetadata);
         // For debugging: print out all the metadata values.
         void printMetadata();
+
+        /* Private Variables */
+        Flashee::FlashDevice* _metaFlash;
 
 };
 

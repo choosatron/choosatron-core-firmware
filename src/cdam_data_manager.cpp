@@ -1,7 +1,6 @@
 #include "cdam_data_manager.h"
 #include "cdam_constants.h"
 #include "cdam_flash.h"
-#include "flashee-eeprom.h"
 
 namespace cdam
 {
@@ -13,7 +12,9 @@ DataManager::DataManager() {
 
 bool DataManager::initialize() {
 	//Serial.begin(BAUD_RATE);
-	Flash::init();
+	//Flash::init();
+
+	//_metaFlash = Flashee::Devices::createAddressErase(0, 1 * 4096);
 
 	if (!loadFirmwareVersion()) {
 		return false;
@@ -24,26 +25,6 @@ bool DataManager::initialize() {
 	return true;
 }
 
-String DataManager::firmwareVersionString() {
-	String ver = String('v');
-	ver += this->metadata.firmwareVer.major;
-	ver += '.';
-	ver += this->metadata.firmwareVer.minor;
-	ver += '.';
-	ver += this->metadata.firmwareVer.revision;
-	return ver;
-}
-
-char *DataManager::firmwareVersionStr(char *aVersion) {
-	aVersion[0] = 'v';
-	aVersion[1] = this->metadata.firmwareVer.major;
-	aVersion[2] = '.';
-	aVersion[3] = this->metadata.firmwareVer.minor;
-	aVersion[4] = '.';
-	aVersion[5] = this->metadata.firmwareVer.revision;
-	aVersion[6] = '\0';
-}
-
 /* Accessors */
 
 
@@ -51,9 +32,9 @@ char *DataManager::firmwareVersionStr(char *aVersion) {
 
 bool DataManager::loadFirmwareVersion() {
 	// Set firmware version.
-	this->firmwareVersion.major = FIRMWARE_VERSION_MAJ;
-	this->firmwareVersion.minor = FIRMWARE_VERSION_MIN;
-	this->firmwareVersion.revision = FIRMWARE_VERSION_REV;
+	this->firmwareVersion.major = kFirmwareVersionMajor;
+	this->firmwareVersion.minor = kFirmwareVersionMinor;
+	this->firmwareVersion.revision = kFirmwareVersionRevision;
 	return true;
 }
 
@@ -76,9 +57,8 @@ bool DataManager::loadMetadata() {
 			return false;
 		}
 
-		char version[7] = {};
-		LOG("Firmware %s", firmwareVersionStr(version));
-		free(version);
+		LOG("Firmware v%d.%d.%d", aMetadata->firmwareVer.major,
+		    aMetadata->firmwareVer.minor, aMetadata->firmwareVer.revision);
 	}
 
 	return true;
@@ -197,7 +177,10 @@ bool DataManager::readMetadata(Metadata *aMetadata) {
 		aMetadata->firmwareVer.minor != this->firmwareVersion.minor ||
 		aMetadata->firmwareVer.revision != this->firmwareVersion.revision) {
 		// First run after firmware update
-
+		LOG("Firmware has been upgraded from v%d.%d.%d to v%d.%d.%d",
+		    aMetadata->firmwareVer.major, aMetadata->firmwareVer.minor,
+		    aMetadata->firmwareVer.revision, this->firmwareVersion.major,
+		    this->firmwareVersion.minor, this->firmwareVersion.revision);
 		// Update to the current standard (in memory)
 		// Wipe out data in flash
 		// Save the new metadata

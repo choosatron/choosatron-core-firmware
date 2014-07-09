@@ -14,7 +14,8 @@ INCLUDE_DIRS += $(TARGET_FLASHEE_EEPROM_PATH)/inc
 CSRC +=
 
 # C++ source files included in this build.
-CPPSRC += $(TARGET_FLASHEE_EEPROM_PATH)/ff.cpp
+CPPSRC += $(TARGET_FLASHEE_EEPROM_SRC_PATH)/flashee-eeprom.cpp
+CPPSRC += $(TARGET_FLASHEE_EEPROM_SRC_PATH)/ff.cpp
 
 # ASM source files included in this build.
 ASRC +=
