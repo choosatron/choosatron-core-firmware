@@ -1,6 +1,7 @@
 #include "cdam_data_manager.h"
 #include "cdam_constants.h"
 #include "cdam_flash.h"
+#include "flashee-eeprom.h"
 
 namespace cdam
 {
@@ -33,6 +34,16 @@ String DataManager::firmwareVersionString() {
 	return ver;
 }
 
+char *DataManager::firmwareVersionStr(char *aVersion) {
+	aVersion[0] = 'v';
+	aVersion[1] = this->metadata.firmwareVer.major;
+	aVersion[2] = '.';
+	aVersion[3] = this->metadata.firmwareVer.minor;
+	aVersion[4] = '.';
+	aVersion[5] = this->metadata.firmwareVer.revision;
+	aVersion[6] = '\0';
+}
+
 /* Accessors */
 
 
@@ -51,18 +62,23 @@ bool DataManager::loadMetadata() {
 
 	// Check for SOH
 	if (Flash::readByte(kMetadataBaseAddress) != ASCII_SOH) {
-		LOG("Write Metadata");
+		LOG("No SOH, write fresh metadata.");
+
 		if (!writeMetadata(&this->metadata)) {
 			ERROR(Errors::errorString());
 			return false;
 		}
 	} else {
 		// Data exists. Read it!
-		LOG("Read Metadata");
+		LOG("SOH found, read metadata.");
 		if (!readMetadata(&this->metadata)) {
 			ERROR(Errors::errorString());
 			return false;
 		}
+
+		char version[7] = {};
+		LOG("Firmware %s", firmwareVersionStr(version));
+		free(version);
 	}
 
 	return true;
@@ -98,7 +114,6 @@ bool DataManager::writeMetadata(Metadata *aMetadata) {
 
 	aMetadata->storyCount = 0;
 
-	// TODO: WRITE TO FLASH
 	if (!Flash::writeBytes((uint8_t *)aMetadata, kMetadataBaseAddress + kMetadataFirmwareOffset, (uint32_t)sizeof(aMetadata))) {
 		Errors::setError(E_METADATA_WRITE_FAIL);
 		return false;

@@ -45,6 +45,7 @@ class DataManager
 
         // A human readable string of the firmware version.
         String firmwareVersionString();
+        char *firmwareVersionStr(char *aVersion);
 
         /* Public Variables */
         // The hard-coded firmware version
