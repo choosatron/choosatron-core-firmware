@@ -19,9 +19,9 @@ Keypad *_keypad;
 //IntervalTimer _timer;
 
 
-const uint16_t KEYPAD_UPDATE_MILLIS = 500;
-uint16_t _lastMillis;
-uint16_t _delta;
+//const uint16_t KEYPAD_UPDATE_MILLIS = 500;
+//uint16_t _lastMillis;
+//uint16_t _delta;
 
 Choosatron::Choosatron() {
 }
@@ -69,10 +69,8 @@ int Choosatron::loop() {
 	return 0;
 }
 
-
 void Choosatron::updateKeypad() {
   _keypad->updateKeypad();
 }
-
 
 }

@@ -12,14 +12,16 @@
 namespace cdam
 {
 
+#define IsBitSet(val, bit) ((val) & (1 << (bit)))
+
 // 0, 3, or 6 are cutoffs for rerouted buttons pins.
 #define BOARD_DOT_VERSION 6
 
 #define BAUD_RATE 19200
 
-const uint8_t kFirmwareVersionMajor = 5;
-const uint8_t kFirmwareVersionMinor = 9;
-const uint8_t kFirmwareVersionRevision = 134;
+const uint8_t kFirmwareVersionMajor = 0;
+const uint8_t kFirmwareVersionMinor = 0;
+const uint8_t kFirmwareVersionRevision = 1;
 
 const unsigned int kKeypadIntervalMillis = 500;
 

@@ -25,6 +25,17 @@ const uint32_t kMetadataValuesCount = 16; // bytes
 const uint32_t kMetadataStoryCountOffset = (kMetadataValuesOffset + kMetadataValuesCount);
 const uint32_t kMetadataStorySizesOffset = (kMetadataStoryCountOffset+ 1);
 
+#define FLG1_OFFLINE   0x80
+#define FLG1_DEMO   0x040
+#define FLG1_SD 0x20
+#define FLG1_MULTI  0x10
+#define FLG1_ARCADE 0x08
+
+#define FLG2_LOGGING 0x80
+#define FLG2_LOG_LOCAL 0x40
+#define FLG2_LOG_LIVE 0x20
+
+
 /* Generic Structures */
 
 typedef struct Version_t {
@@ -114,7 +125,15 @@ typedef struct MetaValues_t {
 	uint8_t value16;
 } MetaValues;
 
+typedef struct MetaStorySizes_t {
+	uint32_t story1;
+	uint32_t story2;
+	uint32_t story3;
+	uint32_t story4;
+} MetaStorySizes;
+
 typedef struct Metadata_t {
+	uint8_t soh;
 	Version firmwareVer;
 	MetaFlags flags;
 	MetaValues values;

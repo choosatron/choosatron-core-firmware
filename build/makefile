@@ -42,6 +42,7 @@ LIB_CORE_COMMUNICATION_PATH = ../core-communication-lib
 
 # Additional include directories, applied to objects built for this target.
 INCLUDE_DIRS += $(CORE_FIRMWARE_PATH)/inc
+INCLUDE_DIRS += $(CORE_FIRMWARE_PATH)/inc/flashee-eeprom
 INCLUDE_DIRS += $(LIB_CORE_COMMON_PATH)/CMSIS/Include
 INCLUDE_DIRS += $(LIB_CORE_COMMON_PATH)/CMSIS/Device/ST/STM32F10x/Include
 INCLUDE_DIRS += $(LIB_CORE_COMMON_PATH)/STM32F10x_StdPeriph_Driver/inc

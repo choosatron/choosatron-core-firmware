@@ -8,8 +8,6 @@
 namespace cdam
 {
 
-#define IsBitSet(val, bit) ((val) & (1 << (bit)))
-
 #define BTN_ONE   0x01
 #define BTN_TWO   0x02
 #define BTN_THREE 0x04

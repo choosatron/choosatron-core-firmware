@@ -70,8 +70,18 @@ class DataManager
         // For debugging: print out all the metadata values.
         void printMetadata();
 
+        // Test Methods
+        bool testMetadata();
+        void setTestMetadata(Metadata *aMetadata);
+        void logMetadata(Metadata *aMetadata);
+        void logBinary(uint8_t aValue);
+        void loadMetadata(Metadata *aMetadata);
+        void saveMetadata(Metadata *aMetadata);
+
+
         /* Private Variables */
         Flashee::FlashDevice* _metaFlash;
+        Flashee::FlashDevice* _storyFlash;
 
 };
 

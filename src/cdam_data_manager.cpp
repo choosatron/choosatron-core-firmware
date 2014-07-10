@@ -14,15 +14,34 @@ bool DataManager::initialize() {
 	//Serial.begin(BAUD_RATE);
 	//Flash::init();
 
-	//_metaFlash = Flashee::Devices::createAddressErase(0, 1 * 4096);
+	this->metadata = {};
+	LOG("Page Size: %d", Flashee::Devices::userFlash().pageSize());
+	LOG("Page Count: %d", Flashee::Devices::userFlash().pageCount());
+	_metaFlash = Flashee::Devices::createAddressErase(0, 4*4096);
+	//_metaFlash->writeString("Hello World!", 0);
+	//char buf[13];
+    //_metaFlash->read(buf, 0, 13);
+    //LOG("BLAH");
+    //LOG("%d", _metaFlash->length());
+    //LOG(buf);
 
-	if (!loadFirmwareVersion()) {
+    //testMetadata();
+	loadMetadata(&this->metadata);
+	logMetadata(&this->metadata);
+
+	//_metaFlash->eraseAll();
+
+	/*if (!loadFirmwareVersion()) {
 		return false;
 	}
 	if (!loadMetadata()) {
 		return false;
-	}
+	}*/
 	return true;
+}
+
+void logMetadata() {
+
 }
 
 /* Accessors */
@@ -56,12 +75,172 @@ bool DataManager::loadMetadata() {
 			ERROR(Errors::errorString());
 			return false;
 		}
-
-		LOG("Firmware v%d.%d.%d", aMetadata->firmwareVer.major,
-		    aMetadata->firmwareVer.minor, aMetadata->firmwareVer.revision);
 	}
+	LOG("Firmware v%d.%d.%d", this->metadata.firmwareVer.major,
+		this->metadata.firmwareVer.minor, this->metadata.firmwareVer.revision);
 
 	return true;
+}
+
+bool DataManager::testMetadata() {
+	Metadata metadata = {};
+	_metaFlash->eraseAll();
+	loadMetadata(&metadata);
+	LOG("*** Should be empty ***");
+	logMetadata(&metadata);
+	setTestMetadata(&metadata);
+	LOG("*** Should be filled in ***");
+	logMetadata(&metadata);
+	saveMetadata(&metadata);
+	metadata = {};
+	LOG("*** Should be empty ***");
+	logMetadata(&metadata);
+	loadMetadata(&metadata);
+	LOG("*** Should be AWESOME ***");
+	logMetadata(&metadata);
+
+	return true;
+}
+
+void DataManager::setTestMetadata(Metadata *aMetadata) {
+	aMetadata->soh = ASCII_SOH;
+
+	aMetadata->firmwareVer.major = 9;
+	aMetadata->firmwareVer.minor = 8;
+	aMetadata->firmwareVer.revision = 76;
+
+	// Flag 1
+	// Set bit to 0
+	aMetadata->flags.flag1 &= (~FLG1_OFFLINE);
+	// Set bit to 1
+	aMetadata->flags.flag1 |= FLG1_OFFLINE;
+	aMetadata->flags.flag1 |= FLG1_SD;
+	aMetadata->flags.flag1 |= FLG1_ARCADE;
+
+	// Flag 2
+	aMetadata->flags.flag2 |= FLG2_LOG_LOCAL;
+
+	aMetadata->flags.flag3 = 0xAA;
+	aMetadata->flags.flag4 = 0x55;
+	aMetadata->flags.flag5 = 0xAA;
+	aMetadata->flags.flag6 = 0x55;
+	aMetadata->flags.flag7 = 0xAA;
+	aMetadata->flags.flag8 = 0x55;
+
+	aMetadata->values.coinsPerCredit = 2;
+	aMetadata->values.coinDenomination = 25;
+	aMetadata->values.value3 = 3;
+	aMetadata->values.value4 = 4;
+	aMetadata->values.value5 = 5;
+	aMetadata->values.value6 = 6;
+	aMetadata->values.value7 = 7;
+	aMetadata->values.value8 = 8;
+	aMetadata->values.value9 = 9;
+	aMetadata->values.value10 = 10;
+	aMetadata->values.value11 = 11;
+	aMetadata->values.value12 = 12;
+	aMetadata->values.value13 = 13;
+	aMetadata->values.value14 = 14;
+	aMetadata->values.value15 = 15;
+	aMetadata->values.value16 = 16;
+
+	aMetadata->storyCount = 4;
+	aMetadata->storySizes.push_back(1);
+	aMetadata->storySizes.push_back(255);
+	aMetadata->storySizes.push_back(65535);
+	aMetadata->storySizes.push_back(2147483647);
+}
+
+void DataManager::logMetadata(Metadata *aMetadata) {
+	LOG("METADATA");
+	LOG("Firmware v%d.%d.%d", aMetadata->firmwareVer.major,
+		aMetadata->firmwareVer.minor, aMetadata->firmwareVer.revision);
+	LOG("Offline: %s", (IsBitSet(aMetadata->flags.flag1, 7) ? "on" : "off"));
+	LOG("Demo: %s", (IsBitSet(aMetadata->flags.flag1, 6) ? "on" : "off"));
+	LOG("SD: %s", (IsBitSet(aMetadata->flags.flag1, 5) ? "on" : "off"));
+	LOG("Multi: %s", (IsBitSet(aMetadata->flags.flag1, 4) ? "on" : "off"));
+	LOG("Arcade: %s", (IsBitSet(aMetadata->flags.flag1, 3) ? "on" : "off"));
+	LOG("Rsvd: %s", (IsBitSet(aMetadata->flags.flag1, 2) ? "on" : "off"));
+	LOG("Rsvd: %s", (IsBitSet(aMetadata->flags.flag1, 1) ? "on" : "off"));
+	LOG("Rsvd: %s", (IsBitSet(aMetadata->flags.flag1, 0) ? "on" : "off"));
+	LOG("Logging: %s", (IsBitSet(aMetadata->flags.flag2, 7) ? "on" : "off"));
+	LOG("Log Local: %s", (IsBitSet(aMetadata->flags.flag2, 6) ? "on" : "off"));
+	LOG("Log Live: %s", (IsBitSet(aMetadata->flags.flag2, 5) ? "on" : "off"));
+	LOG("Rsvd: %s", (IsBitSet(aMetadata->flags.flag2, 4) ? "on" : "off"));
+	LOG("Rsvd: %s", (IsBitSet(aMetadata->flags.flag2, 3) ? "on" : "off"));
+	LOG("Rsvd: %s", (IsBitSet(aMetadata->flags.flag2, 2) ? "on" : "off"));
+	LOG("Rsvd: %s", (IsBitSet(aMetadata->flags.flag2, 1) ? "on" : "off"));
+	LOG("Rsvd: %s", (IsBitSet(aMetadata->flags.flag2, 0) ? "on" : "off"));
+	logBinary(aMetadata->flags.flag3);
+	logBinary(aMetadata->flags.flag4);
+	logBinary(aMetadata->flags.flag5);
+	logBinary(aMetadata->flags.flag6);
+	logBinary(aMetadata->flags.flag7);
+	logBinary(aMetadata->flags.flag8);
+	LOG("Coins Per Credit: %d", aMetadata->values.coinsPerCredit);
+	LOG("Coin Denom: %d", aMetadata->values.coinDenomination);
+	LOG("Value 3: %d", aMetadata->values.value3);
+	LOG("Value 4: %d", aMetadata->values.value4);
+	LOG("Value 5: %d", aMetadata->values.value5);
+	LOG("Value 6: %d", aMetadata->values.value6);
+	LOG("Value 7: %d", aMetadata->values.value7);
+	LOG("Value 8: %d", aMetadata->values.value8);
+	LOG("Value 9: %d", aMetadata->values.value9);
+	LOG("Value 10: %d", aMetadata->values.value10);
+	LOG("Value 11: %d", aMetadata->values.value11);
+	LOG("Value 12: %d", aMetadata->values.value12);
+	LOG("Value 13: %d", aMetadata->values.value13);
+	LOG("Value 14: %d", aMetadata->values.value14);
+	LOG("Value 15: %d", aMetadata->values.value15);
+	LOG("Value 16: %d", aMetadata->values.value16);
+	LOG("Story Count: %d", aMetadata->storyCount);
+	for (int i = 0; i < aMetadata->storyCount; ++i) {
+		LOG("Story Size %d: %d", (i + 1), aMetadata->storySizes[i]);
+	}
+}
+
+void DataManager::logBinary(uint8_t aValue) {
+	LOG("0x%c%c%c%c%c%c%c%c",
+	    (IsBitSet(aValue, 7) ? '1' : '0'),
+	    (IsBitSet(aValue, 6) ? '1' : '0'),
+	    (IsBitSet(aValue, 5) ? '1' : '0'),
+	    (IsBitSet(aValue, 4) ? '1' : '0'),
+	    (IsBitSet(aValue, 3) ? '1' : '0'),
+	    (IsBitSet(aValue, 2) ? '1' : '0'),
+	    (IsBitSet(aValue, 1) ? '1' : '0'),
+	    (IsBitSet(aValue, 0) ? '1' : '0'));
+}
+
+void DataManager::loadMetadata(Metadata *aMetadata) {
+	if (_metaFlash->readByte(kMetadataBaseAddress) == ASCII_SOH) {
+		LOG("*** Loading Data ***");
+		bool result = _metaFlash->read(aMetadata, kMetadataBaseAddress, sizeof(*aMetadata));
+		if (result) {
+			LOG("*** Loaded Data ***");
+			for (int i = 0; i < aMetadata->storyCount; ++i) {
+				_metaFlash->read(&aMetadata->storySizes[i],
+				                 sizeof(*aMetadata) + (i * 32),
+				                 (uint32_t)32);
+			}
+		} else {
+			LOG("*** Failed to Load Data ***");
+		}
+	} else {
+		LOG("*** No SOH to Read ***");
+	}
+}
+
+void DataManager::saveMetadata(Metadata *aMetadata) {
+	if (_metaFlash->write(aMetadata, kMetadataBaseAddress, sizeof(*aMetadata))) {
+		for (int i = 0; i < aMetadata->storyCount; ++i) {
+			_metaFlash->write(&aMetadata->storySizes[i],
+			                 sizeof(*aMetadata) + (i * 32),
+			                 (uint32_t)32);
+		}
+		LOG("*** Wrote Data ***");
+	} else {
+		LOG("*** Failed to Write Data ***");
+	}
 }
 
 bool DataManager::writeMetadata(Metadata *aMetadata) {
