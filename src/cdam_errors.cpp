@@ -10,13 +10,10 @@ struct ErrorDesc_t {
 } ErrorDesc[] = {
 	{ E_NO_ERROR, "No error." },
 	{ E_METADATA_READ_FAIL, "Failed to read from flash." },
-	{ E_METADATA_READ_VERSION_FAIL, "Failed to read firmware version." },
-	{ E_METADATA_READ_FLAGS_FAIL, "Failed to read metadata flags." },
-	{ E_METADATA_READ_VALUES_FAIL, "Failed to read metadata values." },
-	{ E_METADATA_READ_STORY_COUNT_FAIL, "Failed to read story count." },
 	{ E_METADATA_READ_STORY_SIZE_FAIL, "Failed to read the size of a story." },
 	{ E_METADATA_WRITE_FAIL, "Failed to write to flash." },
-	{ E_METADATA_WRITE_SOH_FAIL, "Failed to write 'start of header'." }
+	{ E_METADATA_WRITE_STORY_SIZE_FAIL, "Failed to write the size of a story." },
+	{ E_DATA_MODEL_UPGRADE_FAIL, "Failed to upgrade data model."}
 };
 
 ErrorCode Errors::lastError = E_NO_ERROR;

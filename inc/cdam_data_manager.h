@@ -60,23 +60,30 @@ class DataManager
         DataManager& operator=(DataManager const& copy); // Not Implemented
 
         // Check start byte and load firmware version.
-        bool loadFirmwareVersion();
+        void loadFirmwareVersion();
         // Load flags, values, and basic story info.
         bool loadMetadata();
-        // Write metadata to flash.
-        bool writeMetadata(Metadata *aMetadata);
+        // Set the default metadata and save it.
+        bool initializeMetadata(Metadata *aMetadata);
+
         // Read metadata from flash.
         bool readMetadata(Metadata *aMetadata);
-        // For debugging: print out all the metadata values.
-        void printMetadata();
+        // Write metadata to flash.
+        bool writeMetadata(Metadata *aMetadata);
+
+        // Check if firmware has updated.
+        bool didFirmwareUpdate(Metadata *aMetadata);
+        // Upgrade data since firmware is newer than the data.
+        bool upgradeDataModels();
 
         // Test Methods
         bool testMetadata();
         void setTestMetadata(Metadata *aMetadata);
-        void logMetadata(Metadata *aMetadata);
         void logBinary(uint8_t aValue);
-        void loadMetadata(Metadata *aMetadata);
-        void saveMetadata(Metadata *aMetadata);
+        // For debugging: print out all the metadata values.
+        void logMetadata(Metadata *aMetadata);
+
+
 
 
         /* Private Variables */

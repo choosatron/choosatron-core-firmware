@@ -11,37 +11,22 @@ DataManager::DataManager() {
 }
 
 bool DataManager::initialize() {
-	//Serial.begin(BAUD_RATE);
-	//Flash::init();
-
 	this->metadata = {};
-	LOG("Page Size: %d", Flashee::Devices::userFlash().pageSize());
-	LOG("Page Count: %d", Flashee::Devices::userFlash().pageCount());
+	DEBUG("Page Size: %d", Flashee::Devices::userFlash().pageSize());
+	DEBUG("Page Count: %d", Flashee::Devices::userFlash().pageCount());
 	_metaFlash = Flashee::Devices::createAddressErase(0, 4*4096);
-	//_metaFlash->writeString("Hello World!", 0);
-	//char buf[13];
-    //_metaFlash->read(buf, 0, 13);
-    //LOG("BLAH");
-    //LOG("%d", _metaFlash->length());
-    //LOG(buf);
+	_storyFlash = Flashee::Devices::createWearLevelErase(4*4096, 260*4096);
+
 
     //testMetadata();
-	loadMetadata(&this->metadata);
-	logMetadata(&this->metadata);
-
 	//_metaFlash->eraseAll();
 
-	/*if (!loadFirmwareVersion()) {
-		return false;
-	}
+	loadFirmwareVersion();
+
 	if (!loadMetadata()) {
 		return false;
-	}*/
+	}
 	return true;
-}
-
-void logMetadata() {
-
 }
 
 /* Accessors */
@@ -49,53 +34,166 @@ void logMetadata() {
 
 /* Private Methods */
 
-bool DataManager::loadFirmwareVersion() {
+void DataManager::loadFirmwareVersion() {
 	// Set firmware version.
 	this->firmwareVersion.major = kFirmwareVersionMajor;
 	this->firmwareVersion.minor = kFirmwareVersionMinor;
 	this->firmwareVersion.revision = kFirmwareVersionRevision;
-	return true;
 }
 
 bool DataManager::loadMetadata() {
 	// Load and set metadata.
+	LOG("Firmware v%d.%d.%d", this->firmwareVersion.major,
+		this->firmwareVersion.minor, this->firmwareVersion.revision);
 
 	// Check for SOH
-	if (Flash::readByte(kMetadataBaseAddress) != ASCII_SOH) {
-		LOG("No SOH, write fresh metadata.");
-
-		if (!writeMetadata(&this->metadata)) {
+	if (_metaFlash->readByte(kMetadataBaseAddress) != ASCII_SOH) {
+		DEBUG("No SOH, write fresh metadata.");
+		if (!initializeMetadata(&this->metadata)) {
 			ERROR(Errors::errorString());
 			return false;
 		}
 	} else {
 		// Data exists. Read it!
-		LOG("SOH found, read metadata.");
+		DEBUG("SOH found, read metadata.");
 		if (!readMetadata(&this->metadata)) {
 			ERROR(Errors::errorString());
 			return false;
 		}
+		logMetadata(&this->metadata);
+		if (didFirmwareUpdate(&this->metadata)) {
+			// Update to the current standard (in memory)
+			if (!upgradeDataModels()) {
+				Errors::setError(E_DATA_MODEL_UPGRADE_FAIL);
+				ERROR(Errors::errorString());
+				return false;
+			}
+		}
 	}
-	LOG("Firmware v%d.%d.%d", this->metadata.firmwareVer.major,
-		this->metadata.firmwareVer.minor, this->metadata.firmwareVer.revision);
+	return true;
+}
 
+bool DataManager::initializeMetadata(Metadata *aMetadata) {
+	// Set the default values for a fresh Choosatron.
+	*aMetadata = {};
+
+	aMetadata->soh = ASCII_SOH;
+	aMetadata->firmwareVer.major = this->firmwareVersion.major;
+	aMetadata->firmwareVer.minor = this->firmwareVersion.minor;
+	aMetadata->firmwareVer.revision = this->firmwareVersion.revision;
+
+	//aMetadata->flags.flag1 |= FLG1_OFFLINE;
+	//aMetadata->flags.flag1 |= FLG1_DEMO;
+	//aMetadata->flags.flag1 |= FLG1_SD;
+	//aMetadata->flags.flag1 |= FLG1_MULTI;
+	//aMetadata->flags.flag1 |= FLG1_ARCADE;
+
+	aMetadata->flags.flag2 |= FLG2_LOGGING;
+	aMetadata->flags.flag2 |= FLG2_LOG_LOCAL;
+	//aMetadata->flags.flag2 |= FLG2_LOG_LIVE;
+
+	aMetadata->values.coinsPerCredit = 2;
+	aMetadata->values.coinDenomination = 25;
+
+	aMetadata->storyCount = 0;
+	logMetadata(aMetadata);
+	if (!writeMetadata(aMetadata)) {
+		return false;
+	}
+	return true;
+}
+
+bool DataManager::readMetadata(Metadata *aMetadata) {
+	if (_metaFlash->readByte(kMetadataBaseAddress) == ASCII_SOH) {
+		bool result = _metaFlash->read(aMetadata, kMetadataBaseAddress, sizeof(*aMetadata));
+		if (result) {
+			DEBUG("*** Loaded Data ***");
+			for (int i = 0; i < aMetadata->storyCount; ++i) {
+				result = _metaFlash->read(&aMetadata->storySizes[i],
+				                          sizeof(*aMetadata) + (i * sizeof(uint32_t)),
+				                          sizeof(uint32_t));
+				if (!result) {
+					Errors::setError(E_METADATA_READ_STORY_SIZE_FAIL);
+					ERROR(Errors::errorString());
+					return false;
+				}
+				DEBUG("Story %d size: %d", i, aMetadata->storySizes[i]);
+			}
+		} else {
+			Errors::setError(E_METADATA_READ_FAIL);
+			ERROR(Errors::errorString());
+			return false;
+		}
+	}
+	return true;
+}
+
+bool DataManager::writeMetadata(Metadata *aMetadata) {
+	bool result = _metaFlash->write(aMetadata, kMetadataBaseAddress, sizeof(*aMetadata));
+	if (result) {
+		DEBUG("*** Wrote Data ***");
+		for (int i = 0; i < aMetadata->storyCount; ++i) {
+			result = _metaFlash->write(&aMetadata->storySizes[i],
+			                 sizeof(*aMetadata) + (i * sizeof(uint32_t)),
+			                 sizeof(uint32_t));
+			if (!result) {
+				Errors::setError(E_METADATA_WRITE_STORY_SIZE_FAIL);
+				ERROR(Errors::errorString());
+				return false;
+			}
+		}
+	} else {
+		Errors::setError(E_METADATA_WRITE_FAIL);
+		ERROR(Errors::errorString());
+		return false;
+	}
+	return true;
+}
+
+bool DataManager::didFirmwareUpdate(Metadata *aMetadata) {
+	// Check if saved firmware version is out of date
+	if (aMetadata->firmwareVer.major != this->firmwareVersion.major ||
+		aMetadata->firmwareVer.minor != this->firmwareVersion.minor ||
+		aMetadata->firmwareVer.revision != this->firmwareVersion.revision) {
+		// First run after firmware update
+		DEBUG("Firmware has been upgraded from v%d.%d.%d to v%d.%d.%d",
+		    aMetadata->firmwareVer.major, aMetadata->firmwareVer.minor,
+		    aMetadata->firmwareVer.revision, this->firmwareVersion.major,
+		    this->firmwareVersion.minor, this->firmwareVersion.revision);
+		return true;
+	}
+	return false;
+}
+
+bool DataManager::upgradeDataModels() {
+	// Update the data models.
+
+
+	// Wipe out data in flash
+	// ** Do we need to 'zero' it out?
+	// Save the new metadata
+	if (writeMetadata(&this->metadata)) {
+		Errors::setError(E_METADATA_WRITE_FAIL);
+		ERROR(Errors::errorString());
+		return false;
+	}
 	return true;
 }
 
 bool DataManager::testMetadata() {
 	Metadata metadata = {};
 	_metaFlash->eraseAll();
-	loadMetadata(&metadata);
+	readMetadata(&metadata);
 	LOG("*** Should be empty ***");
 	logMetadata(&metadata);
 	setTestMetadata(&metadata);
 	LOG("*** Should be filled in ***");
 	logMetadata(&metadata);
-	saveMetadata(&metadata);
+	writeMetadata(&metadata);
 	metadata = {};
 	LOG("*** Should be empty ***");
 	logMetadata(&metadata);
-	loadMetadata(&metadata);
+	readMetadata(&metadata);
 	LOG("*** Should be AWESOME ***");
 	logMetadata(&metadata);
 
@@ -151,6 +249,18 @@ void DataManager::setTestMetadata(Metadata *aMetadata) {
 	aMetadata->storySizes.push_back(2147483647);
 }
 
+void DataManager::logBinary(uint8_t aValue) {
+	LOG("0x%c%c%c%c%c%c%c%c",
+	    (IsBitSet(aValue, 7) ? '1' : '0'),
+	    (IsBitSet(aValue, 6) ? '1' : '0'),
+	    (IsBitSet(aValue, 5) ? '1' : '0'),
+	    (IsBitSet(aValue, 4) ? '1' : '0'),
+	    (IsBitSet(aValue, 3) ? '1' : '0'),
+	    (IsBitSet(aValue, 2) ? '1' : '0'),
+	    (IsBitSet(aValue, 1) ? '1' : '0'),
+	    (IsBitSet(aValue, 0) ? '1' : '0'));
+}
+
 void DataManager::logMetadata(Metadata *aMetadata) {
 	LOG("METADATA");
 	LOG("Firmware v%d.%d.%d", aMetadata->firmwareVer.major,
@@ -199,51 +309,7 @@ void DataManager::logMetadata(Metadata *aMetadata) {
 	}
 }
 
-void DataManager::logBinary(uint8_t aValue) {
-	LOG("0x%c%c%c%c%c%c%c%c",
-	    (IsBitSet(aValue, 7) ? '1' : '0'),
-	    (IsBitSet(aValue, 6) ? '1' : '0'),
-	    (IsBitSet(aValue, 5) ? '1' : '0'),
-	    (IsBitSet(aValue, 4) ? '1' : '0'),
-	    (IsBitSet(aValue, 3) ? '1' : '0'),
-	    (IsBitSet(aValue, 2) ? '1' : '0'),
-	    (IsBitSet(aValue, 1) ? '1' : '0'),
-	    (IsBitSet(aValue, 0) ? '1' : '0'));
-}
-
-void DataManager::loadMetadata(Metadata *aMetadata) {
-	if (_metaFlash->readByte(kMetadataBaseAddress) == ASCII_SOH) {
-		LOG("*** Loading Data ***");
-		bool result = _metaFlash->read(aMetadata, kMetadataBaseAddress, sizeof(*aMetadata));
-		if (result) {
-			LOG("*** Loaded Data ***");
-			for (int i = 0; i < aMetadata->storyCount; ++i) {
-				_metaFlash->read(&aMetadata->storySizes[i],
-				                 sizeof(*aMetadata) + (i * 32),
-				                 (uint32_t)32);
-			}
-		} else {
-			LOG("*** Failed to Load Data ***");
-		}
-	} else {
-		LOG("*** No SOH to Read ***");
-	}
-}
-
-void DataManager::saveMetadata(Metadata *aMetadata) {
-	if (_metaFlash->write(aMetadata, kMetadataBaseAddress, sizeof(*aMetadata))) {
-		for (int i = 0; i < aMetadata->storyCount; ++i) {
-			_metaFlash->write(&aMetadata->storySizes[i],
-			                 sizeof(*aMetadata) + (i * 32),
-			                 (uint32_t)32);
-		}
-		LOG("*** Wrote Data ***");
-	} else {
-		LOG("*** Failed to Write Data ***");
-	}
-}
-
-bool DataManager::writeMetadata(Metadata *aMetadata) {
+/*bool DataManager::writeMetadata(Metadata *aMetadata) {
 	// Flash not set (first start), or there is a problem.
 
 	// Write the SOH byte
@@ -366,10 +432,6 @@ bool DataManager::readMetadata(Metadata *aMetadata) {
 	}
 
 	return true;
-}
-
-void DataManager::printMetadata() {
-
-}
+}*/
 
 }

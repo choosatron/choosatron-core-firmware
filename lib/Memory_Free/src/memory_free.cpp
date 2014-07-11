@@ -8,7 +8,7 @@ unsigned int __heap_start;
 void *__brkval;
 
 /*
- * The free list structure as maintained by the 
+ * The free list structure as maintained by the
  * avr-libc memory allocation routines.
  */
 struct __freelist {
@@ -20,7 +20,7 @@ struct __freelist {
 struct __freelist *__flp;
 
 /* Calculates the size of the free list */
-int freeListSize() {
+int MemoryFree::freeListSize() {
   struct __freelist* current;
   int total = 0;
 
@@ -32,7 +32,7 @@ int freeListSize() {
   return total;
 }
 
-int freeMemory() {
+int MemoryFree::freeMemory() {
   int free_memory;
 
   if ((int)__brkval == 0) {
