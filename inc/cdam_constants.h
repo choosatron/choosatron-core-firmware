@@ -27,18 +27,6 @@ const uint8_t kServerTTLDefault = 60;
 
 const unsigned int kKeypadIntervalMillis = 5;
 
-// Game States
-typedef enum {
-	STATE_ERROR,
-	STATE_INIT,
-	STATE_READY,
-	STATE_SELECT,
-	STATE_PLAY,
-	STATE_CONTINUE,
-	STATE_AUTH,
-	STATE_ADMIN
-} GameState;
-
 typedef enum {
 #if (BOARD_DOT_VERSION >= 6)
 	PIN_BTN_ONE = D1,

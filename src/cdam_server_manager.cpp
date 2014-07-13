@@ -100,7 +100,8 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		downloadStoryData(serverAddressAndPort);
 
 	} else if (strcmp(command, kServerCmdGetState) == 0) {
-
+		Spark.publish(kServerCmdGetState, Manager::getInstance().dataManager->gameStateStr(), kServerTTLDefault, PRIVATE);
+		return kServerReturnEventIncoming;
 	} else if (strcmp(command, kServerCmdGetMillis) == 0) {
 		return millis();
 	} else if (strcmp(command, kServerCmdGetSeconds) == 0) {

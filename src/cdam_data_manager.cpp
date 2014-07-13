@@ -5,12 +5,27 @@
 namespace cdam
 {
 
+struct GameStateStr_t {
+	GameState state;
+	const char *stateDesc;
+} GameStateDesc[] = {
+	{ STATE_ERROR, "error" },
+	{ STATE_INIT, "init" },
+	{ STATE_READY, "ready" },
+	{ STATE_SELECT, "select" },
+	{ STATE_PLAY, "play" },
+	{ STATE_AUTH, "auth" },
+	{ STATE_ADMIN, "admin" }
+};
+
 /* Public Methods */
 
 DataManager::DataManager() {
 }
 
 bool DataManager::initialize() {
+	this->gameState = STATE_INIT;
+
 	this->gameCredits = 0;
 
 	this->metadata = {};
@@ -29,6 +44,10 @@ bool DataManager::initialize() {
 		return false;
 	}
 	return true;
+}
+
+const char *DataManager::gameStateStr() {
+	return GameStateDesc[this->gameState].stateDesc;
 }
 
 /* Accessors */

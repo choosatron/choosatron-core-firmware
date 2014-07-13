@@ -30,6 +30,17 @@
 namespace cdam
 {
 
+// Game States
+typedef enum GameState_t {
+    STATE_ERROR,
+    STATE_INIT,
+    STATE_READY,
+    STATE_SELECT,
+    STATE_PLAY,
+    STATE_CONTINUE,
+    STATE_AUTH,
+    STATE_ADMIN
+} GameState;
 
 class DataManager
 {
@@ -38,6 +49,7 @@ class DataManager
         DataManager();
 
         bool initialize();
+        const char *gameStateStr();
 
         /* Public Variables */
         // The hard-coded firmware version
@@ -46,6 +58,7 @@ class DataManager
         std::vector<StoryHeader> storyHeaders;
 
 
+        GameState gameState;
         uint8_t gameCredits;
 
     private:
