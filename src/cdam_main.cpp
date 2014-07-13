@@ -1,6 +1,7 @@
 #include "cdam_main.h"
 #include "cdam_constants.h"
 #include "cdam_data_manager.h"
+#include "Cdam_server_manager.h"
 #include "cdam_hardware_manager.h"
 #include "cdam_keypad.h"
 
@@ -28,6 +29,7 @@ Choosatron::Choosatron() {
 
 bool Choosatron::setup() {
 	DataManager::getInstance().initialize();
+	ServerManager::getInstance().initialize();
 
 	HardwareManager::getInstance().initialize();
 	HardwareManager::getInstance().keypad()->active = true;

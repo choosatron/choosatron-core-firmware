@@ -52,6 +52,9 @@ class DataManager
         Metadata metadata;
         std::vector<StoryHeader> storyHeaders;
 
+
+        uint8_t gameCredits;
+
     private:
         /* Private Methods */
         DataManager();
