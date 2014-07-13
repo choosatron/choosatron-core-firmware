@@ -24,6 +24,12 @@ const String kServerCmdGetSeconds = "get_seconds";
 const String kServerCmdGetFreeSpace = "get_free_space";
 const String kServerCmdGetUsedSpace = "get_used_space";
 const String kServerCmdGetCredits = "get_credits";
+const String kServerCmdGetSSID = "get_ssid";
+const String kServerCmdGetGatewayIP = "get_gateway_ip";
+const String kServerCmdGetMacAddr = "get_mac_addr";
+const String kServerCmdGetSubnetMask = "get_subnet_mask";
+const String kServerCmdGetLocalIP = "get_local_ip";
+const String kServerCmdGetRSSI = "get_rssi";
 
 /* Public Methods */
 
@@ -34,7 +40,7 @@ void ServerManager::initialize() {
 	// Setup our command function hook for the server.
 	Spark.function(kServerCmd, serverCommand);
 	// Expose the last command issued.
-	//Spark.variable(kServerVarLastCmd , _lastCommand, STRING);
+	Spark.variable(kServerVarLastCmd , ServerManager::getInstance().lastCommand, STRING);
 
 	//ServerManager::getInstance().lastCommand = "NONE";
 	//strcpy("NONE", ServerManager::lastCommand);
@@ -81,13 +87,25 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	} else if (command == kServerCmdGetMillis) {
 
 	} else if (command == kServerCmdGetSeconds) {
-
+		Spark.publish(kServerCmdGetSeconds, "thousands", 60, PRIVATE);
 	} else if (command == kServerCmdGetFreeSpace) {
 
 	} else if (command == kServerCmdGetUsedSpace) {
 
 	} else if (command == kServerCmdGetCredits) {
 		return DataManager::getInstance().gameCredits;
+	} else if (command == kServerCmdGetSSID) {
+
+	} else if (command == kServerCmdGetGatewayIP) {
+
+	} else if (command == kServerCmdGetMacAddr) {
+
+	} else if (command == kServerCmdGetSubnetMask) {
+
+	} else if (command == kServerCmdGetLocalIP) {
+
+	} else if (command == kServerCmdGetRSSI) {
+
 	}
 
 	return -1;

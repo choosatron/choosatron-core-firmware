@@ -32,6 +32,12 @@ dfu-util -d 1d50:607f -a 0 -s 0x08005000:leave -D cdam-core-firmware.bin\
      -d "args=ping"\
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
 \cf0 \
+\pard\pardeftab720\sl420
+\cf0 curl -H "Authorization: Bearer 
+\f1\fs28 \cf2 2bf23aca0f37f6646b6dd20d51630c0907feb004
+\f0\fs24 \cf0 "  https://api.spark.io/v1/events/get_seconds\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+\cf0 \
 \pard\pardeftab720\sl380
 
 \f1\fs28 \cf3 make DEBUG_BUILD=y\
