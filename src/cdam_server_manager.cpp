@@ -103,14 +103,26 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	} else if (strcmp(command, kServerCmdGetCredits) == 0) {
 		return Manager::getInstance().dataManager->gameCredits;
 	} else if (strcmp(command, kServerCmdGetSSID) == 0) {
-		//Spark.publish(kServerCmdGetSSID, Network.SSID(), kServerTTLDefault, PRIVATE);
+		Spark.publish(kServerCmdGetSSID, Network.SSID(), kServerTTLDefault, PRIVATE);
 		return 1;
 	} else if (strcmp(command, kServerCmdGetGatewayIP) == 0) {
-		//Spark.publish(kServerCmdGetGatewayIP, Network.gatewayIP(), kServerTTLDefault, PRIVATE);
+		uint8_t *address = Network.gatewayIP().raw_address();
+		char addr[16] = "";
+		snprintf(addr, 16, "%d.%d.%d.%d", address[0], address[1], address[2], address[3]);
+		Spark.publish(kServerCmdGetGatewayIP, addr, kServerTTLDefault, PRIVATE);
 		return 1;
 	} else if (strcmp(command, kServerCmdGetMacAddr) == 0) {
-
+		byte macVal[6];
+		Network.macAddress(macVal);
+		char macAddr[18];
+		snprintf(macAddr, 19, "%02x:%02x:%02x:%02x:%02x:%02x", macVal[5], macVal[4], macVal[3], macVal[2], macVal[1], macVal[0]);
+		Spark.publish(kServerCmdGetMacAddr, macAddr, kServerTTLDefault, PRIVATE);
+		return 1;
 	} else if (strcmp(command, kServerCmdGetSubnetMask) == 0) {
+		uint8_t *address = Network.subnetMask().raw_address();
+		char addr[16] = "";
+		snprintf(addr, 16, "%d.%d.%d.%d", address[0], address[1], address[2], address[3]);
+		Spark.publish(kServerCmdGetSubnetMask, addr, kServerTTLDefault, PRIVATE);
 		return 1;
 	} else if (strcmp(command, kServerCmdGetLocalIP) == 0) {
 		uint8_t *address = Network.localIP().raw_address();
