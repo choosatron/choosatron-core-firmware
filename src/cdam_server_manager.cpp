@@ -146,7 +146,7 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	return kServerReturnNoCmd;
 }
 
-void ServerManager::downloadStoryData(String aServerAddressAndPort) {
+bool ServerManager::downloadStoryData(String aServerAddressAndPort) {
 	// Configure port
 	uint port = kDefaultTCPPort;
 	int colonIndex = aServerAddressAndPort.indexOf(":");
@@ -160,15 +160,27 @@ void ServerManager::downloadStoryData(String aServerAddressAndPort) {
 
 	// Split IP into octets
 	int dotIndex = aServerAddressAndPort.indexOf(".");
+	if (dotIndex == -1) {
+		// Not a valid IP address
+		return false;
+	}
 	String octectStr = aServerAddressAndPort.substring(0, dotIndex);
 	uint8_t firstOctet = atoi(octectStr.c_str());
 
 	int nextDotIndex = aServerAddressAndPort.indexOf(".", dotIndex + 1);
+	if (nextDotIndex == -1) {
+		// Not a valid IP address
+		return false;
+	}
 	octectStr = aServerAddressAndPort.substring(dotIndex + 1, nextDotIndex);
 	uint8_t secondOctet = atoi(octectStr.c_str());
 
 	dotIndex = nextDotIndex;
 	nextDotIndex = aServerAddressAndPort.indexOf(".", dotIndex + 1);
+	if (nextDotIndex == -1) {
+		// Not a valid IP address
+		return false;
+	}
 	octectStr = aServerAddressAndPort.substring(dotIndex + 1, nextDotIndex);
 	uint8_t thirdOctet = atoi(octectStr.c_str());
 
