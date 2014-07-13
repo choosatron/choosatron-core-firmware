@@ -14,6 +14,7 @@ CSRC +=
 
 # C++ source files included in this build.
 CPPSRC += $(TARGET_CHOOSATRON_SRC_PATH)/cdam_main.cpp
+CPPSRC += $(TARGET_CHOOSATRON_SRC_PATH)/cdam_manager.cpp
 CPPSRC += $(TARGET_CHOOSATRON_SRC_PATH)/cdam_data_manager.cpp
 CPPSRC += $(TARGET_CHOOSATRON_SRC_PATH)/cdam_server_manager.cpp
 CPPSRC += $(TARGET_CHOOSATRON_SRC_PATH)/cdam_hardware_manager.cpp

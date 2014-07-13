@@ -10,14 +10,7 @@ class ServerManager
 {
     public:
         /* Public Methods */
-        static ServerManager& getInstance()
-        {
-            // The only instance
-            // Guaranteed to be lazy initialized
-            // Guaranteed that it will be destroyed correctly
-            static ServerManager instance;
-            return instance;
-        }
+        ServerManager();
 
         void initialize();
 
@@ -26,10 +19,6 @@ class ServerManager
 
     private:
         /* Private Methods */
-        ServerManager();
-        // Stop the compiler generating methods of copy the object
-        ServerManager(ServerManager const& copy);            // Not Implemented
-        ServerManager& operator=(ServerManager const& copy); // Not Implemented
 
         static int serverCommand(String aCommand);
 

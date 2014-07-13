@@ -35,14 +35,7 @@ class HardwareManager
 {
     public:
         /* Public Methods */
-        static HardwareManager& getInstance()
-        {
-            // The only instance
-            // Guaranteed to be lazy initialized
-            // Guaranteed that it will be destroyed correctly
-            static HardwareManager instance;
-            return instance;
-        }
+        HardwareManager();
 
         bool initialize();
 
@@ -56,10 +49,6 @@ class HardwareManager
 
     private:
         /* Private Methods */
-        HardwareManager();
-        // Stop the compiler generating methods of copy the object
-        HardwareManager(HardwareManager const& copy);            // Not Implemented
-        HardwareManager& operator=(HardwareManager const& copy); // Not Implemented
 
         // Assign the Spark Core pins.
         void setupHardwarePins();

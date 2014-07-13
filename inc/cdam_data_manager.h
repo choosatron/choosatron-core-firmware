@@ -35,14 +35,7 @@ class DataManager
 {
     public:
         /* Public Methods */
-        static DataManager& getInstance()
-        {
-            // The only instance
-            // Guaranteed to be lazy initialized
-            // Guaranteed that it will be destroyed correctly
-            static DataManager instance;
-            return instance;
-        }
+        DataManager();
 
         bool initialize();
 
@@ -57,10 +50,6 @@ class DataManager
 
     private:
         /* Private Methods */
-        DataManager();
-        // Stop the compiler generating methods of copy the object
-        DataManager(DataManager const& copy);            // Not Implemented
-        DataManager& operator=(DataManager const& copy); // Not Implemented
 
         // Check start byte and load firmware version.
         void loadFirmwareVersion();

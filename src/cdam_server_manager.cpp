@@ -1,5 +1,4 @@
-#include "cdam_server_manager.h"
-#include "cdam_data_manager.h"
+#include "cdam_manager.h"
 #include "cdam_constants.h"
 
 namespace cdam
@@ -40,7 +39,7 @@ void ServerManager::initialize() {
 	// Setup our command function hook for the server.
 	Spark.function(kServerCmd, serverCommand);
 	// Expose the last command issued.
-	Spark.variable(kServerVarLastCmd , ServerManager::getInstance().lastCommand, STRING);
+	Spark.variable(kServerVarLastCmd , Manager::getInstance().serverManager->lastCommand, STRING);
 
 	//ServerManager::getInstance().lastCommand = "NONE";
 	//strcpy("NONE", ServerManager::lastCommand);
@@ -51,8 +50,8 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	String command = "";
 	aCommandAndArgs.trim();
     aCommandAndArgs.toLowerCase();
-    aCommandAndArgs.toCharArray(ServerManager::getInstance().lastCommand, 64);
-    DEBUG("Command Received: %s", ServerManager::getInstance().lastCommand);
+    aCommandAndArgs.toCharArray(Manager::getInstance().serverManager->lastCommand, 64);
+    DEBUG("Command Received: %s", Manager::getInstance().serverManager->lastCommand);
 
     int commaPosition = aCommandAndArgs.indexOf(",");
 	if (commaPosition >- 1) {
@@ -72,8 +71,8 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	} else if (command == kServerCmdButtonInput) {
 
 	} else if (command == kServerCmdAddCredits) {
-		DataManager::getInstance().gameCredits += 1;
-		return DataManager::getInstance().gameCredits;
+		Manager::getInstance().dataManager->gameCredits += 1;
+		return Manager::getInstance().dataManager->gameCredits;
 	} else if (command == kServerCmdRemoveCredits) {
 
 	} else if (command == kServerCmdRemoveStory) {
@@ -85,15 +84,16 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	} else if (command == kServerCmdGetState) {
 
 	} else if (command == kServerCmdGetMillis) {
-
+		return millis();
 	} else if (command == kServerCmdGetSeconds) {
-		Spark.publish(kServerCmdGetSeconds, "thousands", 60, PRIVATE);
+		return millis() / 1000;
+		//Spark.publish(kServerCmdGetSeconds, "thousands", 60, PRIVATE);
 	} else if (command == kServerCmdGetFreeSpace) {
 
 	} else if (command == kServerCmdGetUsedSpace) {
 
 	} else if (command == kServerCmdGetCredits) {
-		return DataManager::getInstance().gameCredits;
+		return Manager::getInstance().dataManager->gameCredits;
 	} else if (command == kServerCmdGetSSID) {
 
 	} else if (command == kServerCmdGetGatewayIP) {

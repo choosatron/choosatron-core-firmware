@@ -1,8 +1,6 @@
 #include "cdam_main.h"
 #include "cdam_constants.h"
-#include "cdam_data_manager.h"
-#include "Cdam_server_manager.h"
-#include "cdam_hardware_manager.h"
+#include "cdam_manager.h"
 #include "cdam_keypad.h"
 
 #if (OFFLINE == 1)
@@ -28,11 +26,14 @@ Choosatron::Choosatron() {
 }
 
 bool Choosatron::setup() {
-	DataManager::getInstance().initialize();
+	Manager::getInstance().initialize();
+	Manager::getInstance().hardwareManager->keypad()->active = true;
+
+	/*DataManager::getInstance().initialize();
 	ServerManager::getInstance().initialize();
 
 	HardwareManager::getInstance().initialize();
-	HardwareManager::getInstance().keypad()->active = true;
+	HardwareManager::getInstance().keypad()->active = true;*/
 
 	// Setup the timer interrupts for keypad updates.
 	//_timer.begin(updateKeypad, 10, hmSec);
@@ -49,7 +50,7 @@ bool Choosatron::setup() {
 }
 
 int Choosatron::loop() {
-	HardwareManager::getInstance().updateIntervalTimers();
+	Manager::getInstance().hardwareManager->updateIntervalTimers();
 	//uint16_t newMillis = millis();
 	//uint16_t diff = newMillis - _lastMillis;
 
