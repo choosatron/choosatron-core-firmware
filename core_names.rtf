@@ -23,6 +23,14 @@ Now, navigate to the build folder in your core-firmware repository and use the f
 dfu-util -d 1d50:607f -a 0 -s 0x08005000:leave -D cdam-core-firmware.bin\
 \
 \pard\pardeftab720\sl420
+\cf0 curl "https://api.spark.io/v1/devices/
+\f1\fs28 \cf2 48ff6f065067555019501287
+\f0\fs24 \cf0 /last_command?access_token=
+\f1\fs28 \cf2 2bf23aca0f37f6646b6dd20d51630c0907feb004
+\f0\fs24 \cf0 "\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+\cf0 \
+\pard\pardeftab720\sl420
 \cf0 curl https://api.spark.io/v1/devices/
 \f1\fs28 \cf2 48ff6f065067555019501287
 \f0\fs24 \cf0 /command \\\

@@ -39,7 +39,7 @@ void ServerManager::initialize() {
 	// Setup our command function hook for the server.
 	Spark.function(kServerCmd, serverCommand);
 	// Expose the last command issued.
-	Spark.variable(kServerVarLastCmd , Manager::getInstance().serverManager->lastCommand, STRING);
+	Spark.variable(kServerVarLastCmd , this->lastCommand, STRING);
 
 	//ServerManager::getInstance().lastCommand = "NONE";
 	//strcpy("NONE", ServerManager::lastCommand);
