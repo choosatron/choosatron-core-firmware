@@ -23,7 +23,9 @@ const uint8_t kFirmwareVersionMajor = 0;
 const uint8_t kFirmwareVersionMinor = 0;
 const uint8_t kFirmwareVersionRevision = 1;
 
-const unsigned int kKeypadIntervalMillis = 500;
+const uint8_t kServerTTLDefault = 60;
+
+const unsigned int kKeypadIntervalMillis = 5;
 
 // Game States
 typedef enum {

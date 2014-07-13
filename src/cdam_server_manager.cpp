@@ -1,5 +1,6 @@
 #include "cdam_manager.h"
 #include "cdam_constants.h"
+#include "spark_wiring_network.h"
 
 namespace cdam
 {
@@ -53,8 +54,8 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
     aCommandAndArgs.toCharArray(Manager::getInstance().serverManager->lastCommand, 64);
     DEBUG("Command Received: %s", Manager::getInstance().serverManager->lastCommand);
 
-    int commaPosition = aCommandAndArgs.indexOf(",");
-	if (commaPosition >- 1) {
+    int commaPosition = aCommandAndArgs.indexOf("|");
+	if (commaPosition > -1) {
 		DEBUG("Has Arguments");
     	command = aCommandAndArgs.substring(0, commaPosition);
     	//args.substring(commaPosition+1, args.length()));//send remaining part to line 2
@@ -67,12 +68,16 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	if (command == kServerCmdPing) {
 
 	} else if (command == kServerCmdKeypadInput) {
-
+		String keypadStr = aCommandAndArgs.substring(commaPosition + 1, aCommandAndArgs.length());
+		uint8_t keypadVal = atoi(keypadStr.c_str());
+		DEBUG("Keypad Val: %d", keypadVal);
+		return keypadVal;
 	} else if (command == kServerCmdButtonInput) {
 
 	} else if (command == kServerCmdAddCredits) {
 		Manager::getInstance().dataManager->gameCredits += 1;
 		return Manager::getInstance().dataManager->gameCredits;
+		return 1;
 	} else if (command == kServerCmdRemoveCredits) {
 
 	} else if (command == kServerCmdRemoveStory) {
@@ -87,7 +92,8 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		return millis();
 	} else if (command == kServerCmdGetSeconds) {
 		return millis() / 1000;
-		//Spark.publish(kServerCmdGetSeconds, "thousands", 60, PRIVATE);
+		return 1;
+		//Spark.publish(kServerCmdGetSeconds, "thousands", kServerTTLDefault, PRIVATE);
 	} else if (command == kServerCmdGetFreeSpace) {
 
 	} else if (command == kServerCmdGetUsedSpace) {
@@ -95,17 +101,21 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	} else if (command == kServerCmdGetCredits) {
 		return Manager::getInstance().dataManager->gameCredits;
 	} else if (command == kServerCmdGetSSID) {
-
+		//Spark.publish(kServerCmdGetSSID, Network.SSID(), kServerTTLDefault, PRIVATE);
+		return 1;
 	} else if (command == kServerCmdGetGatewayIP) {
-
+		//Spark.publish(kServerCmdGetGatewayIP, Network.gatewayIP(), kServerTTLDefault, PRIVATE);
+		return 1;
 	} else if (command == kServerCmdGetMacAddr) {
 
 	} else if (command == kServerCmdGetSubnetMask) {
-
+		//Spark.publish(kServerCmdGetSSID, Network.SSID(), kServerTTLDefault, PRIVATE);
+		return 1;
 	} else if (command == kServerCmdGetLocalIP) {
-
+		//Spark.publish(kServerCmdGetSSID, Network.SSID(), kServerTTLDefault, PRIVATE);
+		return 1;
 	} else if (command == kServerCmdGetRSSI) {
-
+		return Network.RSSI();
 	}
 
 	return -1;
