@@ -22,6 +22,7 @@ const String kServerCmdGetMillis = "get_millis";
 const String kServerCmdGetSeconds = "get_seconds";
 const String kServerCmdGetFreeSpace = "get_free_space";
 const String kServerCmdGetUsedSpace = "get_used_space";
+const String kServerCmdGetCredits = "get_credits";
 
 /* Public Methods */
 
@@ -64,7 +65,8 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	} else if (command = kServerCmdButtonInput) {
 
 	} else if (command = kServerCmdAddCredits) {
-
+		DataManager::getInstance()->gameCredits += 1;
+		return DataManager::getInstance()->gameCredits;
 	} else if (command = kServerCmdRemoveCredits) {
 
 	} else if (command = kServerCmdRemoveStory) {
@@ -83,6 +85,8 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 
 	} else if (command = kServerCmdGetUsedSpace) {
 
+	} else if (command = kServerCmdGetCredits) {
+		return DataManager::getInstance()->gameCredits;
 	}
 
 	return -1;

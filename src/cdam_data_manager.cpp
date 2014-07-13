@@ -11,6 +11,8 @@ DataManager::DataManager() {
 }
 
 bool DataManager::initialize() {
+	this->gameCredits = 0;
+
 	this->metadata = {};
 	DEBUG("Page Size: %d", Flashee::Devices::userFlash().pageSize());
 	DEBUG("Page Count: %d", Flashee::Devices::userFlash().pageCount());
