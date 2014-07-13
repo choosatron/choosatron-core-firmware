@@ -1,6 +1,7 @@
 #include "cdam_manager.h"
 #include "cdam_constants.h"
 #include "spark_wiring_network.h"
+#include "spark_wiring_tcpclient.h"
 
 namespace cdam
 {
@@ -30,6 +31,8 @@ const String kServerCmdGetMacAddr = "get_mac_addr";
 const String kServerCmdGetSubnetMask = "get_subnet_mask";
 const String kServerCmdGetLocalIP = "get_local_ip";
 const String kServerCmdGetRSSI = "get_rssi";
+
+const int kDefaultTCPPort = 80;
 
 /* Public Methods */
 
@@ -86,6 +89,10 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 
 	} else if (command == kServerCmdAddStory) {
 
+		// Get server IP address/port (e.g. 1.1.1.1:80) from arguments
+		String serverAddressAndPort = aCommandAndArgs.substring(commaPosition + 1, aCommandAndArgs.length());
+		downloadStoryData(serverAddressAndPort);
+
 	} else if (command == kServerCmdGetState) {
 
 	} else if (command == kServerCmdGetMillis) {
@@ -119,6 +126,54 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	}
 
 	return -1;
+}
+
+void ServerManager::downloadStoryData(String aServerAddressAndPort) {
+	// Configure port
+	uint port = kDefaultTCPPort;
+	int colonIndex = aServerAddressAndPort.indexOf(":");
+	if (colonIndex > -1) {
+		String portStr = aServerAddressAndPort.substring(colonIndex+1, aServerAddressAndPort.length());
+		port = atoi(portStr.c_str());
+	} else {
+		// No port supplied, set index to end of string
+		colonIndex = aServerAddressAndPort.length();
+	}
+
+	// Split IP into octets
+	int dotIndex = aServerAddressAndPort.indexOf(".");
+	String octectStr = aServerAddressAndPort.substring(0, dotIndex);
+	uint8_t firstOctet = atoi(octectStr.c_str());
+
+	int nextDotIndex = aServerAddressAndPort.indexOf(".", dotIndex + 1);
+	octectStr = aServerAddressAndPort.substring(dotIndex + 1, nextDotIndex);
+	uint8_t secondOctet = atoi(octectStr.c_str());
+
+	dotIndex = nextDotIndex;
+	nextDotIndex = aServerAddressAndPort.indexOf(".", dotIndex + 1);
+	octectStr = aServerAddressAndPort.substring(dotIndex + 1, nextDotIndex);
+	uint8_t thirdOctet = atoi(octectStr.c_str());
+
+	dotIndex = nextDotIndex;
+	octectStr = aServerAddressAndPort.substring(dotIndex + 1, colonIndex);
+	uint8_t fourthOctet = atoi(octectStr.c_str());
+
+	DEBUG("Download story data from %u.%u.%u.%u:%u", firstOctet, secondOctet, thirdOctet, fourthOctet, port);
+
+	byte server[] = {firstOctet, secondOctet, thirdOctet, fourthOctet};
+	TCPClient client;
+	if (client.connect(server, port)) {
+    	DEBUG("TCPClient connected");
+    	// client.println("GET /search?q=unicorn HTTP/1.0");
+    	// client.println("Host: www.google.com");
+    	// client.println("Content-Length: 0");
+    	// client.println();
+  	}
+  	else
+  	{
+    	Serial.println("TCPClient connection failed");
+ 	}
+
 }
 
 }

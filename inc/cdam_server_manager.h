@@ -22,6 +22,8 @@ class ServerManager
 
         static int serverCommand(String aCommand);
 
+        static void downloadStoryData(String aServerAddressAndPort);
+
         /* Private Variables */
 };
 
