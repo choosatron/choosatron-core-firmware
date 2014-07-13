@@ -56,6 +56,8 @@ INCLUDE_DIRS += $(LIB_CORE_COMMUNICATION_PATH)/src
 CFLAGS =  -g3 -gdwarf-2 -Os -mcpu=cortex-m3 -mthumb
 CFLAGS += $(patsubst %,-I$(SRC_PATH)/%,$(INCLUDE_DIRS)) -I.
 CFLAGS += -ffunction-sections -fmessage-length=0 -Wall
+# Recommended from spark_wiring_string.h
+#CFLGAS += -felide-constructors -std=c++0x
 
 # Generate dependancy files automatically.
 CFLAGS += -MD -MP -MF $@.d
