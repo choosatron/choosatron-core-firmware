@@ -68,7 +68,7 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	aCommandAndArgs.toCharArray(command, cmdLen);
 
 	DEBUG("Cmd: %s", command);
-	if (command == kServerCmdPing) {
+	if (strcmp(command, kServerCmdPing) == 0) {
 
 	} else if (strcmp(command, kServerCmdKeypadInput) == 0) {
 		String keypadStr = aCommandAndArgs.substring(commaPosition + 1, aCommandAndArgs.length());
@@ -93,16 +93,16 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 
 	} else if (strcmp(command, kServerCmdGetMillis) == 0) {
 		return millis();
-	} else if (command == kServerCmdGetSeconds) == 0) {
+	} else if (strcmp(command, kServerCmdGetSeconds) == 0) {
 		return millis() / 1000;
 		//Spark.publish(kServerCmdGetSeconds, "thousands", kServerTTLDefault, PRIVATE);
 	} else if (strcmp(command, kServerCmdGetFreeSpace) == 0) {
 
-	} else if (strcmp(command, kServerCmdGetUsedSpace) == 0 {
+	} else if (strcmp(command, kServerCmdGetUsedSpace) == 0) {
 
 	} else if (strcmp(command, kServerCmdGetCredits) == 0) {
 		return Manager::getInstance().dataManager->gameCredits;
-	} else if (strcmp(command, kServerCmdGetSSID) {
+	} else if (strcmp(command, kServerCmdGetSSID) == 0) {
 		//Spark.publish(kServerCmdGetSSID, Network.SSID(), kServerTTLDefault, PRIVATE);
 		return 1;
 	} else if (strcmp(command, kServerCmdGetGatewayIP) == 0) {
@@ -111,18 +111,12 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	} else if (strcmp(command, kServerCmdGetMacAddr) == 0) {
 
 	} else if (strcmp(command, kServerCmdGetSubnetMask) == 0) {
-		//Spark.publish(kServerCmdGetSSID, Network.SSID(), kServerTTLDefault, PRIVATE);
 		return 1;
 	} else if (strcmp(command, kServerCmdGetLocalIP) == 0) {
 		uint8_t *address = Network.localIP().raw_address();
-		char addr[15] = "";
-		DEBUG("%d.%d.%d.%d", address[0], address[1], address[2], address[3]);
-		String *ip = new String(address[0]);
-		ip += address[1];
-		ip += address[2];
-		ip += address[3];
-		DEBUG("%s", ip->c_str());
-		Spark.publish(kServerCmdGetLocalIP, *ip, kServerTTLDefault, PRIVATE);
+		char addr[16] = "";
+		snprintf(addr, 16, "%d.%d.%d.%d", address[0], address[1], address[2], address[3]);
+		Spark.publish(kServerCmdGetLocalIP, addr, kServerTTLDefault, PRIVATE);
 		return 1;
 	} else if (strcmp(command, kServerCmdGetRSSI) == 0) {
 		return Network.RSSI();
