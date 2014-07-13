@@ -1,4 +1,5 @@
 #include "cdam_server_manager.h"
+#include "cdam_data_manager.h"
 #include "cdam_constants.h"
 
 namespace cdam
@@ -60,33 +61,33 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	//DEBUG("Cmd: %s", command);
 	if (command == kServerCmdPing) {
 
-	} else if (command = kServerCmdKeypadInput) {
+	} else if (command == kServerCmdKeypadInput) {
 
-	} else if (command = kServerCmdButtonInput) {
+	} else if (command == kServerCmdButtonInput) {
 
-	} else if (command = kServerCmdAddCredits) {
-		DataManager::getInstance()->gameCredits += 1;
-		return DataManager::getInstance()->gameCredits;
-	} else if (command = kServerCmdRemoveCredits) {
+	} else if (command == kServerCmdAddCredits) {
+		DataManager::getInstance().gameCredits += 1;
+		return DataManager::getInstance().gameCredits;
+	} else if (command == kServerCmdRemoveCredits) {
 
-	} else if (command = kServerCmdRemoveStory) {
+	} else if (command == kServerCmdRemoveStory) {
 
-	} else if (command = kServerCmdRemoveAllStories) {
+	} else if (command == kServerCmdRemoveAllStories) {
 
-	} else if (command = kServerCmdAddStory) {
+	} else if (command == kServerCmdAddStory) {
 
-	} else if (command = kServerCmdGetState) {
+	} else if (command == kServerCmdGetState) {
 
-	} else if (command = kServerCmdGetMillis) {
+	} else if (command == kServerCmdGetMillis) {
 
-	} else if (command = kServerCmdGetSeconds) {
+	} else if (command == kServerCmdGetSeconds) {
 
-	} else if (command = kServerCmdGetFreeSpace) {
+	} else if (command == kServerCmdGetFreeSpace) {
 
-	} else if (command = kServerCmdGetUsedSpace) {
+	} else if (command == kServerCmdGetUsedSpace) {
 
-	} else if (command = kServerCmdGetCredits) {
-		return DataManager::getInstance()->gameCredits;
+	} else if (command == kServerCmdGetCredits) {
+		return DataManager::getInstance().gameCredits;
 	}
 
 	return -1;
