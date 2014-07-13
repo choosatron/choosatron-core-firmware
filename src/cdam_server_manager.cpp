@@ -5,6 +5,10 @@
 namespace cdam
 {
 
+const int8_t kServerReturnNoCmd = -1;
+const int8_t kServerReturnFail = 0;
+const int8_t kServerReturnEventIncoming = 1;
+
 const char* kServerVarLastCmd = "last_command";
 
 const char* kServerCmd = "command";
@@ -80,7 +84,6 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	} else if (strcmp(command, kServerCmdAddCredits) == 0) {
 		Manager::getInstance().dataManager->gameCredits += 1;
 		return Manager::getInstance().dataManager->gameCredits;
-		return 1;
 	} else if (strcmp(command, kServerCmdRemoveCredits) == 0) {
 
 	} else if (strcmp(command, kServerCmdRemoveStory) == 0) {
@@ -95,7 +98,6 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		return millis();
 	} else if (strcmp(command, kServerCmdGetSeconds) == 0) {
 		return millis() / 1000;
-		//Spark.publish(kServerCmdGetSeconds, "thousands", kServerTTLDefault, PRIVATE);
 	} else if (strcmp(command, kServerCmdGetFreeSpace) == 0) {
 
 	} else if (strcmp(command, kServerCmdGetUsedSpace) == 0) {
@@ -104,37 +106,37 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		return Manager::getInstance().dataManager->gameCredits;
 	} else if (strcmp(command, kServerCmdGetSSID) == 0) {
 		Spark.publish(kServerCmdGetSSID, Network.SSID(), kServerTTLDefault, PRIVATE);
-		return 1;
+		return kServerReturnEventIncoming;
 	} else if (strcmp(command, kServerCmdGetGatewayIP) == 0) {
 		uint8_t *address = Network.gatewayIP().raw_address();
 		char addr[16] = "";
 		snprintf(addr, 16, "%d.%d.%d.%d", address[0], address[1], address[2], address[3]);
 		Spark.publish(kServerCmdGetGatewayIP, addr, kServerTTLDefault, PRIVATE);
-		return 1;
+		return kServerReturnEventIncoming;
 	} else if (strcmp(command, kServerCmdGetMacAddr) == 0) {
 		byte macVal[6];
 		Network.macAddress(macVal);
 		char macAddr[18];
 		snprintf(macAddr, 19, "%02x:%02x:%02x:%02x:%02x:%02x", macVal[5], macVal[4], macVal[3], macVal[2], macVal[1], macVal[0]);
 		Spark.publish(kServerCmdGetMacAddr, macAddr, kServerTTLDefault, PRIVATE);
-		return 1;
+		return kServerReturnEventIncoming;
 	} else if (strcmp(command, kServerCmdGetSubnetMask) == 0) {
 		uint8_t *address = Network.subnetMask().raw_address();
 		char addr[16] = "";
 		snprintf(addr, 16, "%d.%d.%d.%d", address[0], address[1], address[2], address[3]);
 		Spark.publish(kServerCmdGetSubnetMask, addr, kServerTTLDefault, PRIVATE);
-		return 1;
+		return kServerReturnEventIncoming;
 	} else if (strcmp(command, kServerCmdGetLocalIP) == 0) {
 		uint8_t *address = Network.localIP().raw_address();
 		char addr[16] = "";
 		snprintf(addr, 16, "%d.%d.%d.%d", address[0], address[1], address[2], address[3]);
 		Spark.publish(kServerCmdGetLocalIP, addr, kServerTTLDefault, PRIVATE);
-		return 1;
+		return kServerReturnEventIncoming;
 	} else if (strcmp(command, kServerCmdGetRSSI) == 0) {
 		return Network.RSSI();
 	}
 
-	return -1;
+	return kServerReturnNoCmd;
 }
 
 }
