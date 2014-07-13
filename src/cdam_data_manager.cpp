@@ -81,7 +81,7 @@ bool DataManager::loadMetadata() {
 			ERROR(Errors::errorString());
 			return false;
 		}
-		logMetadata(&this->metadata);
+
 		if (didFirmwareUpdate(&this->metadata)) {
 			// Update to the current standard (in memory)
 			if (!upgradeDataModels()) {
@@ -117,7 +117,7 @@ bool DataManager::initializeMetadata(Metadata *aMetadata) {
 	aMetadata->values.coinDenomination = 25;
 
 	aMetadata->storyCount = 0;
-	logMetadata(aMetadata);
+
 	if (!writeMetadata(aMetadata)) {
 		return false;
 	}

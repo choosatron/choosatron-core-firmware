@@ -36,7 +36,8 @@ const char* kServerCmdGetSubnetMask = "get_subnet_mask";
 const char* kServerCmdGetLocalIP = "get_local_ip";
 const char* kServerCmdGetRSSI = "get_rssi";
 
-const int kDefaultTCPPort = 80;
+const uint16_t kServerDefaultTCPPort = 80;
+const char kServerArgumentDelimiter = '|';
 
 /* Public Methods */
 
@@ -61,7 +62,7 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
     DEBUG("Command Received: %s", Manager::getInstance().serverManager->lastCommand);
 
     int cmdLen = aCommandAndArgs.length() + 1;
-    int commaPosition = aCommandAndArgs.indexOf("|");
+    int commaPosition = aCommandAndArgs.indexOf(kServerArgumentDelimiter);
 	if (commaPosition > -1) {
 		DEBUG("Has Arguments");
 		cmdLen = commaPosition + 1;
@@ -95,8 +96,22 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 
 	} else if (strcmp(command, kServerCmdAddStory) == 0) {
 
+		// Parser arguments
+		// args: IP addr uint8_t(4 bytes), port uint16_t(2 bytes), story position uint8_t(1 byte), story size uint32_t(4 bytes), checksum uint8_t(16 bytes)
+		// Validate
+		// Check Storage availability (ensure there is room)
+		// Set State to waiting for data
+		// Create server connection
+		// While connected, wait for data availability (with timeout)
+		// While data available, read data into buffer, then flash space based on page size
+		// Run Checksum
+		// Send back status (success, failure...)
+
+
 		// Get server IP address/port (e.g. 1.1.1.1:80) from arguments
 		String serverAddressAndPort = aCommandAndArgs.substring(commaPosition + 1, aCommandAndArgs.length());
+
+
 		downloadStoryData(serverAddressAndPort);
 
 	} else if (strcmp(command, kServerCmdGetState) == 0) {
@@ -148,6 +163,10 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 }
 
 bool ServerManager::downloadStoryData(String aServerAddressAndPort) {
+	// Configure port
+    uint16_t port = kDefaultTCPPort;
+    //int delimeterIndex = aServerAddressAndPort.index("");
+
 	// Configure port
 	uint port = kDefaultTCPPort;
 	int colonIndex = aServerAddressAndPort.indexOf(":");
@@ -201,10 +220,17 @@ bool ServerManager::downloadStoryData(String aServerAddressAndPort) {
 	TCPClient client;
 	if (client.connect(server, port)) {
     	DEBUG("TCPClient connected");
+    	client.write("Hey there mr. server!");
     	// client.println("GET /search?q=unicorn HTTP/1.0");
     	// client.println("Host: www.google.com");
     	// client.println("Content-Length: 0");
     	// client.println();
+    	delay(1000);
+    	while (client.available()) {
+    		DEBUG("%c", client.read());
+    		//Serial.print(client.read());
+    	}
+    	//Serial.println("");
   	}
   	else
   	{
