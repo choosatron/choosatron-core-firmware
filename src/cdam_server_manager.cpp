@@ -163,6 +163,8 @@ bool ServerManager::downloadStoryData(String aServerAddressAndPort) {
 	int dotIndex = aServerAddressAndPort.indexOf(".");
 	if (dotIndex == -1) {
 		// Not a valid IP address
+		Errors::setError(E_SERVER_INVALID_IP);
+		ERROR(Errors::errorString());
 		return false;
 	}
 	String octectStr = aServerAddressAndPort.substring(0, dotIndex);
@@ -171,6 +173,8 @@ bool ServerManager::downloadStoryData(String aServerAddressAndPort) {
 	int nextDotIndex = aServerAddressAndPort.indexOf(".", dotIndex + 1);
 	if (nextDotIndex == -1) {
 		// Not a valid IP address
+		Errors::setError(E_SERVER_INVALID_IP);
+		ERROR(Errors::errorString());
 		return false;
 	}
 	octectStr = aServerAddressAndPort.substring(dotIndex + 1, nextDotIndex);
@@ -180,6 +184,8 @@ bool ServerManager::downloadStoryData(String aServerAddressAndPort) {
 	nextDotIndex = aServerAddressAndPort.indexOf(".", dotIndex + 1);
 	if (nextDotIndex == -1) {
 		// Not a valid IP address
+		Errors::setError(E_SERVER_INVALID_IP);
+		ERROR(Errors::errorString());
 		return false;
 	}
 	octectStr = aServerAddressAndPort.substring(dotIndex + 1, nextDotIndex);
