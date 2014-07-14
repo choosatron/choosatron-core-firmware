@@ -14,7 +14,7 @@ struct ErrorDesc_t {
 	{ E_METADATA_WRITE_FAIL, "Failed to write to flash." },
 	{ E_METADATA_WRITE_STORY_SIZE_FAIL, "Failed to write the size of a story." },
 	{ E_DATA_MODEL_UPGRADE_FAIL, "Failed to upgrade data model." },
-	{ E_SERVER_INVALID_IP, "Invalid IP address received." }
+	{ E_SERVER_CONNECTION_FAILED, "Failed to connect to server." }
 };
 
 ErrorCode Errors::lastError = E_NO_ERROR;

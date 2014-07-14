@@ -1,7 +1,6 @@
 #include "cdam_manager.h"
 #include "cdam_constants.h"
 #include "spark_wiring_network.h"
-#include "spark_wiring_tcpclient.h"
 
 namespace cdam
 {
@@ -36,6 +35,7 @@ const char* kServerCmdGetSubnetMask = "get_subnet_mask";
 const char* kServerCmdGetLocalIP = "get_local_ip";
 const char* kServerCmdGetRSSI = "get_rssi";
 
+const uint8_t kServerTimeout = 30000;	// ms
 const uint16_t kServerDefaultTCPPort = 80;
 const char kServerArgumentDelimiter = '|';
 
@@ -162,81 +162,41 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	return kServerReturnNoCmd;
 }
 
-bool ServerManager::downloadStoryData(String aServerAddressAndPort) {
-	// Configure port
-    uint16_t port = kDefaultTCPPort;
-    //int delimeterIndex = aServerAddressAndPort.index("");
+TCPClient* ServerManager::connectToServer(byte server[4], uint16_t port) {
+	DEBUG("Connecting to client at %u.%u.%u.%u:%u", server[0], server[1], server[2], server[3], port);
 
-	// Configure port
-	uint port = kDefaultTCPPort;
-	int colonIndex = aServerAddressAndPort.indexOf(":");
-	if (colonIndex > -1) {
-		String portStr = aServerAddressAndPort.substring(colonIndex+1, aServerAddressAndPort.length());
-		port = atoi(portStr.c_str());
-	} else {
-		// No port supplied, set index to end of string
-		colonIndex = aServerAddressAndPort.length();
-	}
-
-	// Split IP into octets
-	int dotIndex = aServerAddressAndPort.indexOf(".");
-	if (dotIndex == -1) {
-		// Not a valid IP address
-		Errors::setError(E_SERVER_INVALID_IP);
-		ERROR(Errors::errorString());
-		return false;
-	}
-	String octectStr = aServerAddressAndPort.substring(0, dotIndex);
-	uint8_t firstOctet = atoi(octectStr.c_str());
-
-	int nextDotIndex = aServerAddressAndPort.indexOf(".", dotIndex + 1);
-	if (nextDotIndex == -1) {
-		// Not a valid IP address
-		Errors::setError(E_SERVER_INVALID_IP);
-		ERROR(Errors::errorString());
-		return false;
-	}
-	octectStr = aServerAddressAndPort.substring(dotIndex + 1, nextDotIndex);
-	uint8_t secondOctet = atoi(octectStr.c_str());
-
-	dotIndex = nextDotIndex;
-	nextDotIndex = aServerAddressAndPort.indexOf(".", dotIndex + 1);
-	if (nextDotIndex == -1) {
-		// Not a valid IP address
-		Errors::setError(E_SERVER_INVALID_IP);
-		ERROR(Errors::errorString());
-		return false;
-	}
-	octectStr = aServerAddressAndPort.substring(dotIndex + 1, nextDotIndex);
-	uint8_t thirdOctet = atoi(octectStr.c_str());
-
-	dotIndex = nextDotIndex;
-	octectStr = aServerAddressAndPort.substring(dotIndex + 1, colonIndex);
-	uint8_t fourthOctet = atoi(octectStr.c_str());
-
-	DEBUG("Download story data from %u.%u.%u.%u:%u", firstOctet, secondOctet, thirdOctet, fourthOctet, port);
-
-	byte server[] = {firstOctet, secondOctet, thirdOctet, fourthOctet};
-	TCPClient client;
-	if (client.connect(server, port)) {
+	TCPClient* client = new TCPClient();
+	if (client->connect(server, port)) {
     	DEBUG("TCPClient connected");
-    	client.write("Hey there mr. server!");
-    	// client.println("GET /search?q=unicorn HTTP/1.0");
-    	// client.println("Host: www.google.com");
-    	// client.println("Content-Length: 0");
-    	// client.println();
-    	delay(1000);
-    	while (client.available()) {
-    		DEBUG("%c", client.read());
-    		//Serial.print(client.read());
-    	}
-    	//Serial.println("");
+    	return client;
   	}
-  	else
-  	{
-    	Serial.println("TCPClient connection failed");
+  	else {
+    	DEBUG("TCPClient connection failed");
+    	Errors::setError(E_SERVER_CONNECTION_FAILED);
+		ERROR(Errors::errorString());
+		return NULL;
  	}
+}
 
+bool ServerManager::getStoryData(TCPClient *client) {
+	if (client->connected()) {
+		int startTimeMs = millis();
+		int currentTimeMs = startTimeMs;
+		// While connected, wait for data availability (with timeout)
+		while ((currentTimeMs - startTimeMs) < kServerTimeout) {
+			currentTimeMs = millis();
+			while (client->available() == 0) {
+				startTimeMs = currentTimeMs;
+				// While data available, read data into buffer, then flash space based on page size	
+				uint8_t theByte = client->read();
+			}
+		}
+				
+	}
+	else {
+		// TODO: ERROR
+		return false;
+	}
 }
 
 }
