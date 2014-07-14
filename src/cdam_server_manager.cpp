@@ -106,13 +106,43 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		// While data available, read data into buffer, then flash space based on page size
 		// Run Checksum
 		// Send back status (success, failure...)
+		byte ip[] = { aCommandAndArgs.charAt(commaPosition + 1), aCommandAndArgs.charAt(commaPosition + 2),
+			aCommandAndArgs.charAt(commaPosition + 3), aCommandAndArgs.charAt(commaPosition + 4)};
 
+		uint16_t port = aCommandAndArgs.charAt(commaPosition + 5) | (aCommandAndArgs.charAt(commaPosition + 6) << 8);
+		DEBUG("Port: %d", port);
+		uint8_t storyPos = aCommandAndArgs.charAt(commaPosition + 7);
+		DEBUG("Story Pos: %d", storyPos);
+		uint32_t storySize = aCommandAndArgs.charAt(commaPosition + 8) | (aCommandAndArgs.charAt(commaPosition + 9) << 8) | (aCommandAndArgs.charAt(commaPosition + 10) << 16) | (aCommandAndArgs.charAt(commaPosition + 11) << 24);
+		DEBUG("Story Size: %Lu", storySize);
+		DEBUG("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x", aCommandAndArgs.charAt(commaPosition + 1), aCommandAndArgs.charAt(commaPosition + 2), aCommandAndArgs.charAt(commaPosition + 3), aCommandAndArgs.charAt(commaPosition + 4), aCommandAndArgs.charAt(commaPosition + 5),
+		      aCommandAndArgs.charAt(commaPosition + 6), aCommandAndArgs.charAt(commaPosition + 7), aCommandAndArgs.charAt(commaPosition + 8),
+		      aCommandAndArgs.charAt(commaPosition + 9), aCommandAndArgs.charAt(commaPosition + 10), aCommandAndArgs.charAt(commaPosition + 11));
 
+		TCPClient client;
+		if (client.connect(ip, port)) {
+	    	DEBUG("TCPClient connected");
+	    	client.write("Hey there mr. server!");
+	    	// client.println("GET /search?q=unicorn HTTP/1.0");
+	    	// client.println("Host: www.google.com");
+	    	// client.println("Content-Length: 0");
+	    	// client.println();
+	    	delay(1000);
+	    	while (client.available()) {
+	    		DEBUG("%c", client.read());
+	    		//Serial.print(client.read());
+	    	}
+	    	//Serial.println("");
+	  	}
+	  	else
+	  	{
+	    	Serial.println("TCPClient connection failed");
+	 	}
 		// Get server IP address/port (e.g. 1.1.1.1:80) from arguments
-		String serverAddressAndPort = aCommandAndArgs.substring(commaPosition + 1, aCommandAndArgs.length());
+		//String serverAddressAndPort = aCommandAndArgs.substring(commaPosition + 1, aCommandAndArgs.length());
 
 
-		downloadStoryData(serverAddressAndPort);
+		//downloadStoryData(serverAddressAndPort);
 
 	} else if (strcmp(command, kServerCmdGetState) == 0) {
 		Spark.publish(kServerCmdGetState, Manager::getInstance().dataManager->gameStateStr(), kServerTTLDefault, PRIVATE);
@@ -162,7 +192,7 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	return kServerReturnNoCmd;
 }
 
-bool ServerManager::downloadStoryData(String aServerAddressAndPort) {
+/*bool ServerManager::downloadStoryData(String aServerAddressAndPort) {
 	// Configure port
     uint16_t port = kDefaultTCPPort;
     //int delimeterIndex = aServerAddressAndPort.index("");
@@ -237,6 +267,6 @@ bool ServerManager::downloadStoryData(String aServerAddressAndPort) {
     	Serial.println("TCPClient connection failed");
  	}
 
-}
+}*/
 
 }

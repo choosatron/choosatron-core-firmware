@@ -22,7 +22,7 @@ class ServerManager
 
         static int serverCommand(String aCommand);
 
-        static bool downloadStoryData(String aServerAddressAndPort);
+        //static bool downloadStoryData(String aServerAddressAndPort);
 
         /* Private Variables */
 };
