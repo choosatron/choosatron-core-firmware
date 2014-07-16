@@ -53,6 +53,10 @@ class DataManager
         bool initialize();
         const char* gameStateStr();
 
+        void addStoryMetadata(uint8_t aPosition, uint32_t aByteSize);
+        void removeStoryMetadata(uint8_t aPosition);
+        void removeAllStoryData();
+
         Flashee::FlashDevice* storyFlash();
 
         /* Public Variables */

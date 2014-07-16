@@ -25,7 +25,7 @@ const uint8_t kFirmwareVersionRevision = 1;
 
 const uint8_t kServerTTLDefault = 60;
 
-const unsigned int kKeypadIntervalMillis = 5;
+const unsigned int kIntervalKeypadMillis = 5;
 
 typedef enum {
 #if (BOARD_DOT_VERSION >= 6)

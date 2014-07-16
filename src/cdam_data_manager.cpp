@@ -32,9 +32,8 @@ bool DataManager::initialize() {
 	this->metadata = {};
 	DEBUG("Page Size: %d", Flashee::Devices::userFlash().pageSize());
 	DEBUG("Page Count: %d", Flashee::Devices::userFlash().pageCount());
-	_metaFlash = Flashee::Devices::createAddressErase(0, 4*4096);
-	_storyFlash = Flashee::Devices::createWearLevelErase(4*4096, 260*4096);
-
+	_metaFlash = Flashee::Devices::createAddressErase(0,
+	                               4 * Flashee::Devices::userFlash().pageSize());
 
     //testMetadata();
 	//_metaFlash->eraseAll();
@@ -44,6 +43,11 @@ bool DataManager::initialize() {
 	if (!loadMetadata()) {
 		return false;
 	}
+
+	_storyFlash = Flashee::Devices::createWearLevelErase(
+	                               4 * Flashee::Devices::userFlash().pageSize(),
+	                               260 * Flashee::Devices::userFlash().pageSize());
+
 	return true;
 }
 
@@ -51,12 +55,56 @@ const char* DataManager::gameStateStr() {
 	return GameStateDesc[this->gameState].stateDesc;
 }
 
-Flashee::FlashDevice* DataManager::storyFlash() {
-	return _storyFlash;
+void DataManager::addStoryMetadata(uint8_t aIndex, uint32_t aByteSize) {
+	// Get the current story count, see if adjustement is needed.
+	uint8_t count = this->metadata.storyCount;
+
+	// Add a new element, data will get shifted in.
+	this->metadata.storySizes.push_back(0);
+	this->metadata.storyOffsets.push_back(0);
+
+	// If the position requested is past the existing, just set it to the next.
+	if (aIndex >= count) {
+		aIndex = count;
+	} else {
+		// Shift existing story indexes 'up', until the slot for the new story is free.
+		while (count > aIndex) {
+			this->metadata.storySizes[count] = this->metadata.storySizes[count - 1];
+			this->metadata.storyOffsets[count] = this->metadata.storyOffsets[count - 1];
+			count--;
+		}
+	}
+	// Increase the story count.
+	this->metadata.storyCount += 1;
+	// Assign the story index and story size.
+	this->metadata.storySizes[aIndex] = aByteSize;
+	// Set this stories flash memory offset.
+	this->metadata.storyOffsets[aIndex] = this->usedStoryBytes;
+	// Add the total story bytes to the total used.
+	this->usedStoryBytes += aByteSize;
+}
+
+void DataManager::removeStoryMetadata(uint8_t aIndex) {
+	// Get the current story count, see if adjustement is needed.
+	uint8_t count = this->metadata.storyCount;
+
+	// Shift existing story indexes 'down', until the slot for the new story is free.
+	while (count > aIndex) {
+		this->metadata.storySizes[count] = this->metadata.storySizes[count - 1];
+		this->metadata.storyOffsets[count] = this->metadata.storyOffsets[count - 1];
+		count--;
+	}
+}
+
+void DataManager::removeAllStoryData() {
+	/* TODO */
 }
 
 /* Accessors */
 
+Flashee::FlashDevice* DataManager::storyFlash() {
+	return _storyFlash;
+}
 
 /* Private Methods */
 

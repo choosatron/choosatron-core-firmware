@@ -1,14 +1,18 @@
 #include "cdam_manager.h"
 #include "cdam_constants.h"
 #include "spark_wiring_network.h"
+#include "memory_free.h"
 
 namespace cdam
 {
 
+const int8_t kServerReturnInvalidIndex = -4;
+const int8_t kServerReturnBusy = -3;
 const int8_t kServerReturnInvalidCmd = -2;
 const int8_t kServerReturnFail = -1;
 const int8_t kServerReturnSuccess = 0;
 const int8_t kServerReturnEventIncoming = 1;
+const int8_t kServerReturnConnecting = 2;
 
 const char* kServerVarLastCmd = "last_command";
 
@@ -21,6 +25,7 @@ const char* kServerCmdSetCredits = "set_credits";
 const char* kServerCmdRemoveStory = "remove_story";
 const char* kServerCmdRemoveAllStories = "remove_all_stories";
 const char* kServerCmdAddStory = "add_story";
+const char* kServerCmdSwapStoryPositions = "swap_story_pos";
 
 // Commands that cause the Choosatron to throw events.
 const char* kServerCmdGetState = "get_state";
@@ -39,7 +44,6 @@ const char* kServerCmdGetRSSI = "get_rssi";
 
 const uint16_t kServerDataBufferSize = 256;
 const uint16_t kServerTimeout = 30000;	// ms
-const uint16_t kServerDefaultTCPPort = 80;
 const char kServerArgumentDelimiter = '|';
 
 const uint8_t kServerStoryPositionBytes = 1;
@@ -58,19 +62,52 @@ void ServerManager::initialize() {
 	// Expose the last command issued.
 	Spark.variable(kServerVarLastCmd , this->lastCommand, STRING);
 
-	//ServerManager::getInstance().lastCommand = "NONE";
-	//strcpy("NONE", ServerManager::lastCommand);
-	//DEBUG(ServerManager::lastCommand);
+	this->pendingAction = false;
+	this->newStoryIndex = 0;
+	this->newStorySize = 0;
 }
 
+void ServerManager::handlePendingActions() {
+	if (this->pendingAction) {
+		TCPClient *client = new TCPClient();
+		DEBUG("Connecting to client at %u.%u.%u.%u:%u", this->serverIp[0], this->serverIp[1], this->serverIp[2], this->serverIp[3], this->serverPort);
+
+		if (client->connect(this->serverIp, this->serverPort)) {
+	    	DEBUG("TCPClient connected");
+	    	if (strcmp(this->lastCommand, kServerCmdAddStory) == 0) {
+	    		if (getStoryData(client, this->newStorySize)) {
+	    			// Update the data manager metadata for the new story.
+	    			Manager::getInstance().dataManager->addStoryMetadata(this->newStoryIndex, this->newStorySize);
+	    		}
+	    	}
+	    	client->stop();
+	  	} else {
+	    	DEBUG("TCPClient connection failed");
+	    	Errors::setError(E_SERVER_CONNECTION_FAIL);
+			ERROR(Errors::errorString());
+	 	}
+	 	free(client);
+
+	 	this->newStoryIndex = 0;
+	 	this->newStorySize = 0;
+	 	this->pendingAction = false;
+	}
+}
+
+/* Static Methods */
 int ServerManager::serverCommand(String aCommandAndArgs) {
-	aCommandAndArgs.trim();
-    aCommandAndArgs.toLowerCase();
-    aCommandAndArgs.toCharArray(Manager::getInstance().serverManager->lastCommand, 64);
-    DEBUG("Command Received: %s", Manager::getInstance().serverManager->lastCommand);
+	ServerManager* serverMan = Manager::getInstance().serverManager;
+
+	//aCommandAndArgs.trim();
+    //aCommandAndArgs.toLowerCase();
+
 
     int cmdLen = aCommandAndArgs.length() + 1;
     int delimiterPos = aCommandAndArgs.indexOf(kServerArgumentDelimiter);
+
+	aCommandAndArgs.toCharArray(serverMan->lastCommand, delimiterPos + 1);
+    DEBUG("Command Received: %s", serverMan->lastCommand);
+
 	if (delimiterPos > -1) {
 		DEBUG("Has Arguments");
 		cmdLen = delimiterPos + 1;
@@ -101,12 +138,20 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		Manager::getInstance().dataManager->gameCredits = atoi(creditsStr.c_str());
 		return Manager::getInstance().dataManager->gameCredits;
 	} else if (strcmp(command, kServerCmdRemoveStory) == 0) {
-		/* TODO */
-		return kServerReturnSuccess;
+		uint8_t storyIndex = ((aCommandAndArgs.charAt(delimiterPos + 1) - '0') % 48) - 1;
+		if (storyIndex < (Manager::getInstance().dataManager->metadata.storyCount)) {
+			Manager::getInstance().dataManager->removeStoryMetadata(storyIndex);
+			return kServerReturnSuccess;
+		}
+		return kServerReturnInvalidIndex;
 	} else if (strcmp(command, kServerCmdRemoveAllStories) == 0) {
-		/* TODO */
+		Manager::getInstance().dataManager->removeAllStoryData();
 		return kServerReturnSuccess;
 	} else if (strcmp(command, kServerCmdAddStory) == 0) {
+		// We only want to deal with one server connection at a time.
+		if (serverMan->pendingAction) {
+			return kServerReturnBusy;
+		}
 
 		/* 35 bytes of arguments - In Order */
 		// 10 bytes - Command Name & Delimiter
@@ -130,29 +175,18 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		aCommandAndArgs.toCharArray(buffer, kServerStorySizeBytes + 1, index);
 		index += kServerStorySizeBytes;
 
-		uint32_t storySize = atol(buffer);
-		DEBUG("Incoming story size: %lu", storySize);
+		serverMan->newStorySize = atol(buffer);
+		DEBUG("Incoming story size: %lu", serverMan->newStorySize);
 
 		DEBUG("Total Story Size: %lu", Manager::getInstance().dataManager->usedStoryBytes);
-		if (storySize > (kFlashMaxStoryBytes - Manager::getInstance().dataManager->usedStoryBytes)) {
+		if (serverMan->newStorySize > (kFlashMaxStoryBytes - Manager::getInstance().dataManager->usedStoryBytes)) {
 			Errors::setError(E_SERVER_ADD_STORY_NO_SPACE);
 			ERROR(Errors::errorString());
 			return kServerReturnFail;
 		}
 
-		uint8_t storyPos = (aCommandAndArgs.charAt(index) - '0') % 48;
-		DEBUG("Story Pos: %d", storyPos);
-		uint8_t count = Manager::getInstance().dataManager->metadata.storyCount;
-		if (storyPos > count) {
-			storyPos = count + 1;
-		} else {
-			Manager::getInstance().dataManager->metadata.storySizes.push_back(0);
-			while (count >= storyPos) {
-				Manager::getInstance().dataManager->metadata.storySizes[count] = Manager::getInstance().dataManager->metadata.storySizes[count - 1];
-				count--;
-			}
-			Manager::getInstance().dataManager->metadata.storySizes[storyPos - 1] = storySize;
-		}
+		serverMan->newStoryIndex = ((aCommandAndArgs.charAt(index) - '0') % 48) - 1;
+		DEBUG("Story Index: %d", serverMan->newStoryIndex);
 		index++;
 
 		aCommandAndArgs.toCharArray(buffer, kServerStoryOctetBytes + 1, index);
@@ -171,26 +205,19 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		uint8_t fourthOctet = atoi(buffer);
 		index += kServerStoryOctetBytes;
 
-		byte ip[] = {firstOctet, secondOctet, thirdOctet, fourthOctet};
+		serverMan->serverIp[0] = firstOctet;
+		serverMan->serverIp[1] = secondOctet;
+		serverMan->serverIp[2] = thirdOctet;
+		serverMan->serverIp[3] = fourthOctet;
 
 		aCommandAndArgs.toCharArray(buffer, kServerStoryPortBytes + 1, index);
-		uint16_t port = atoi(buffer);
+		serverMan->serverPort = atoi(buffer);
+
+		serverMan->pendingAction = true;
+
+		return kServerReturnConnecting;
 
 
-		TCPClient *client = new TCPClient();
-		DEBUG("Connecting to client at %u.%u.%u.%u:%u", ip[0], ip[1], ip[2], ip[3], port);
-
-		if (client->connect(ip, port)) {
-	    	DEBUG("TCPClient connected");
-	    	Manager::getInstance().serverManager->getStoryData(client, storySize);
-	    	client->stop();
-	  	} else {
-	    	DEBUG("TCPClient connection failed");
-	    	Errors::setError(E_SERVER_CONNECTION_FAIL);
-			ERROR(Errors::errorString());
-			return kServerReturnFail;
-	 	}
-	 	free(client);
 
 		// Parser arguments
 		// args: IP addr uint8_t(4 bytes), port uint16_t(2 bytes), story position uint8_t(1 byte), story size uint32_t(4 bytes), checksum uint8_t(16 bytes)
@@ -238,6 +265,8 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 
 		//downloadStoryData(serverAddressAndPort);
 
+	} else if (strcmp(command, kServerCmdSwapStoryPositions) == 0) {
+		/* TODO */
 	} else if (strcmp(command, kServerCmdGetState) == 0) {
 		Spark.publish(kServerCmdGetState, Manager::getInstance().dataManager->gameStateStr(), kServerTTLDefault, PRIVATE);
 		return kServerReturnEventIncoming;
@@ -303,7 +332,8 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
  	}
 }*/
 
-bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aByteCount) {
+/* Private Methods */
+bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 	if (aClient->connected()) {
 		int startTimeMs = millis();
 		// While connected, wait for data availability (with timeout)
@@ -312,29 +342,43 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aByteCount) {
 				uint16_t index = 0;
 				uint32_t chunks = 0;
 				char buffer[kServerDataBufferSize] = "";
+				memset(&buffer[0], 0, sizeof(buffer));
+				DEBUG("Story Size: %lu", aStorySize);
+
 				while (aClient->available()) {
 					// While data available, read data into buffer, then flash space based on page size
 					buffer[index] = aClient->read();
 					index++;
-					aByteCount--;
-					if ((index == kServerDataBufferSize) || (aByteCount == 0)) {
+					aStorySize--;
+					if ((index == kServerDataBufferSize) || (aStorySize == 0)) {
+						DEBUG("Index: %d", index);
 						// Write data
 						Manager::getInstance().dataManager->storyFlash()->write(buffer,
 						                       Manager::getInstance().dataManager->usedStoryBytes +
-						                       kServerDataBufferSize * chunks, index);
-						if (aByteCount == 0) {
+						                       kServerDataBufferSize * chunks, kServerDataBufferSize);
+						Serial.print("BUF: ");
+						Serial.println(buffer);
+						memset(&buffer[0], 0, sizeof(buffer));
+						Manager::getInstance().dataManager->storyFlash()->read(buffer,
+						                       Manager::getInstance().dataManager->usedStoryBytes +
+						                       kServerDataBufferSize * chunks, kServerDataBufferSize);
+						Serial.print("READ BUF: ");
+						Serial.println(buffer);
+
+						if (aStorySize == 0) {
 							DEBUG("Data Received");
+							aClient->write("received");
 							if (aClient->available()) {
 								Errors::setError(E_SERVER_SOCKET_DATA_FAIL);
 								ERROR(Errors::errorString());
 							}
-							/*char data[512] = "";
-							DEBUG("Len to read: %lu", kServerDataBufferSize * chunks + index);
-							Manager::getInstance().dataManager->storyFlash()->read(data, 0,
-							                       Manager::getInstance().dataManager->usedStoryBytes +
+							char data[512] = "";
+							DEBUG("Len to read: %lu", Manager::getInstance().dataManager->usedStoryBytes + kServerDataBufferSize * chunks + index);
+							Manager::getInstance().dataManager->storyFlash()->read(data,
+							                       Manager::getInstance().dataManager->usedStoryBytes,
 							                       kServerDataBufferSize * chunks + index);
 							DEBUG("%s", data);
-							Serial.println(data);*/
+							Serial.println(data);
 							return true;
 						}
 						index = 0;

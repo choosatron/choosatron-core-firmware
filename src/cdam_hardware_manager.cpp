@@ -48,7 +48,7 @@ void HardwareManager::initLoopControl() {
 }
 
 void HardwareManager::keypadIntervalUpdate() {
-	if (_keypadElapsed > kKeypadIntervalMillis) {
+	if (_keypadElapsed > kIntervalKeypadMillis) {
 		_keypad->updateKeypad();
 		_keypadElapsed = 0;
 	}

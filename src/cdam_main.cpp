@@ -51,6 +51,8 @@ bool Choosatron::setup() {
 
 int Choosatron::loop() {
 	Manager::getInstance().hardwareManager->updateIntervalTimers();
+
+	Manager::getInstance().serverManager->handlePendingActions();
 	//uint16_t newMillis = millis();
 	//uint16_t diff = newMillis - _lastMillis;
 

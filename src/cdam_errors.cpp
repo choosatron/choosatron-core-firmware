@@ -4,6 +4,8 @@
 namespace cdam
 {
 
+/* TODO - REMOVE ALL ERROR STUFF WHEN NOT USING DEBUG_BUILD */
+
 struct ErrorDesc_t {
 	ErrorCode code;
 	const char *message;
