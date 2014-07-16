@@ -5,8 +5,9 @@
 namespace cdam
 {
 
-const int8_t kServerReturnNoCmd = -1;
-const int8_t kServerReturnFail = 0;
+const int8_t kServerReturnInvalidCmd = -2;
+const int8_t kServerReturnFail = -1;
+const int8_t kServerReturnSuccess = 0;
 const int8_t kServerReturnEventIncoming = 1;
 
 const char* kServerVarLastCmd = "last_command";
@@ -15,8 +16,8 @@ const char* kServerCmd = "command";
 const char* kServerCmdPing = "ping";
 const char* kServerCmdKeypadInput = "keypad_input";
 const char* kServerCmdButtonInput = "button_input";
-const char* kServerCmdAddCredits = "add_credits";
-const char* kServerCmdRemoveCredits = "remove_credits";
+const char* kServerCmdAdjustCredits = "adjust_credits";
+const char* kServerCmdSetCredits = "set_credits";
 const char* kServerCmdRemoveStory = "remove_story";
 const char* kServerCmdRemoveAllStories = "remove_all_stories";
 const char* kServerCmdAddStory = "add_story";
@@ -69,46 +70,61 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
     DEBUG("Command Received: %s", Manager::getInstance().serverManager->lastCommand);
 
     int cmdLen = aCommandAndArgs.length() + 1;
-    int commaPosition = aCommandAndArgs.indexOf(kServerArgumentDelimiter);
-	if (commaPosition > -1) {
+    int delimiterPos = aCommandAndArgs.indexOf(kServerArgumentDelimiter);
+	if (delimiterPos > -1) {
 		DEBUG("Has Arguments");
-		cmdLen = commaPosition + 1;
-    	//command = aCommandAndArgs.substring(0, commaPosition);
-    	//args.substring(commaPosition+1, args.length()));//send remaining part to line 2
+		cmdLen = delimiterPos + 1;
 	} else {
 		DEBUG("No Arguments");
-		//command = aCommandAndArgs.c_str();
 	}
 	char command[cmdLen];
 	aCommandAndArgs.toCharArray(command, cmdLen);
 
 	DEBUG("Cmd: %s", command);
 	if (strcmp(command, kServerCmdPing) == 0) {
-
+		return kServerReturnSuccess;
 	} else if (strcmp(command, kServerCmdKeypadInput) == 0) {
-		String keypadStr = aCommandAndArgs.substring(commaPosition + 1, aCommandAndArgs.length());
+		/* TODO */
+		String keypadStr = aCommandAndArgs.substring(delimiterPos + 1, aCommandAndArgs.length());
 		uint8_t keypadVal = atoi(keypadStr.c_str());
 		DEBUG("Keypad Val: %d", keypadVal);
-		return keypadVal;
+		return kServerReturnSuccess;
 	} else if (strcmp(command, kServerCmdButtonInput) == 0) {
-
-	} else if (strcmp(command, kServerCmdAddCredits) == 0) {
-		Manager::getInstance().dataManager->gameCredits += 1;
+		/* TODO */
+		return kServerReturnSuccess;
+	} else if (strcmp(command, kServerCmdAdjustCredits) == 0) {
+		String creditsStr = aCommandAndArgs.substring(delimiterPos + 1, aCommandAndArgs.length());
+		Manager::getInstance().dataManager->gameCredits += atoi(creditsStr.c_str());
 		return Manager::getInstance().dataManager->gameCredits;
-	} else if (strcmp(command, kServerCmdRemoveCredits) == 0) {
-
+	} else if (strcmp(command, kServerCmdSetCredits) == 0) {
+		String creditsStr = aCommandAndArgs.substring(delimiterPos + 1, aCommandAndArgs.length());
+		Manager::getInstance().dataManager->gameCredits = atoi(creditsStr.c_str());
+		return Manager::getInstance().dataManager->gameCredits;
 	} else if (strcmp(command, kServerCmdRemoveStory) == 0) {
-
+		/* TODO */
+		return kServerReturnSuccess;
 	} else if (strcmp(command, kServerCmdRemoveAllStories) == 0) {
-
+		/* TODO */
+		return kServerReturnSuccess;
 	} else if (strcmp(command, kServerCmdAddStory) == 0) {
 
+		/* 35 bytes of arguments - In Order */
+		// 10 bytes - Command Name & Delimiter
+		//  7 bytes - Binary Blob Byte Size
+		//  1 byte  - Story Position
+		//  3 bytes - IP Address Octet One
+		//  3 bytes - IP Address Octet Two
+		//  3 bytes - IP Address Octet Three
+		//  3 bytes - IP Address Octet Four
+		//  5 bytes - Port Number
 		if (aCommandAndArgs.length() != 35) {
-			ERROR("Command length off?");
+			Errors::setError(E_SERVER_ADD_STORY_LEN_FAIL);
+			ERROR(Errors::errorString());
 			DEBUG("Length: %d", aCommandAndArgs.length());
+			return kServerReturnFail;
 		}
 
-		uint8_t index = commaPosition + 1;
+		uint8_t index = delimiterPos + 1;
 		char buffer[8] = "";
 
 		aCommandAndArgs.toCharArray(buffer, kServerStorySizeBytes + 1, index);
@@ -119,7 +135,8 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 
 		DEBUG("Total Story Size: %lu", Manager::getInstance().dataManager->usedStoryBytes);
 		if (storySize > (kFlashMaxStoryBytes - Manager::getInstance().dataManager->usedStoryBytes)) {
-			ERROR("No space!");
+			Errors::setError(E_SERVER_ADD_STORY_NO_SPACE);
+			ERROR(Errors::errorString());
 			return kServerReturnFail;
 		}
 
@@ -169,7 +186,7 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	    	client->stop();
 	  	} else {
 	    	DEBUG("TCPClient connection failed");
-	    	Errors::setError(E_SERVER_CONNECTION_FAILED);
+	    	Errors::setError(E_SERVER_CONNECTION_FAIL);
 			ERROR(Errors::errorString());
 			return kServerReturnFail;
 	 	}
@@ -185,18 +202,18 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		// While data available, read data into buffer, then flash space based on page size
 		// Run Checksum
 		// Send back status (success, failure...)
-		/*byte ip[] = { aCommandAndArgs.charAt(commaPosition + 1), aCommandAndArgs.charAt(commaPosition + 2),
-			aCommandAndArgs.charAt(commaPosition + 3), aCommandAndArgs.charAt(commaPosition + 4)};
+		/*byte ip[] = { aCommandAndArgs.charAt(delimiterPos + 1), aCommandAndArgs.charAt(delimiterPos + 2),
+			aCommandAndArgs.charAt(delimiterPos + 3), aCommandAndArgs.charAt(delimiterPos + 4)};
 
-		uint16_t port = aCommandAndArgs.charAt(commaPosition + 5) | (aCommandAndArgs.charAt(commaPosition + 6) << 8);
+		uint16_t port = aCommandAndArgs.charAt(delimiterPos + 5) | (aCommandAndArgs.charAt(delimiterPos + 6) << 8);
 		DEBUG("Port: %d", port);
-		uint8_t storyPos = aCommandAndArgs.charAt(commaPosition + 7);
+		uint8_t storyPos = aCommandAndArgs.charAt(delimiterPos + 7);
 		DEBUG("Story Pos: %d", storyPos);
-		uint32_t storySize = aCommandAndArgs.charAt(commaPosition + 8) | (aCommandAndArgs.charAt(commaPosition + 9) << 8) | (aCommandAndArgs.charAt(commaPosition + 10) << 16) | (aCommandAndArgs.charAt(commaPosition + 11) << 24);
+		uint32_t storySize = aCommandAndArgs.charAt(delimiterPos + 8) | (aCommandAndArgs.charAt(delimiterPos + 9) << 8) | (aCommandAndArgs.charAt(delimiterPos + 10) << 16) | (aCommandAndArgs.charAt(delimiterPos + 11) << 24);
 		DEBUG("Story Size: %Lu", storySize);
-		DEBUG("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x", aCommandAndArgs.charAt(commaPosition + 1), aCommandAndArgs.charAt(commaPosition + 2), aCommandAndArgs.charAt(commaPosition + 3), aCommandAndArgs.charAt(commaPosition + 4), aCommandAndArgs.charAt(commaPosition + 5),
-		      aCommandAndArgs.charAt(commaPosition + 6), aCommandAndArgs.charAt(commaPosition + 7), aCommandAndArgs.charAt(commaPosition + 8),
-		      aCommandAndArgs.charAt(commaPosition + 9), aCommandAndArgs.charAt(commaPosition + 10), aCommandAndArgs.charAt(commaPosition + 11));
+		DEBUG("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x", aCommandAndArgs.charAt(delimiterPos + 1), aCommandAndArgs.charAt(delimiterPos + 2), aCommandAndArgs.charAt(delimiterPos + 3), aCommandAndArgs.charAt(delimiterPos + 4), aCommandAndArgs.charAt(delimiterPos + 5),
+		      aCommandAndArgs.charAt(delimiterPos + 6), aCommandAndArgs.charAt(delimiterPos + 7), aCommandAndArgs.charAt(delimiterPos + 8),
+		      aCommandAndArgs.charAt(delimiterPos + 9), aCommandAndArgs.charAt(delimiterPos + 10), aCommandAndArgs.charAt(delimiterPos + 11));
 
 		TCPClient client;
 		if (client.connect(ip, port)) {
@@ -216,7 +233,7 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	    	Serial.println("TCPClient connection failed");
 	 	}*/
 		// Get server IP address/port (e.g. 1.1.1.1:80) from arguments
-		//String serverAddressAndPort = aCommandAndArgs.substring(commaPosition + 1, aCommandAndArgs.length());
+		//String serverAddressAndPort = aCommandAndArgs.substring(delimiterPos + 1, aCommandAndArgs.length());
 
 
 		//downloadStoryData(serverAddressAndPort);
@@ -268,10 +285,10 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		return Network.RSSI();
 	}
 
-	return kServerReturnNoCmd;
+	return kServerReturnInvalidCmd;
 }
 
-TCPClient* ServerManager::connectToServer(byte server[4], uint16_t port) {
+/*TCPClient* ServerManager::connectToServer(byte server[4], uint16_t port) {
 	DEBUG("Connecting to client at %u.%u.%u.%u:%u", server[0], server[1], server[2], server[3], port);
 
 	TCPClient* client = new TCPClient();
@@ -280,11 +297,11 @@ TCPClient* ServerManager::connectToServer(byte server[4], uint16_t port) {
     	return client;
   	} else {
     	DEBUG("TCPClient connection failed");
-    	Errors::setError(E_SERVER_CONNECTION_FAILED);
+    	Errors::setError(E_SERVER_CONNECTION_FAIL);
 		ERROR(Errors::errorString());
 		return NULL;
  	}
-}
+}*/
 
 bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aByteCount) {
 	if (aClient->connected()) {
@@ -307,6 +324,10 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aByteCount) {
 						                       kServerDataBufferSize * chunks, index);
 						if (aByteCount == 0) {
 							DEBUG("Data Received");
+							if (aClient->available()) {
+								Errors::setError(E_SERVER_SOCKET_DATA_FAIL);
+								ERROR(Errors::errorString());
+							}
 							/*char data[512] = "";
 							DEBUG("Len to read: %lu", kServerDataBufferSize * chunks + index);
 							Manager::getInstance().dataManager->storyFlash()->read(data, 0,
@@ -320,12 +341,14 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aByteCount) {
 						chunks++;
 					}
 				}
+				Errors::setError(E_SERVER_SOCKET_DATA_FAIL);
+				ERROR(Errors::errorString());
 			}
 		}
 		DEBUG("Timed out waiting to receive story data.");
 	} else {
-		// TODO: ERROR
-		ERROR("Failed to get story data!");
+		Errors::setError(E_SERVER_CONNECTION_FAIL);
+		ERROR(Errors::errorString());
 	}
 	return false;
 }
@@ -333,7 +356,7 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aByteCount) {
 /*bool ServerManager::downloadStoryData(String aServerAddressAndPort) {
 	// Configure port
     uint16_t port = kDefaultTCPPort;
-    //int delimeterIndex = aServerAddressAndPort.index("");
+    //int delimiterIndex = aServerAddressAndPort.index("");
 
 	// Configure port
 	uint port = kDefaultTCPPort;
