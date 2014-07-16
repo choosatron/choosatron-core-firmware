@@ -26,6 +26,7 @@ DataManager::DataManager() {
 bool DataManager::initialize() {
 	this->gameState = STATE_INIT;
 
+	this->usedStoryBytes = 0;
 	this->gameCredits = 0;
 
 	this->metadata = {};
@@ -46,8 +47,12 @@ bool DataManager::initialize() {
 	return true;
 }
 
-const char *DataManager::gameStateStr() {
+const char* DataManager::gameStateStr() {
 	return GameStateDesc[this->gameState].stateDesc;
+}
+
+Flashee::FlashDevice* DataManager::storyFlash() {
+	return _storyFlash;
 }
 
 /* Accessors */

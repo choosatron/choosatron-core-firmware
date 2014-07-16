@@ -25,7 +25,7 @@ class ServerManager
 
         TCPClient* connectToServer(byte server[4], uint16_t port);
 
-        bool getStoryData(TCPClient *client);
+        bool getStoryData(TCPClient *aClient, uint32_t aByteCount);
         /* Private Variables */
 };
 

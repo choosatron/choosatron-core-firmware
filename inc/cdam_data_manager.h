@@ -30,6 +30,8 @@
 namespace cdam
 {
 
+const uint32_t kFlashMaxStoryBytes = 1048576;
+
 // Game States
 typedef enum GameState_t {
     STATE_ERROR,
@@ -49,7 +51,9 @@ class DataManager
         DataManager();
 
         bool initialize();
-        const char *gameStateStr();
+        const char* gameStateStr();
+
+        Flashee::FlashDevice* storyFlash();
 
         /* Public Variables */
         // The hard-coded firmware version
@@ -59,6 +63,7 @@ class DataManager
 
 
         GameState gameState;
+        uint32_t usedStoryBytes;
         uint8_t gameCredits;
 
     private:
