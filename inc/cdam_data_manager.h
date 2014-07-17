@@ -54,9 +54,9 @@ class DataManager
         const char* gameStateStr();
 
         uint32_t getStoryOffset(uint8_t aIndex);
-        void addStoryMetadata(uint8_t aPosition, uint32_t aByteSize);
-        void removeStoryMetadata(uint8_t aPosition);
-        void removeAllStoryData();
+        bool addStoryMetadata(uint8_t aPosition, uint32_t aByteSize);
+        //bool removeStoryMetadata(uint8_t aPosition);
+        bool removeAllStoryData();
 
         Flashee::FlashDevice* storyFlash();
 
@@ -66,9 +66,7 @@ class DataManager
         Metadata metadata;
         std::vector<StoryHeader> storyHeaders;
 
-
         GameState gameState;
-        uint32_t usedStoryBytes;
         uint8_t gameCredits;
 
     private:
@@ -85,6 +83,8 @@ class DataManager
         bool readMetadata(Metadata *aMetadata);
         // Write metadata to flash.
         bool writeMetadata(Metadata *aMetadata);
+        // Write the storyCount and usedStoryBytes to flash.
+        bool writeStoryCountData(Metadata *aMetadata);
 
         // Check if firmware has updated.
         bool didFirmwareUpdate(Metadata *aMetadata);
@@ -92,9 +92,11 @@ class DataManager
         bool upgradeDataModels();
 
         // Test Methods
-        bool testMetadata();
+        void testMetadata();
         void setTestMetadata(Metadata *aMetadata);
         void logBinary(uint8_t aValue);
+        void logStoryOffsets(Metadata *aMetadata);
+        void logStoryBytes(Metadata *aMetadata);
         // For debugging: print out all the metadata values.
         void logMetadata(Metadata *aMetadata);
 

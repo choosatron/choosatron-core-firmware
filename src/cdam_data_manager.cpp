@@ -26,7 +26,6 @@ DataManager::DataManager() {
 bool DataManager::initialize() {
 	this->gameState = STATE_INIT;
 
-	this->usedStoryBytes = 0;
 	this->gameCredits = 0;
 
 	this->metadata = {};
@@ -44,9 +43,15 @@ bool DataManager::initialize() {
 		return false;
 	}
 
+	DEBUG("Stories: %d, Used Bytes: %lu", this->metadata.storyCount, this->metadata.usedStoryBytes);
 	_storyFlash = Flashee::Devices::createWearLevelErase(
 	                               4 * Flashee::Devices::userFlash().pageSize(),
 	                               260 * Flashee::Devices::userFlash().pageSize());
+
+	logStoryOffsets(&this->metadata);
+	logStoryBytes(&this->metadata);
+	DEBUG("Ready!");
+
 	//_storyFlash->eraseAll();
 	return true;
 }
@@ -56,19 +61,22 @@ const char* DataManager::gameStateStr() {
 }
 
 uint32_t DataManager::getStoryOffset(uint8_t aIndex) {
-	uint32_t size;
+	/*uint32_t size;
 	bool result = _metaFlash->read(&size, sizeof(this->metadata) +
 	                          (aIndex * sizeof(uint32_t)),
 				              sizeof(uint32_t));
-	return (result) ? size : 0;
+	if (!result) {
+		Errors::setError(E_METADATA_READ_STORY_OFFSET_FAIL);
+		ERROR(Errors::errorString());
+		return 0;
+	}
+	return size;*/
+	return this->metadata.storyOffsets[aIndex];
 }
 
-void DataManager::addStoryMetadata(uint8_t aIndex, uint32_t aByteSize) {
+bool DataManager::addStoryMetadata(uint8_t aIndex, uint32_t aByteSize) {
 	// Get the current story count, see if adjustement is needed.
 	uint8_t count = this->metadata.storyCount;
-
-	// Add a new element, data will get shifted in.
-	this->metadata.storyOffsets.push_back(0);
 
 	// If the position requested is past the existing, just set it to the next.
 	if (aIndex >= count) {
@@ -80,29 +88,49 @@ void DataManager::addStoryMetadata(uint8_t aIndex, uint32_t aByteSize) {
 			count--;
 		}
 	}
+
 	// Increase the story count.
 	this->metadata.storyCount += 1;
-	// Set this stories flash memory offset.
-	this->metadata.storyOffsets[aIndex] = this->usedStoryBytes;
+	// Set the offset for this story.
+	this->metadata.storyOffsets[aIndex] = this->metadata.usedStoryBytes;
 	// Add the total story bytes to the total used.
-	this->usedStoryBytes += aByteSize;
+	this->metadata.usedStoryBytes += aByteSize;
+
+	return writeStoryCountData(&this->metadata);
 }
 
-void DataManager::removeStoryMetadata(uint8_t aIndex) {
+/*bool DataManager::removeStoryMetadata(uint8_t aIndex) {
 	// Get the current story count, see if adjustement is needed.
 	uint8_t count = this->metadata.storyCount;
 
-	// Shift existing story indexes 'down', until the slot for the new story is free.
-	while (count > aIndex) {
-		//this->metadata.storySizes[count] = this->metadata.storySizes[count - 1];
-		this->metadata.storyOffsets[count] = this->metadata.storyOffsets[count - 1];
-		count--;
+	// If the position requested is past the existing, just set it to the next.
+	if (aIndex >= count) {
+		aIndex = count;
+	} else {
+		// Shift existing story indexes 'up', until the slot for the new story is free.
+		while (count > aIndex) {
+			this->metadata.storyOffsets[count] = this->metadata.storyOffsets[count - 1];
+			count--;
+		}
 	}
-	this->metadata.storyCount--;
-}
 
-void DataManager::removeAllStoryData() {
-	/* TODO */
+	// Decrease the story count.
+	this->metadata.storyCount--;
+	// Decrease used story bytes.
+	this->metadata.usedStoryBytes -= this->storyHeaders[aIndex].storySize;
+
+	return writeStoryCountData(&this->metadata);
+}*/
+
+bool DataManager::removeAllStoryData() {
+	// Increase the story count.
+	this->metadata.storyCount = 0;
+	// Add the total story bytes to the total used.
+	this->metadata.usedStoryBytes = 0;
+	// Clear out storyOffsets.
+	memset(&this->metadata.storyOffsets[0], 0, sizeof(this->metadata.storyOffsets));
+
+	return writeStoryCountData(&this->metadata);
 }
 
 /* Accessors */
@@ -175,6 +203,7 @@ bool DataManager::initializeMetadata(Metadata *aMetadata) {
 	aMetadata->values.coinDenomination = 25;
 
 	aMetadata->storyCount = 0;
+	aMetadata->usedStoryBytes = 0;
 
 	if (!writeMetadata(aMetadata)) {
 		return false;
@@ -187,17 +216,17 @@ bool DataManager::readMetadata(Metadata *aMetadata) {
 		bool result = _metaFlash->read(aMetadata, kMetadataBaseAddress, sizeof(*aMetadata));
 		if (result) {
 			DEBUG("*** Loaded Data ***");
-			for (int i = 0; i < aMetadata->storyCount; ++i) {
+			/*for (int i = 0; i < aMetadata->storyCount; ++i) {
 				result = _metaFlash->read(&aMetadata->storyOffsets[i],
 				                          sizeof(*aMetadata) + (i * sizeof(uint32_t)),
 				                          sizeof(uint32_t));
 				if (!result) {
-					Errors::setError(E_METADATA_READ_STORY_SIZE_FAIL);
+					Errors::setError(E_METADATA_READ_STORY_OFFSET_FAIL);
 					ERROR(Errors::errorString());
 					return false;
 				}
 				DEBUG("Story %d size: %d", i, aMetadata->storyOffsets[i]);
-			}
+			}*/
 		} else {
 			Errors::setError(E_METADATA_READ_FAIL);
 			ERROR(Errors::errorString());
@@ -211,18 +240,31 @@ bool DataManager::writeMetadata(Metadata *aMetadata) {
 	bool result = _metaFlash->write(aMetadata, kMetadataBaseAddress, sizeof(*aMetadata));
 	if (result) {
 		DEBUG("*** Wrote Data ***");
-		for (int i = 0; i < aMetadata->storyCount; ++i) {
+		/*for (int i = 0; i < aMetadata->storyCount; ++i) {
 			result = _metaFlash->write(&aMetadata->storyOffsets[i],
 			                 sizeof(*aMetadata) + (i * sizeof(uint32_t)),
 			                 sizeof(uint32_t));
 			if (!result) {
-				Errors::setError(E_METADATA_WRITE_STORY_SIZE_FAIL);
+				Errors::setError(E_METADATA_WRITE_STORY_OFFSET_FAIL);
 				ERROR(Errors::errorString());
 				return false;
 			}
-		}
+		}*/
 	} else {
 		Errors::setError(E_METADATA_WRITE_FAIL);
+		ERROR(Errors::errorString());
+		return false;
+	}
+	return true;
+}
+
+bool DataManager::writeStoryCountData(Metadata *aMetadata) {
+	bool result = _metaFlash->write(&aMetadata->storyCount,
+		                 kMetadataStoryCountOffset,
+		                 kMetadataStoryCountSize + kMetadataStoryUsedBytesSize +
+		                 kMetadataStoryOffsetsSize);
+	if (!result) {
+		Errors::setError(E_METADATA_WRITE_STORY_OFFSET_FAIL);
 		ERROR(Errors::errorString());
 		return false;
 	}
@@ -259,27 +301,28 @@ bool DataManager::upgradeDataModels() {
 	return true;
 }
 
-bool DataManager::testMetadata() {
+void DataManager::testMetadata() {
+#ifdef DEBUG_BUILD
 	Metadata metadata = {};
 	_metaFlash->eraseAll();
 	readMetadata(&metadata);
-	LOG("*** Should be empty ***");
+	DEBUG("*** Should be empty ***");
 	logMetadata(&metadata);
 	setTestMetadata(&metadata);
-	LOG("*** Should be filled in ***");
+	DEBUG("*** Should be filled in ***");
 	logMetadata(&metadata);
 	writeMetadata(&metadata);
 	metadata = {};
-	LOG("*** Should be empty ***");
+	DEBUG("*** Should be empty ***");
 	logMetadata(&metadata);
 	readMetadata(&metadata);
-	LOG("*** Should be AWESOME ***");
+	DEBUG("*** Should be AWESOME ***");
 	logMetadata(&metadata);
-
-	return true;
+#endif
 }
 
 void DataManager::setTestMetadata(Metadata *aMetadata) {
+#ifdef DEBUG_BUILD
 	aMetadata->soh = ASCII_SOH;
 
 	aMetadata->firmwareVer.major = 9;
@@ -322,14 +365,17 @@ void DataManager::setTestMetadata(Metadata *aMetadata) {
 	aMetadata->values.value16 = 16;
 
 	aMetadata->storyCount = 4;
-	aMetadata->storyOffsets.push_back(1);
+	aMetadata->usedStoryBytes = 4294967295;
+	/*aMetadata->storyOffsets.push_back(1);
 	aMetadata->storyOffsets.push_back(255);
 	aMetadata->storyOffsets.push_back(65535);
-	aMetadata->storyOffsets.push_back(2147483647);
+	aMetadata->storyOffsets.push_back(2147483647);*/
+#endif
 }
 
 void DataManager::logBinary(uint8_t aValue) {
-	LOG("0x%c%c%c%c%c%c%c%c",
+#ifdef DEBUG_BUILD
+	DEBUG("0x%c%c%c%c%c%c%c%c",
 	    (IsBitSet(aValue, 7) ? '1' : '0'),
 	    (IsBitSet(aValue, 6) ? '1' : '0'),
 	    (IsBitSet(aValue, 5) ? '1' : '0'),
@@ -338,54 +384,81 @@ void DataManager::logBinary(uint8_t aValue) {
 	    (IsBitSet(aValue, 2) ? '1' : '0'),
 	    (IsBitSet(aValue, 1) ? '1' : '0'),
 	    (IsBitSet(aValue, 0) ? '1' : '0'));
+#endif
+}
+
+void DataManager::logStoryOffsets(Metadata *aMetadata) {
+#ifdef DEBUG_BUILD
+	for (int i = 0; i < aMetadata->storyCount; ++i) {
+		DEBUG("Story #: %d, Offset: %lu", i, aMetadata->storyOffsets[i]);
+	}
+#endif
+}
+
+void DataManager::logStoryBytes(Metadata *aMetadata) {
+#ifdef DEBUG_BUILD
+	char data[512] = "";
+	for (int i = 0; i < aMetadata->storyCount; ++i) {
+		bool result = _storyFlash->read(data, aMetadata->storyOffsets[i], 435);
+		if (result) {
+			DEBUG("Story #: %d, Offset: %lu", i, aMetadata->storyOffsets[i]);
+			Serial.println(data);
+		}
+		memset(&data[0], 0, sizeof(data));
+	}
+#endif
 }
 
 void DataManager::logMetadata(Metadata *aMetadata) {
-	LOG("METADATA");
-	LOG("Firmware v%d.%d.%d", aMetadata->firmwareVer.major,
+#ifdef DEBUG_BUILD
+	DEBUG("METADATA");
+	DEBUG("Firmware v%d.%d.%d", aMetadata->firmwareVer.major,
 		aMetadata->firmwareVer.minor, aMetadata->firmwareVer.revision);
-	LOG("Offline: %s", (IsBitSet(aMetadata->flags.flag1, 7) ? "on" : "off"));
-	LOG("Demo: %s", (IsBitSet(aMetadata->flags.flag1, 6) ? "on" : "off"));
-	LOG("SD: %s", (IsBitSet(aMetadata->flags.flag1, 5) ? "on" : "off"));
-	LOG("Multi: %s", (IsBitSet(aMetadata->flags.flag1, 4) ? "on" : "off"));
-	LOG("Arcade: %s", (IsBitSet(aMetadata->flags.flag1, 3) ? "on" : "off"));
-	LOG("Rsvd: %s", (IsBitSet(aMetadata->flags.flag1, 2) ? "on" : "off"));
-	LOG("Rsvd: %s", (IsBitSet(aMetadata->flags.flag1, 1) ? "on" : "off"));
-	LOG("Rsvd: %s", (IsBitSet(aMetadata->flags.flag1, 0) ? "on" : "off"));
-	LOG("Logging: %s", (IsBitSet(aMetadata->flags.flag2, 7) ? "on" : "off"));
-	LOG("Log Local: %s", (IsBitSet(aMetadata->flags.flag2, 6) ? "on" : "off"));
-	LOG("Log Live: %s", (IsBitSet(aMetadata->flags.flag2, 5) ? "on" : "off"));
-	LOG("Rsvd: %s", (IsBitSet(aMetadata->flags.flag2, 4) ? "on" : "off"));
-	LOG("Rsvd: %s", (IsBitSet(aMetadata->flags.flag2, 3) ? "on" : "off"));
-	LOG("Rsvd: %s", (IsBitSet(aMetadata->flags.flag2, 2) ? "on" : "off"));
-	LOG("Rsvd: %s", (IsBitSet(aMetadata->flags.flag2, 1) ? "on" : "off"));
-	LOG("Rsvd: %s", (IsBitSet(aMetadata->flags.flag2, 0) ? "on" : "off"));
+	DEBUG("Offline: %s", (IsBitSet(aMetadata->flags.flag1, 7) ? "on" : "off"));
+	DEBUG("Demo: %s", (IsBitSet(aMetadata->flags.flag1, 6) ? "on" : "off"));
+	DEBUG("SD: %s", (IsBitSet(aMetadata->flags.flag1, 5) ? "on" : "off"));
+	DEBUG("Multi: %s", (IsBitSet(aMetadata->flags.flag1, 4) ? "on" : "off"));
+	DEBUG("Arcade: %s", (IsBitSet(aMetadata->flags.flag1, 3) ? "on" : "off"));
+	DEBUG("Rsvd: %s", (IsBitSet(aMetadata->flags.flag1, 2) ? "on" : "off"));
+	DEBUG("Rsvd: %s", (IsBitSet(aMetadata->flags.flag1, 1) ? "on" : "off"));
+	DEBUG("Rsvd: %s", (IsBitSet(aMetadata->flags.flag1, 0) ? "on" : "off"));
+	DEBUG("Logging: %s", (IsBitSet(aMetadata->flags.flag2, 7) ? "on" : "off"));
+	DEBUG("Log Local: %s", (IsBitSet(aMetadata->flags.flag2, 6) ? "on" : "off"));
+	DEBUG("Log Live: %s", (IsBitSet(aMetadata->flags.flag2, 5) ? "on" : "off"));
+	DEBUG("Rsvd: %s", (IsBitSet(aMetadata->flags.flag2, 4) ? "on" : "off"));
+	DEBUG("Rsvd: %s", (IsBitSet(aMetadata->flags.flag2, 3) ? "on" : "off"));
+	DEBUG("Rsvd: %s", (IsBitSet(aMetadata->flags.flag2, 2) ? "on" : "off"));
+	DEBUG("Rsvd: %s", (IsBitSet(aMetadata->flags.flag2, 1) ? "on" : "off"));
+	DEBUG("Rsvd: %s", (IsBitSet(aMetadata->flags.flag2, 0) ? "on" : "off"));
 	logBinary(aMetadata->flags.flag3);
 	logBinary(aMetadata->flags.flag4);
 	logBinary(aMetadata->flags.flag5);
 	logBinary(aMetadata->flags.flag6);
 	logBinary(aMetadata->flags.flag7);
 	logBinary(aMetadata->flags.flag8);
-	LOG("Coins Per Credit: %d", aMetadata->values.coinsPerCredit);
-	LOG("Coin Denom: %d", aMetadata->values.coinDenomination);
-	LOG("Value 3: %d", aMetadata->values.value3);
-	LOG("Value 4: %d", aMetadata->values.value4);
-	LOG("Value 5: %d", aMetadata->values.value5);
-	LOG("Value 6: %d", aMetadata->values.value6);
-	LOG("Value 7: %d", aMetadata->values.value7);
-	LOG("Value 8: %d", aMetadata->values.value8);
-	LOG("Value 9: %d", aMetadata->values.value9);
-	LOG("Value 10: %d", aMetadata->values.value10);
-	LOG("Value 11: %d", aMetadata->values.value11);
-	LOG("Value 12: %d", aMetadata->values.value12);
-	LOG("Value 13: %d", aMetadata->values.value13);
-	LOG("Value 14: %d", aMetadata->values.value14);
-	LOG("Value 15: %d", aMetadata->values.value15);
-	LOG("Value 16: %d", aMetadata->values.value16);
-	LOG("Story Count: %d", aMetadata->storyCount);
-	for (int i = 0; i < aMetadata->storyCount; ++i) {
+	DEBUG("Coins Per Credit: %d", aMetadata->values.coinsPerCredit);
+	DEBUG("Coin Denom: %d", aMetadata->values.coinDenomination);
+	DEBUG("Value 3: %d", aMetadata->values.value3);
+	DEBUG("Value 4: %d", aMetadata->values.value4);
+	DEBUG("Value 5: %d", aMetadata->values.value5);
+	DEBUG("Value 6: %d", aMetadata->values.value6);
+	DEBUG("Value 7: %d", aMetadata->values.value7);
+	DEBUG("Value 8: %d", aMetadata->values.value8);
+	DEBUG("Value 9: %d", aMetadata->values.value9);
+	DEBUG("Value 10: %d", aMetadata->values.value10);
+	DEBUG("Value 11: %d", aMetadata->values.value11);
+	DEBUG("Value 12: %d", aMetadata->values.value12);
+	DEBUG("Value 13: %d", aMetadata->values.value13);
+	DEBUG("Value 14: %d", aMetadata->values.value14);
+	DEBUG("Value 15: %d", aMetadata->values.value15);
+	DEBUG("Value 16: %d", aMetadata->values.value16);
+	DEBUG("Story Count: %d", aMetadata->storyCount);
+	DEBUG("Used Story Bytes: %lu", aMetadata->usedStoryBytes);
+	logStoryOffsets(aMetadata);
+	/*for (int i = 0; i < aMetadata->storyCount; ++i) {
 		LOG("Story Size %d: %d", (i + 1), aMetadata->storyOffsets[i]);
-	}
+	}*/
+#endif
 }
 
 }

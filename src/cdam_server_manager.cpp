@@ -6,6 +6,7 @@
 namespace cdam
 {
 
+const int8_t kServerReturnMaxReached = -5;
 const int8_t kServerReturnInvalidIndex = -4;
 const int8_t kServerReturnBusy = -3;
 const int8_t kServerReturnInvalidCmd = -2;
@@ -46,7 +47,7 @@ const uint16_t kServerDataBufferSize = 128;
 const uint16_t kServerTimeout = 30000;	// ms
 const char kServerArgumentDelimiter = '|';
 
-const uint8_t kServerStoryPositionBytes = 1;
+const uint8_t kServerStoryPositionBytes = 2;
 const uint8_t kServerStorySizeBytes = 7;
 const uint8_t kServerStoryOctetBytes = 3;
 const uint8_t kServerStoryPortBytes = 6;
@@ -138,13 +139,13 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		String creditsStr = aCommandAndArgs.substring(delimiterPos + 1, aCommandAndArgs.length());
 		Manager::getInstance().dataManager->gameCredits = atoi(creditsStr.c_str());
 		return Manager::getInstance().dataManager->gameCredits;
-	} else if (strcmp(command, kServerCmdRemoveStory) == 0) {
+	/*} else if (strcmp(command, kServerCmdRemoveStory) == 0) {
 		uint8_t storyIndex = ((aCommandAndArgs.charAt(delimiterPos + 1) - '0') % 48) - 1;
 		if (storyIndex < (Manager::getInstance().dataManager->metadata.storyCount)) {
 			Manager::getInstance().dataManager->removeStoryMetadata(storyIndex);
 			return kServerReturnSuccess;
 		}
-		return kServerReturnInvalidIndex;
+		return kServerReturnInvalidIndex;*/
 	} else if (strcmp(command, kServerCmdRemoveAllStories) == 0) {
 		Manager::getInstance().dataManager->removeAllStoryData();
 		return kServerReturnSuccess;
@@ -152,6 +153,8 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		// We only want to deal with one server connection at a time.
 		if (serverMan->pendingAction) {
 			return kServerReturnBusy;
+		} else if (Manager::getInstance().dataManager->metadata.storyCount >= kMaxStoryCount) {
+			return kServerReturnMaxReached;
 		}
 
 		/* 35 bytes of arguments - In Order */
@@ -163,7 +166,7 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		//  3 bytes - IP Address Octet Three
 		//  3 bytes - IP Address Octet Four
 		//  5 bytes - Port Number
-		if (aCommandAndArgs.length() != 35) {
+		if (aCommandAndArgs.length() != 36) {
 			Errors::setError(E_SERVER_ADD_STORY_LEN_FAIL);
 			ERROR(Errors::errorString());
 			DEBUG("Length: %d", aCommandAndArgs.length());
@@ -175,20 +178,21 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 
 		aCommandAndArgs.toCharArray(buffer, kServerStorySizeBytes + 1, index);
 		index += kServerStorySizeBytes;
-
 		serverMan->newStorySize = atol(buffer);
 		DEBUG("Incoming story size: %lu", serverMan->newStorySize);
 
-		DEBUG("Total Story Size: %lu", Manager::getInstance().dataManager->usedStoryBytes);
-		if (serverMan->newStorySize > (kFlashMaxStoryBytes - Manager::getInstance().dataManager->usedStoryBytes)) {
+		DEBUG("Total Story Size: %lu", Manager::getInstance().dataManager->metadata.usedStoryBytes);
+		if (serverMan->newStorySize > (kFlashMaxStoryBytes - Manager::getInstance().dataManager->metadata.usedStoryBytes)) {
 			Errors::setError(E_SERVER_ADD_STORY_NO_SPACE);
 			ERROR(Errors::errorString());
 			return kServerReturnFail;
 		}
 
 		serverMan->newStoryIndex = ((aCommandAndArgs.charAt(index) - '0') % 48) - 1;
+		aCommandAndArgs.toCharArray(buffer, kServerStoryPositionBytes + 1, index);
+		serverMan->newStoryIndex = atoi(buffer);
 		DEBUG("Story Index: %d", serverMan->newStoryIndex);
-		index++;
+		index += kServerStoryPositionBytes;
 
 		aCommandAndArgs.toCharArray(buffer, kServerStoryOctetBytes + 1, index);
 		uint8_t firstOctet = atoi(buffer);
@@ -278,9 +282,9 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	} else if (strcmp(command, kServerCmdGetSeconds) == 0) {
 		return millis() / 1000;
 	} else if (strcmp(command, kServerCmdGetFreeSpace) == 0) {
-		return kFlashMaxStoryBytes - Manager::getInstance().dataManager->usedStoryBytes;
+		return kFlashMaxStoryBytes - Manager::getInstance().dataManager->metadata.usedStoryBytes;
 	} else if (strcmp(command, kServerCmdGetUsedSpace) == 0) {
-		return Manager::getInstance().dataManager->usedStoryBytes;
+		return Manager::getInstance().dataManager->metadata.usedStoryBytes;
 	} else if (strcmp(command, kServerCmdGetCredits) == 0) {
 		return Manager::getInstance().dataManager->gameCredits;
 	} else if (strcmp(command, kServerCmdGetSSID) == 0) {
@@ -353,13 +357,9 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 					int bytes = aClient->read(buffer, kServerDataBufferSize);
 					// Write data
 					bool result = Manager::getInstance().dataManager->storyFlash()->write(buffer,
-						                       Manager::getInstance().dataManager->usedStoryBytes +
+						                       Manager::getInstance().dataManager->metadata.usedStoryBytes +
 						                       bytesRead, bytes);
 					bytesRead += bytes;
-					DEBUG("%d", bytes);
-					DEBUG("%d", bytesRead);
-					DEBUG("%s", buffer);
-
 
 					if (!result) {
 						Errors::setError(E_SERVER_SOCKET_DATA_FAIL);
@@ -378,7 +378,7 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 							char data[512] = "";
 							DEBUG("Len to read: %lu", bytesRead);
 							bool result = Manager::getInstance().dataManager->storyFlash()->read(data,
-							                       Manager::getInstance().dataManager->usedStoryBytes,
+							                       Manager::getInstance().dataManager->metadata.usedStoryBytes,
 							                       bytesRead);
 							if (result) {
 								DEBUG("%s", data);
