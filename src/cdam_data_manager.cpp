@@ -32,20 +32,33 @@ bool DataManager::initialize() {
 	DEBUG("Page Size: %d", Flashee::Devices::userFlash().pageSize());
 	DEBUG("Page Count: %d", Flashee::Devices::userFlash().pageCount());
 	_metaFlash = Flashee::Devices::createAddressErase(0,
-	                               4 * Flashee::Devices::userFlash().pageSize());
+	                               8 * Flashee::Devices::userFlash().pageSize());
 
     //testMetadata();
 	//_metaFlash->eraseAll();
+
+	char data[81] = "";
+	bool result = _metaFlash->read(data, 0, 80);
+	DEBUG("META DEBUG BEGIN");
+	Serial.println(data);
+	DEBUG("HEX");
+	for (int i = 0; i < sizeof(data); ++i) {
+		if (data[i]<0x10) {Serial.print("0");}
+          Serial.print(data[i],HEX);
+          Serial.print(" ");
+	}
+	Serial.println("END");
+	DEBUG("META DEBUG END");
 
 	loadFirmwareVersion();
 
 	if (!loadMetadata()) {
 		return false;
 	}
-
+	delay(500);
 	DEBUG("Stories: %d, Used Bytes: %lu", this->metadata.storyCount, this->metadata.usedStoryBytes);
 	_storyFlash = Flashee::Devices::createWearLevelErase(
-	                               4 * Flashee::Devices::userFlash().pageSize(),
+	                               8 * Flashee::Devices::userFlash().pageSize(),
 	                               260 * Flashee::Devices::userFlash().pageSize());
 
 	logStoryOffsets(&this->metadata);
@@ -89,12 +102,14 @@ bool DataManager::addStoryMetadata(uint8_t aIndex, uint32_t aByteSize) {
 		}
 	}
 
+	DEBUG("Offset: %lu, Size: %lu", this->metadata.usedStoryBytes, aByteSize);
 	// Increase the story count.
 	this->metadata.storyCount += 1;
 	// Set the offset for this story.
 	this->metadata.storyOffsets[aIndex] = this->metadata.usedStoryBytes;
 	// Add the total story bytes to the total used.
 	this->metadata.usedStoryBytes += aByteSize;
+	DEBUG("Offset: %lu, Size: %lu", this->metadata.usedStoryBytes, aByteSize);
 
 	return writeStoryCountData(&this->metadata);
 }
@@ -259,6 +274,8 @@ bool DataManager::writeMetadata(Metadata *aMetadata) {
 }
 
 bool DataManager::writeStoryCountData(Metadata *aMetadata) {
+	DEBUG("Write Story Data: %d, %d, %lu", aMetadata->storyCount, kMetadataStoryCountOffset, kMetadataStoryCountSize + kMetadataStoryUsedBytesSize +
+		                 kMetadataStoryOffsetsSize);
 	bool result = _metaFlash->write(&aMetadata->storyCount,
 		                 kMetadataStoryCountOffset,
 		                 kMetadataStoryCountSize + kMetadataStoryUsedBytesSize +
