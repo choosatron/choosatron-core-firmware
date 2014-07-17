@@ -125,20 +125,12 @@ typedef struct MetaValues_t {
 	uint8_t value16;
 } MetaValues;
 
-typedef struct MetaStorySizes_t {
-	uint32_t story1;
-	uint32_t story2;
-	uint32_t story3;
-	uint32_t story4;
-} MetaStorySizes;
-
 typedef struct Metadata_t {
 	uint8_t soh;
 	Version firmwareVer;
 	MetaFlags flags;
 	MetaValues values;
 	uint8_t storyCount;
-	std::vector<uint32_t> storySizes;
 	std::vector<uint32_t> storyOffsets;
 } Metadata;
 

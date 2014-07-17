@@ -42,7 +42,7 @@ const char* kServerCmdGetSubnetMask = "get_subnet_mask";
 const char* kServerCmdGetLocalIP = "get_local_ip";
 const char* kServerCmdGetRSSI = "get_rssi";
 
-const uint16_t kServerDataBufferSize = 256;
+const uint16_t kServerDataBufferSize = 128;
 const uint16_t kServerTimeout = 30000;	// ms
 const char kServerArgumentDelimiter = '|';
 
@@ -77,6 +77,7 @@ void ServerManager::handlePendingActions() {
 	    	if (strcmp(this->lastCommand, kServerCmdAddStory) == 0) {
 	    		if (getStoryData(client, this->newStorySize)) {
 	    			// Update the data manager metadata for the new story.
+	    			DEBUG("Index: %d, Size: %lu", this->newStoryIndex, this->newStorySize);
 	    			Manager::getInstance().dataManager->addStoryMetadata(this->newStoryIndex, this->newStorySize);
 	    		}
 	    	}
@@ -335,37 +336,39 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 /* Private Methods */
 bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 	if (aClient->connected()) {
+		aClient->write("hi");
 		int startTimeMs = millis();
 		// While connected, wait for data availability (with timeout)
 		while ((millis() - startTimeMs) < kServerTimeout) {
 			if (aClient->available()) {
 				uint16_t index = 0;
-				uint32_t chunks = 0;
-				char buffer[kServerDataBufferSize] = "";
+				uint32_t bytesRead = 0;
+				uint8_t buffer[kServerDataBufferSize + 1] = "";
 				memset(&buffer[0], 0, sizeof(buffer));
 				DEBUG("Story Size: %lu", aStorySize);
 
 				while (aClient->available()) {
 					// While data available, read data into buffer, then flash space based on page size
-					buffer[index] = aClient->read();
-					index++;
-					aStorySize--;
-					if ((index == kServerDataBufferSize) || (aStorySize == 0)) {
-						DEBUG("Index: %d", index);
-						// Write data
-						Manager::getInstance().dataManager->storyFlash()->write(buffer,
+					memset(&buffer[0], 0, sizeof(buffer));
+					int bytes = aClient->read(buffer, kServerDataBufferSize);
+					// Write data
+					bool result = Manager::getInstance().dataManager->storyFlash()->write(buffer,
 						                       Manager::getInstance().dataManager->usedStoryBytes +
-						                       kServerDataBufferSize * chunks, kServerDataBufferSize);
-						Serial.print("BUF: ");
-						Serial.println(buffer);
-						memset(&buffer[0], 0, sizeof(buffer));
-						Manager::getInstance().dataManager->storyFlash()->read(buffer,
-						                       Manager::getInstance().dataManager->usedStoryBytes +
-						                       kServerDataBufferSize * chunks, kServerDataBufferSize);
-						Serial.print("READ BUF: ");
-						Serial.println(buffer);
+						                       bytesRead, bytes);
+					bytesRead += bytes;
+					DEBUG("%d", bytes);
+					DEBUG("%d", bytesRead);
+					DEBUG("%s", buffer);
 
-						if (aStorySize == 0) {
+
+					if (!result) {
+						Errors::setError(E_SERVER_SOCKET_DATA_FAIL);
+						ERROR(Errors::errorString());
+						return false;
+					}
+					if (bytesRead == aStorySize) {
+
+
 							DEBUG("Data Received");
 							aClient->write("received");
 							if (aClient->available()) {
@@ -373,16 +376,18 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 								ERROR(Errors::errorString());
 							}
 							char data[512] = "";
-							DEBUG("Len to read: %lu", Manager::getInstance().dataManager->usedStoryBytes + kServerDataBufferSize * chunks + index);
-							Manager::getInstance().dataManager->storyFlash()->read(data,
+							DEBUG("Len to read: %lu", bytesRead);
+							bool result = Manager::getInstance().dataManager->storyFlash()->read(data,
 							                       Manager::getInstance().dataManager->usedStoryBytes,
-							                       kServerDataBufferSize * chunks + index);
-							DEBUG("%s", data);
-							Serial.println(data);
+							                       bytesRead);
+							if (result) {
+								DEBUG("%s", data);
+								Serial.println(data);
+							} else {
+								ERROR("Couldn't read!");
+							}
 							return true;
-						}
-						index = 0;
-						chunks++;
+
 					}
 				}
 				Errors::setError(E_SERVER_SOCKET_DATA_FAIL);

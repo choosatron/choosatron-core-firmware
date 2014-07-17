@@ -53,6 +53,7 @@ class DataManager
         bool initialize();
         const char* gameStateStr();
 
+        uint32_t getStoryOffset(uint8_t aIndex);
         void addStoryMetadata(uint8_t aPosition, uint32_t aByteSize);
         void removeStoryMetadata(uint8_t aPosition);
         void removeAllStoryData();

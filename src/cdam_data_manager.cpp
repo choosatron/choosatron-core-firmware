@@ -47,7 +47,7 @@ bool DataManager::initialize() {
 	_storyFlash = Flashee::Devices::createWearLevelErase(
 	                               4 * Flashee::Devices::userFlash().pageSize(),
 	                               260 * Flashee::Devices::userFlash().pageSize());
-
+	//_storyFlash->eraseAll();
 	return true;
 }
 
@@ -55,12 +55,19 @@ const char* DataManager::gameStateStr() {
 	return GameStateDesc[this->gameState].stateDesc;
 }
 
+uint32_t DataManager::getStoryOffset(uint8_t aIndex) {
+	uint32_t size;
+	bool result = _metaFlash->read(&size, sizeof(this->metadata) +
+	                          (aIndex * sizeof(uint32_t)),
+				              sizeof(uint32_t));
+	return (result) ? size : 0;
+}
+
 void DataManager::addStoryMetadata(uint8_t aIndex, uint32_t aByteSize) {
 	// Get the current story count, see if adjustement is needed.
 	uint8_t count = this->metadata.storyCount;
 
 	// Add a new element, data will get shifted in.
-	this->metadata.storySizes.push_back(0);
 	this->metadata.storyOffsets.push_back(0);
 
 	// If the position requested is past the existing, just set it to the next.
@@ -69,15 +76,12 @@ void DataManager::addStoryMetadata(uint8_t aIndex, uint32_t aByteSize) {
 	} else {
 		// Shift existing story indexes 'up', until the slot for the new story is free.
 		while (count > aIndex) {
-			this->metadata.storySizes[count] = this->metadata.storySizes[count - 1];
 			this->metadata.storyOffsets[count] = this->metadata.storyOffsets[count - 1];
 			count--;
 		}
 	}
 	// Increase the story count.
 	this->metadata.storyCount += 1;
-	// Assign the story index and story size.
-	this->metadata.storySizes[aIndex] = aByteSize;
 	// Set this stories flash memory offset.
 	this->metadata.storyOffsets[aIndex] = this->usedStoryBytes;
 	// Add the total story bytes to the total used.
@@ -90,10 +94,11 @@ void DataManager::removeStoryMetadata(uint8_t aIndex) {
 
 	// Shift existing story indexes 'down', until the slot for the new story is free.
 	while (count > aIndex) {
-		this->metadata.storySizes[count] = this->metadata.storySizes[count - 1];
+		//this->metadata.storySizes[count] = this->metadata.storySizes[count - 1];
 		this->metadata.storyOffsets[count] = this->metadata.storyOffsets[count - 1];
 		count--;
 	}
+	this->metadata.storyCount--;
 }
 
 void DataManager::removeAllStoryData() {
@@ -183,7 +188,7 @@ bool DataManager::readMetadata(Metadata *aMetadata) {
 		if (result) {
 			DEBUG("*** Loaded Data ***");
 			for (int i = 0; i < aMetadata->storyCount; ++i) {
-				result = _metaFlash->read(&aMetadata->storySizes[i],
+				result = _metaFlash->read(&aMetadata->storyOffsets[i],
 				                          sizeof(*aMetadata) + (i * sizeof(uint32_t)),
 				                          sizeof(uint32_t));
 				if (!result) {
@@ -191,7 +196,7 @@ bool DataManager::readMetadata(Metadata *aMetadata) {
 					ERROR(Errors::errorString());
 					return false;
 				}
-				DEBUG("Story %d size: %d", i, aMetadata->storySizes[i]);
+				DEBUG("Story %d size: %d", i, aMetadata->storyOffsets[i]);
 			}
 		} else {
 			Errors::setError(E_METADATA_READ_FAIL);
@@ -207,7 +212,7 @@ bool DataManager::writeMetadata(Metadata *aMetadata) {
 	if (result) {
 		DEBUG("*** Wrote Data ***");
 		for (int i = 0; i < aMetadata->storyCount; ++i) {
-			result = _metaFlash->write(&aMetadata->storySizes[i],
+			result = _metaFlash->write(&aMetadata->storyOffsets[i],
 			                 sizeof(*aMetadata) + (i * sizeof(uint32_t)),
 			                 sizeof(uint32_t));
 			if (!result) {
@@ -317,10 +322,10 @@ void DataManager::setTestMetadata(Metadata *aMetadata) {
 	aMetadata->values.value16 = 16;
 
 	aMetadata->storyCount = 4;
-	aMetadata->storySizes.push_back(1);
-	aMetadata->storySizes.push_back(255);
-	aMetadata->storySizes.push_back(65535);
-	aMetadata->storySizes.push_back(2147483647);
+	aMetadata->storyOffsets.push_back(1);
+	aMetadata->storyOffsets.push_back(255);
+	aMetadata->storyOffsets.push_back(65535);
+	aMetadata->storyOffsets.push_back(2147483647);
 }
 
 void DataManager::logBinary(uint8_t aValue) {
@@ -379,7 +384,7 @@ void DataManager::logMetadata(Metadata *aMetadata) {
 	LOG("Value 16: %d", aMetadata->values.value16);
 	LOG("Story Count: %d", aMetadata->storyCount);
 	for (int i = 0; i < aMetadata->storyCount; ++i) {
-		LOG("Story Size %d: %d", (i + 1), aMetadata->storySizes[i]);
+		LOG("Story Size %d: %d", (i + 1), aMetadata->storyOffsets[i]);
 	}
 }
 
