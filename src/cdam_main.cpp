@@ -13,7 +13,6 @@ namespace cdam
 
 
 // Extern C seems to mess up declaring this in the header.
-Keypad *_keypad;
 
 //IntervalTimer _timer;
 
@@ -72,10 +71,6 @@ int Choosatron::loop() {
 	}*/
 
 	return 0;
-}
-
-void Choosatron::updateKeypad() {
-  _keypad->updateKeypad();
 }
 
 }

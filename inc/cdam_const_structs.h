@@ -16,22 +16,25 @@ namespace cdam
 #define METADATA_STORYCOUNT_OFFSET  (METADATA_VALUES_OFFSET + METADATA_VALUES_COUNT)
 #define METADATA_STORYSIZES_OFFSET  (METADATA_STORYCOUNT_OFFSET + 1)*/
 
-const uint8_t kMaxStoryCount = 20;
+const uint8_t kMaxStoryCount = 10;
 
 /* WARNING: If this grows, need to up to uint16_t!!! */
-const uint8_t  kMetadataBaseAddress = 0;
-const uint8_t  kMetadataFirmwareOffset = kMetadataBaseAddress + 1; // adding SOH byte
-const uint8_t  kMetadataFirmwareSize = 3;
-const uint8_t  kMetadataFlagsOffset = (kMetadataFirmwareOffset + kMetadataFirmwareSize);
-const uint8_t  kMetadataFlagsSize = 8; // bytes
-const uint8_t  kMetadataValuesOffset = (kMetadataFlagsOffset + kMetadataFlagsSize);
-const uint8_t  kMetadataValuesSize = 16; // bytes
-const uint8_t  kMetadataStoryCountOffset = (kMetadataValuesOffset + kMetadataValuesSize);
-const uint8_t  kMetadataStoryCountSize = 1; // bytes
-const uint8_t  kMetadataStoryUsedBytesOffset = (kMetadataStoryCountOffset + kMetadataStoryCountSize);
-const uint8_t  kMetadataStoryUsedBytesSize = 4; // bytes
+const uint16_t  kMetadataBaseAddress = 0;
+const uint16_t  kMetadataFirmwareOffset = 1; // adding SOH byte
+const uint16_t  kMetadataFirmwareSize = 3;
+const uint16_t  kMetadataFlagsOffset = (kMetadataFirmwareOffset + kMetadataFirmwareSize);
+const uint16_t  kMetadataFlagsSize = 8; // bytes
+const uint16_t  kMetadataValuesOffset = (kMetadataFlagsOffset + kMetadataFlagsSize);
+const uint16_t  kMetadataValuesSize = 16; // bytes
+const uint16_t  kMetadataStoryCountOffset = (kMetadataValuesOffset + kMetadataValuesSize);
+const uint16_t  kMetadataStoryCountSize = 2; // bytes
+const uint16_t  kMetadataStoryUsedBytesOffset = (kMetadataStoryCountOffset + kMetadataStoryCountSize);
+const uint16_t  kMetadataStoryUsedBytesSize = 4; // bytes
 const uint16_t kMetadataStoryOffsetsOffset = (kMetadataStoryUsedBytesOffset + kMetadataStoryUsedBytesSize);
 const uint16_t kMetadataStoryOffsetsSize = kMaxStoryCount * 4; // 4 bytes each.
+const uint16_t kMetadataSize = (kMetadataStoryOffsetsOffset + kMetadataStoryOffsetsSize); // 4 bytes each.
+
+const uint16_t kStoryBaseAddress = (kMetadataStoryOffsetsOffset + kMetadataStoryOffsetsSize);
 
 #define FLG1_OFFLINE   0x80
 #define FLG1_DEMO   0x040
@@ -138,7 +141,7 @@ typedef struct Metadata_t {
 	Version firmwareVer;
 	MetaFlags flags;
 	MetaValues values;
-	uint8_t storyCount;
+	uint16_t storyCount;
 	uint32_t usedStoryBytes;
 	uint32_t storyOffsets[kMaxStoryCount];
 	//std::vector<uint32_t> storyOffsets;

@@ -8,8 +8,6 @@
 namespace cdam
 {
 
-class Keypad;
-
 class Choosatron
 {
  public:
@@ -19,9 +17,7 @@ class Choosatron
     int loop(void);
 
  private:
-  	void updateKeypad();
 
-  	//Keypad *_keypad;
 };
 
 }

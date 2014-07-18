@@ -3,17 +3,17 @@
     <grammar name="Choosatron Metadata" start="id:15" author="Jerry Belich" email="jerry@monkeytheater.com" fileextension="mcdam" uti="com.choosatron">
         <description>Metadata for Choosatron settings and story table of contents.</description>
         <structure name="Metadata" id="15" encoding="ISO_8859-1:1987" endian="big" signed="no">
-            <binary name="StartHeader" mustmatch="yes" id="16" length="1">
+            <binary name="StartHeader" mustmatch="yes" id="16" fillcolor="FF9688" length="1">
                 <fixedvalues>
                     <fixedvalue name="SOH" value="01"/>
                 </fixedvalues>
             </binary>
             <structure name="FirmwareVersion" id="17" length="3">
-                <number name="Major" id="18" type="integer" length="1"/>
-                <number name="Minor" id="19" type="integer" length="1"/>
-                <number name="Revision" id="20" type="integer" length="1"/>
+                <number name="Major" id="18" fillcolor="FFE645" type="integer" length="1"/>
+                <number name="Minor" id="19" fillcolor="FFE83E" type="integer" length="1"/>
+                <number name="Revision" id="20" fillcolor="FFE84B" type="integer" length="1"/>
             </structure>
-            <structure name="Flags" id="22" length="8">
+            <structure name="Flags" id="22" length="8" fillcolor="8EFA9B">
                 <number name="Flag1" id="23" type="integer" length="8" lengthunit="bit" display="binary" minval="00000000" maxval="0111111111111111111111111111111111111111111111111111111111111111">
                     <mask name="Offline" value="0x80">
                         <fixedvalue name="Yes" value="0x80"/>
@@ -62,7 +62,7 @@
                 <number name="Flag7" id="29" type="integer" length="1"/>
                 <number name="Flag8" id="30" type="integer" length="1"/>
             </structure>
-            <structure name="Values" id="32" length="16">
+            <structure name="Values" id="32" length="16" fillcolor="FFBE6B">
                 <number name="CoinsPerCredit" id="33" type="integer" length="1"/>
                 <number name="CoinDenomination" id="34" type="integer" length="1"/>
                 <number name="Value3" id="35" type="integer" length="1"/>
@@ -80,10 +80,11 @@
                 <number name="Value15" id="47" type="integer" length="1"/>
                 <number name="Value16" id="48" type="integer" length="1"/>
             </structure>
-            <number name="StoryCount" id="50" type="integer" length="1" minval="0" maxval="10"/>
-            <number name="StorySize" id="51" repeatmin="StoryCount" repeatmax="StoryCount" type="integer" length="4">
-                <description>Number of bytes each story is.</description>
+            <number name="StoryCount" id="50" fillcolor="FF6CEE" type="integer" length="2" endian="little" minval="0" maxval="10"/>
+            <number name="UsedStoryBytes" id="51" type="integer" length="4" endian="little" minval="0" maxval="1048576">
+                <description>Total bytes used.</description>
             </number>
+            <number name="StoryOffset" id="54" fillcolor="4CCDFF" repeatmin="StoryCount" repeatmax="StoryCount" type="integer" length="4" endian="little" minval="0" maxval="1048576"/>
         </structure>
     </grammar>
 </ufwb>

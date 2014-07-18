@@ -356,8 +356,8 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 					memset(&buffer[0], 0, sizeof(buffer));
 					int bytes = aClient->read(buffer, kServerDataBufferSize);
 					// Write data
-					bool result = Manager::getInstance().dataManager->storyFlash()->write(buffer,
-						                       Manager::getInstance().dataManager->metadata.usedStoryBytes +
+					bool result = Manager::getInstance().dataManager->storyFlash()->writeErasePage(buffer,
+						                       kStoryBaseAddress + Manager::getInstance().dataManager->metadata.usedStoryBytes +
 						                       bytesRead, bytes);
 					bytesRead += bytes;
 
@@ -376,9 +376,9 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 								ERROR(Errors::errorString());
 							}
 							char data[512] = "";
-							DEBUG("Len to read: %lu", bytesRead);
+							DEBUG("Used: %lu, Len to read: %lu", Manager::getInstance().dataManager->metadata.usedStoryBytes, bytesRead);
 							bool result = Manager::getInstance().dataManager->storyFlash()->read(data,
-							                       Manager::getInstance().dataManager->metadata.usedStoryBytes,
+							                       kStoryBaseAddress + Manager::getInstance().dataManager->metadata.usedStoryBytes,
 							                       bytesRead);
 							if (result) {
 								DEBUG("%s", data);
