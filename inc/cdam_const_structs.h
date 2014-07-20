@@ -34,7 +34,7 @@ const uint16_t kMetadataStoryOffsetsOffset = (kMetadataStoryUsedBytesOffset + kM
 const uint16_t kMetadataStoryOffsetsSize = kMaxStoryCount * 4; // 4 bytes each.
 const uint16_t kMetadataSize = (kMetadataStoryOffsetsOffset + kMetadataStoryOffsetsSize); // 4 bytes each.
 
-const uint16_t kStoryBaseAddress = (kMetadataStoryOffsetsOffset + kMetadataStoryOffsetsSize);
+//const uint16_t kStoryBaseAddress = (kMetadataStoryOffsetsOffset + kMetadataStoryOffsetsSize);
 
 #define FLG1_OFFLINE   0x80
 #define FLG1_DEMO   0x040

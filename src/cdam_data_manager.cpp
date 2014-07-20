@@ -91,7 +91,7 @@ uint32_t DataManager::getStoryOffset(uint8_t aIndex) {
 	return this->metadata.storyOffsets[aIndex];
 }
 
-bool DataManager::addStoryMetadata(uint8_t aIndex, uint32_t aByteSize) {
+bool DataManager::addStoryMetadata(uint8_t aIndex, uint32_t aPages) {
 	// Get the current story count, see if adjustement is needed.
 	uint8_t count = this->metadata.storyCount;
 
@@ -111,7 +111,7 @@ bool DataManager::addStoryMetadata(uint8_t aIndex, uint32_t aByteSize) {
 	// Set the offset for this story.
 	this->metadata.storyOffsets[aIndex] = this->metadata.usedStoryBytes;
 	// Add the total story bytes to the total used.
-	this->metadata.usedStoryBytes += aByteSize;
+	this->metadata.usedStoryBytes += aPages * Flashee::Devices::userFlash().pageSize();
 
 	return writeStoryCountData(&this->metadata);
 }
