@@ -43,7 +43,7 @@ const char* kServerCmdGetSubnetMask = "get_subnet_mask";
 const char* kServerCmdGetLocalIP = "get_local_ip";
 const char* kServerCmdGetRSSI = "get_rssi";
 
-const uint16_t kServerDataBufferSize = 128;
+const uint16_t kServerDataBufferSize = 4096;
 const uint16_t kServerTimeout = 30000;	// ms
 const char kServerArgumentDelimiter = '|';
 
@@ -342,21 +342,26 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 	if (aClient->connected()) {
 		aClient->write("hi");
 		int startTimeMs = millis();
-		// While connected, wait for data availability (with timeout)
-		while ((millis() - startTimeMs) < kServerTimeout) {
-			if (aClient->available()) {
-				uint16_t index = 0;
-				uint32_t bytesRead = 0;
-				uint8_t buffer[kServerDataBufferSize + 1] = "";
-				memset(&buffer[0], 0, sizeof(buffer));
-				DEBUG("Story Size: %lu", aStorySize);
 
-				while (aClient->available()) {
-					// While data available, read data into buffer, then flash space based on page size
-					memset(&buffer[0], 0, sizeof(buffer));
-					int bytes = aClient->read(buffer, kServerDataBufferSize);
+		// Wait for data availability (with timeout)
+		while (!aClient->available() && ((millis() - startTimeMs) < kServerTimeout)) {}
+
+		if (aClient->available()) {
+			uint16_t index = 0;
+			uint32_t bytesRead = 0;
+			uint8_t pagesWritten = 0;
+			uint8_t buffer[kServerDataBufferSize] = "";
+			memset(&buffer[0], 0, sizeof(buffer));
+			DEBUG("Story Size: %lu", aStorySize);
+
+			while (aClient->available()) {
+				// While data available, read data into buffer, then flash space based on page size
+				memset(&buffer[0], 0, sizeof(buffer));
+				int bytes = aClient->read(buffer, kServerDataBufferSize);
+
+				if (bytes > 0) {
 					// Write data
-					bool result = Manager::getInstance().dataManager->storyFlash()->writeErasePage(buffer,
+					bool result = Manager::getInstance().dataManager->storyFlash()->write(buffer,
 						                       kStoryBaseAddress + Manager::getInstance().dataManager->metadata.usedStoryBytes +
 						                       bytesRead, bytes);
 					bytesRead += bytes;
@@ -364,37 +369,36 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 					if (!result) {
 						Errors::setError(E_SERVER_SOCKET_DATA_FAIL);
 						ERROR(Errors::errorString());
-						return false;
+						break;
 					}
 					if (bytesRead == aStorySize) {
 
 
-							DEBUG("Data Received");
-							aClient->write("received");
-							if (aClient->available()) {
-								Errors::setError(E_SERVER_SOCKET_DATA_FAIL);
-								ERROR(Errors::errorString());
-							}
-							char data[512] = "";
-							DEBUG("Used: %lu, Len to read: %lu", Manager::getInstance().dataManager->metadata.usedStoryBytes, bytesRead);
-							bool result = Manager::getInstance().dataManager->storyFlash()->read(data,
-							                       kStoryBaseAddress + Manager::getInstance().dataManager->metadata.usedStoryBytes,
-							                       bytesRead);
-							if (result) {
-								DEBUG("%s", data);
-								Serial.println(data);
-							} else {
-								ERROR("Couldn't read!");
-							}
+							// DEBUG("Data Received");
+							// aClient->write("received");
+							// if (aClient->available()) {
+							// 	Errors::setError(E_SERVER_SOCKET_DATA_FAIL);
+							// 	ERROR(Errors::errorString());
+							// }
+							// char data[512] = "";
+							// DEBUG("Used: %lu, Len to read: %lu", Manager::getInstance().dataManager->metadata.usedStoryBytes, bytesRead);
+							// bool result = Manager::getInstance().dataManager->storyFlash()->read(data,
+							//                        kStoryBaseAddress + Manager::getInstance().dataManager->metadata.usedStoryBytes,
+							//                        bytesRead);
+							// if (result) {
+							// 	DEBUG("%s", data);
+							// 	Serial.println(data);
+							// } else {
+							// 	ERROR("Couldn't read!");
+							// }
 							return true;
 
 					}
 				}
-				Errors::setError(E_SERVER_SOCKET_DATA_FAIL);
-				ERROR(Errors::errorString());
 			}
+		} else {
+			DEBUG("Timed out waiting to receive story data.");
 		}
-		DEBUG("Timed out waiting to receive story data.");
 	} else {
 		Errors::setError(E_SERVER_CONNECTION_FAIL);
 		ERROR(Errors::errorString());
