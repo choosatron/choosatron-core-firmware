@@ -34,6 +34,10 @@ bool DataManager::initialize() {
 	_metaFlash = Flashee::Devices::createAddressErase(0,
 	                               4 * Flashee::Devices::userFlash().pageSize());
 
+	if (_metaFlash == NULL) {
+		ERROR("Meta Flash is NULL!");
+		return false;
+	}
     //testMetadata();
 	//_metaFlash->eraseAll();
 	DEBUG("Sizeof: %d", sizeof(this->metadata));
@@ -56,10 +60,11 @@ bool DataManager::initialize() {
 		return false;
 	}
 	DEBUG("Stories: %d, Used Bytes: %lu", this->metadata.storyCount, this->metadata.usedStoryBytes);
-	_storyFlash = Flashee::Devices::createWearLevelErase(
-	                               4 * Flashee::Devices::userFlash().pageSize(),
-	                               259 * Flashee::Devices::userFlash().pageSize());
-
+	_storyFlash = Flashee::Devices::createWearLevelErase(128 * 4096, 384 * 4096);
+	if (_storyFlash == NULL) {
+		ERROR("Story Flash is NULL!");
+		return false;
+	}
 	//logStoryOffsets(&this->metadata);
 	logStoryBytes(&this->metadata);
 	DEBUG("Ready!");
@@ -263,49 +268,34 @@ bool DataManager::readMetadata(Metadata *aMetadata) {
 }
 
 bool DataManager::writeMetadata(Metadata *aMetadata) {
+	DEBUG("Write Story Data: %d, %d, %lu", aMetadata->storyCount, kMetadataStoryCountOffset, kMetadataStoryCountSize + kMetadataStoryUsedBytesSize +
+		                 kMetadataStoryOffsetsSize);
 	bool result = _metaFlash->write(aMetadata, kMetadataBaseAddress, kMetadataValuesOffset + kMetadataValuesSize);
+	if (!result) {
+		Errors::setError(E_METADATA_WRITE_STORY_OFFSET_FAIL);
+	}
 	result = _metaFlash->write(&aMetadata->storyCount,
 		                 kMetadataStoryCountOffset,
 		                 kMetadataStoryCountSize);
+	if (!result) {
+		Errors::setError(E_METADATA_WRITE_STORY_OFFSET_FAIL);
+	}
 	result = _metaFlash->write(&aMetadata->usedStoryBytes,
 		                 kMetadataStoryUsedBytesOffset,
 		                 kMetadataStoryUsedBytesSize);
+	if (!result) {
+		Errors::setError(E_METADATA_WRITE_STORY_OFFSET_FAIL);
+	}
 	for (int i = 0; i < kMaxStoryCount; ++i) {
 		result = _metaFlash->write(&aMetadata->storyOffsets[i],
 	                 	kMetadataStoryOffsetsOffset + (i * 4), 4);
+		if (!result) {
+			Errors::setError(E_METADATA_WRITE_STORY_OFFSET_FAIL);
+		}
 	}
-	if (result) {
-		DEBUG("*** Wrote Data ***");
-		/*for (int i = 0; i < aMetadata->storyCount; ++i) {
-			result = _metaFlash->write(&aMetadata->storyOffsets[i],
-			                 sizeof(*aMetadata) + (i * sizeof(uint32_t)),
-			                 sizeof(uint32_t));
-			if (!result) {
-				Errors::setError(E_METADATA_WRITE_STORY_OFFSET_FAIL);
-				ERROR(Errors::errorString());
-				return false;
-			}
-		}*/
-	} else {
-		Errors::setError(E_METADATA_WRITE_FAIL);
+	if (Errors::lastError == E_METADATA_WRITE_STORY_OFFSET_FAIL) {
 		ERROR(Errors::errorString());
 		return false;
-	}
-	return true;
-}
-
-bool DataManager::writeStoryCountData(Metadata *aMetadata) {
-	DEBUG("Write Story Data: %d, %d, %lu", aMetadata->storyCount, kMetadataStoryCountOffset, kMetadataStoryCountSize + kMetadataStoryUsedBytesSize +
-		                 kMetadataStoryOffsetsSize);
-	bool result = _metaFlash->write(&aMetadata->storyCount,
-		                 kMetadataStoryCountOffset,
-		                 kMetadataStoryCountSize);
-	result = _metaFlash->write(&aMetadata->usedStoryBytes,
-		                 kMetadataStoryUsedBytesOffset,
-		                 kMetadataStoryUsedBytesSize);
-	for (int i = 0; i < kMaxStoryCount; ++i) {
-		result = _metaFlash->write(&aMetadata->storyOffsets[i],
-	                 	kMetadataStoryOffsetsOffset + (i * 4), 4);
 	}
 	char data[74] = "";
 	result = _metaFlash->read(data, 0, 74);
@@ -318,11 +308,50 @@ bool DataManager::writeStoryCountData(Metadata *aMetadata) {
 	}
 	Serial.println("END");
 	DEBUG("META DEBUG END");
+	return true;
+}
+
+bool DataManager::writeStoryCountData(Metadata *aMetadata) {
+	DEBUG("Write Story Data: %d, %d, %lu", aMetadata->storyCount, kMetadataStoryCountOffset, kMetadataStoryCountSize + kMetadataStoryUsedBytesSize +
+		                 kMetadataStoryOffsetsSize);
+	bool result = _metaFlash->write(aMetadata, kMetadataBaseAddress, kMetadataValuesOffset + kMetadataValuesSize);
 	if (!result) {
 		Errors::setError(E_METADATA_WRITE_STORY_OFFSET_FAIL);
+	}
+	result = _metaFlash->write(&aMetadata->storyCount,
+		                 kMetadataStoryCountOffset,
+		                 kMetadataStoryCountSize);
+	if (!result) {
+		Errors::setError(E_METADATA_WRITE_STORY_OFFSET_FAIL);
+	}
+	result = _metaFlash->write(&aMetadata->usedStoryBytes,
+		                 kMetadataStoryUsedBytesOffset,
+		                 kMetadataStoryUsedBytesSize);
+	if (!result) {
+		Errors::setError(E_METADATA_WRITE_STORY_OFFSET_FAIL);
+	}
+	for (int i = 0; i < kMaxStoryCount; ++i) {
+		result = _metaFlash->write(&aMetadata->storyOffsets[i],
+	                 	kMetadataStoryOffsetsOffset + (i * 4), 4);
+		if (!result) {
+			Errors::setError(E_METADATA_WRITE_STORY_OFFSET_FAIL);
+		}
+	}
+	if (Errors::lastError == E_METADATA_WRITE_STORY_OFFSET_FAIL) {
 		ERROR(Errors::errorString());
 		return false;
 	}
+	char data[74] = "";
+	result = _metaFlash->read(data, 0, 74);
+	DEBUG("META DEBUG BEGIN");
+	DEBUG("HEX");
+	for (int i = 0; i < 74; ++i) {
+		if (data[i]<0x10) {Serial.print("0");}
+          Serial.print(data[i],HEX);
+          Serial.print(" ");
+	}
+	Serial.println("END");
+	DEBUG("META DEBUG END");
 	return true;
 }
 
@@ -458,9 +487,9 @@ void DataManager::logStoryOffsets(Metadata *aMetadata) {
 
 void DataManager::logStoryBytes(Metadata *aMetadata) {
 #ifdef DEBUG_BUILD
-	char data[512] = "";
+	char data[1000] = "";
 	for (int i = 0; i < aMetadata->storyCount; ++i) {
-		bool result = _storyFlash->read(data, kStoryBaseAddress + aMetadata->storyOffsets[i], 435);
+		bool result = _storyFlash->read(data, aMetadata->storyOffsets[i], 1000);
 		if (result) {
 			DEBUG("Story #: %d, Offset: %lu", i, aMetadata->storyOffsets[i]);
 			Serial.println(data);
