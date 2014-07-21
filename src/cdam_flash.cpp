@@ -18,8 +18,8 @@ void Flash::init(void) {
  * @return The retrieved data if successful, 0 otherwise
  */
 uint8_t Flash::readByte(uint32_t address) {
-    uint8_t value;
-    if (readBytes(&value, address, 1)) {
+    uint8_t value = 0xFF;
+    if (read(&value, address, 1)) {
         return value;
     }
     return 0;
@@ -31,24 +31,24 @@ uint8_t Flash::readByte(uint32_t address) {
  * @return true if successful, false otherwise
  */
 bool Flash::writeByte(uint32_t address, uint8_t value) {
-    return writeBytes(&value, address, 1);
+    return write(&value, address, 1);
 }
 
 /**
  * Read bytes from the Flash
- * @param buffer  The address of the buffer which will receive the data
+ * @param data  The address of the data which will receive the data
  * @param address The Flash address to begin reading, from 0 to 0x17FFFF
  * @param length  The number of bytes to read
  * @return true if successful, false otherwise
  */
-bool Flash::readBytes(uint8_t *buffer, uint32_t address, uint32_t length) {
+bool Flash::read(void* data, uint32_t address, uint32_t length) {
     // Check for errors
     if (address + length > maxAddress) {
         return false;
     }
 
     // Read the data
-    sFLASH_ReadBuffer(buffer, baseAddress + address, length);
+    sFLASH_ReadBuffer((uint8_t*)data, baseAddress + address, length);
 
     return true;
 }
@@ -56,19 +56,20 @@ bool Flash::readBytes(uint8_t *buffer, uint32_t address, uint32_t length) {
 /**
  * Write bytes to the Flash
  * Note: sFlash_WriteBuffer NOW SUPPORTS ODD ADDRESSES AND LENGTHS
- * @param buffer  The starting address of the data buffer to write
+ * @param data  The starting address of the data data to write
  * @param address The Flash address to begin writing, from 0 to 0x17FFFF
  * @param length  The number of bytes to write
  * @return true if successful, false otherwise
  */
-bool Flash::writeBytes(uint8_t *buffer, uint32_t address, uint32_t length) {
+bool Flash::write(const void* data, uint32_t address, uint32_t length) {
     // Check for errors after adjustment
     if (address + length > maxAddress) {
         return false;
     }
 
     // Write the data
-    sFLASH_WriteBuffer(buffer, baseAddress + address, length);
+    sFLASH_WriteBuffer(const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(data)),
+                       baseAddress + address, length);
 
     return true;
 }

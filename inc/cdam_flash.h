@@ -27,8 +27,8 @@ class Flash
 	  	static void init(void);
 	  	static uint8_t readByte(uint32_t address);
 	  	static bool writeByte(uint32_t address, uint8_t value);
-	  	static bool readBytes(uint8_t *buffer, uint32_t address, uint32_t length);
-	 	static bool writeBytes(uint8_t *buffer, uint32_t address, uint32_t length);
+	  	static bool read(void* data, uint32_t address, uint32_t length);
+	 	static bool write(const void* data, uint32_t address, uint32_t length);
 };
 
 }
