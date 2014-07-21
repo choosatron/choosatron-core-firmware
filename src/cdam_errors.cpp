@@ -28,6 +28,10 @@ void Errors::setError(ErrorCode aCode) {
 	Errors::lastError = aCode;
 }
 
+void Errors::clearError() {
+	Errors::lastError = E_NO_ERROR;
+}
+
 const char *Errors::errorString() {
 	return ErrorDesc[Errors::lastError].message;
 }

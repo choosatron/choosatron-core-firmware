@@ -24,6 +24,7 @@ public:
 	~Errors();
 
 	static void setError(ErrorCode aCode);
+	static void clearError();
 	static const char *errorString();
     static const char *errorString(ErrorCode aCode);
 
