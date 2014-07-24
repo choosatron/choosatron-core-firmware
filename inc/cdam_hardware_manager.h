@@ -30,6 +30,8 @@ namespace cdam
 {
 
 class Keypad;
+class Printer;
+class CoinAcceptor;
 
 class HardwareManager
 {
@@ -40,7 +42,9 @@ class HardwareManager
         bool initialize();
 
         // Accessors
+        Printer* printer();
         Keypad* keypad();
+        CoinAcceptor* coinAcceptor();
 
         // Call once per loop, check intervals.
         void updateIntervalTimers();
@@ -58,14 +62,21 @@ class HardwareManager
         bool loadMetadata();
         // Setup hardware communication objects.
         void initHardware();
-        // Setup interval timers for loop control.
-        void initLoopControl();
+        // Check the printer elapse time interval, react.
+        void printerIntervalUpdate();
         // Check the keypad elapse time interval, react.
         void keypadIntervalUpdate();
+        // Check the coin acceptor elapse time interval, react.
+        void coinAcceptorIntervalUpdate();
 
         /* Private Variables */
-        Keypad *_keypad;
+        Printer* _printer;
+        Keypad* _keypad;
+        CoinAcceptor* _coinAcceptor;
+
+        ElapsedMillis _printerElapsed;
         ElapsedMillis _keypadElapsed;
+        ElapsedMillis _coinElapsed;
 
 };
 

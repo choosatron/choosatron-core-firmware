@@ -58,7 +58,7 @@ class Keypad {
 public:
 	Keypad();
 	void initialize();
-	void updateKeypad();
+	void updateState();
 	// Returns true if the provided event type has occurred.
 	uint8_t buttonEvent(ButtonEvent aEvent, uint8_t aRange = 0);
 	uint8_t buttonEventValue(uint8_t aBtnNum, ButtonEvent aEvent);
@@ -72,6 +72,7 @@ public:
 	bool buttonsDown();
 	void clearEvents();
 
+	// Should the keypad respond to update requests.
 	bool active;
 private:
 	ButtonEvent filterButton(ButtonData *aBtnData);

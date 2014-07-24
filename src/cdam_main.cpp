@@ -11,21 +11,15 @@
 namespace cdam
 {
 
-
-// Extern C seems to mess up declaring this in the header.
-
-//IntervalTimer _timer;
-
-
-//const uint16_t KEYPAD_UPDATE_MILLIS = 500;
-//uint16_t _lastMillis;
-//uint16_t _delta;
-
 Choosatron::Choosatron() {
 }
 
 bool Choosatron::setup() {
 	Manager::getInstance().initialize();
+	_dataManager = Manager::getInstance().dataManager;
+	_hardwareManager = Manager::getInstance().hardwareManager;
+	_serverManager = Manager::getInstance().serverManager;
+
 	Manager::getInstance().hardwareManager->keypad()->active = true;
 
 	/*DataManager::getInstance().initialize();
@@ -50,8 +44,9 @@ bool Choosatron::setup() {
 
 int Choosatron::loop() {
 	Manager::getInstance().hardwareManager->updateIntervalTimers();
-
 	Manager::getInstance().serverManager->handlePendingActions();
+
+
 	//uint16_t newMillis = millis();
 	//uint16_t diff = newMillis - _lastMillis;
 

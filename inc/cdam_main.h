@@ -8,6 +8,10 @@
 namespace cdam
 {
 
+class DataManager;
+class HardwareManager;
+class ServerManager;
+
 class Choosatron
 {
  public:
@@ -17,6 +21,9 @@ class Choosatron
     int loop(void);
 
  private:
+ 	DataManager* _dataManager;
+ 	HardwareManager* _hardwareManager;
+ 	ServerManager* _serverManager;
 
 };
 

@@ -4,8 +4,9 @@
 namespace cdam
 {
 
-#define ASCII_SOH 0x01
-#define ASCII_STX 0x02
+#define ASCII_NULL 0x00
+#define ASCII_SOH  0x01
+#define ASCII_STX  0x02
 
 }
 

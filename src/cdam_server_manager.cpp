@@ -137,12 +137,12 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		return kServerReturnSuccess;
 	} else if (strcmp(command, kServerCmdAdjustCredits) == 0) {
 		String creditsStr = aCommandAndArgs.substring(delimiterPos + 1, aCommandAndArgs.length());
-		Manager::getInstance().dataManager->gameCredits += atoi(creditsStr.c_str());
-		return Manager::getInstance().dataManager->gameCredits;
+		Manager::getInstance().dataManager->credits += atoi(creditsStr.c_str());
+		return Manager::getInstance().dataManager->credits;
 	} else if (strcmp(command, kServerCmdSetCredits) == 0) {
 		String creditsStr = aCommandAndArgs.substring(delimiterPos + 1, aCommandAndArgs.length());
-		Manager::getInstance().dataManager->gameCredits = atoi(creditsStr.c_str());
-		return Manager::getInstance().dataManager->gameCredits;
+		Manager::getInstance().dataManager->credits = atoi(creditsStr.c_str());
+		return Manager::getInstance().dataManager->credits;
 	/*} else if (strcmp(command, kServerCmdRemoveStory) == 0) {
 		uint8_t storyIndex = ((aCommandAndArgs.charAt(delimiterPos + 1) - '0') % 48) - 1;
 		if (storyIndex < (Manager::getInstance().dataManager->metadata.storyCount)) {
@@ -185,8 +185,8 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		serverMan->newStorySize = atol(buffer);
 		DEBUG("Incoming story size: %lu", serverMan->newStorySize);
 
-		DEBUG("Total Story Size: %lu", Manager::getInstance().dataManager->metadata.usedStoryBytes);
-		if (serverMan->newStorySize > (kFlashMaxStoryBytes - Manager::getInstance().dataManager->metadata.usedStoryBytes)) {
+		DEBUG("Total Pages: %d", Manager::getInstance().dataManager->metadata.usedStoryPages);
+		if (serverMan->newStorySize > (kFlashMaxStoryBytes - (Manager::getInstance().dataManager->metadata.usedStoryPages * Flashee::Devices::userFlash().pageSize()))) {
 			Errors::setError(E_SERVER_ADD_STORY_NO_SPACE);
 			ERROR(Errors::errorString());
 			return kServerReturnFail;
@@ -286,11 +286,11 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	} else if (strcmp(command, kServerCmdGetSeconds) == 0) {
 		return millis() / 1000;
 	} else if (strcmp(command, kServerCmdGetFreeSpace) == 0) {
-		return kFlashMaxStoryBytes - Manager::getInstance().dataManager->metadata.usedStoryBytes;
+		return kFlashMaxStoryBytes - (Manager::getInstance().dataManager->metadata.usedStoryPages * Flashee::Devices::userFlash().pageSize());
 	} else if (strcmp(command, kServerCmdGetUsedSpace) == 0) {
-		return Manager::getInstance().dataManager->metadata.usedStoryBytes;
+		return Manager::getInstance().dataManager->metadata.usedStoryPages * Flashee::Devices::userFlash().pageSize();
 	} else if (strcmp(command, kServerCmdGetCredits) == 0) {
-		return Manager::getInstance().dataManager->gameCredits;
+		return Manager::getInstance().dataManager->credits;
 	} else if (strcmp(command, kServerCmdGetSSID) == 0) {
 		Spark.publish(kServerCmdGetSSID, Network.SSID(), kServerTTLDefault, PRIVATE);
 		return kServerReturnEventIncoming;
@@ -371,8 +371,8 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 						(bytesRead == aStorySize)) {
 						// Write data
 						DEBUG("Writing page #: %d", pagesWritten);
-						bool result = Manager::getInstance().dataManager->storyFlash()->write(buffer,
-						                       Manager::getInstance().dataManager->metadata.usedStoryBytes +
+						bool result = Manager::getInstance().dataManager->storyFlash()->writePage(buffer,
+						                       (Manager::getInstance().dataManager->metadata.usedStoryPages * Flashee::Devices::userFlash().pageSize()) +
 						                       (pagesWritten * Flashee::Devices::userFlash().pageSize()), Flashee::Devices::userFlash().pageSize());
 
 						if (!result) {
@@ -391,9 +391,9 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 								Errors::setError(E_SERVER_SOCKET_DATA_FAIL);
 								ERROR(Errors::errorString());
 							}
-							DEBUG("Used: %lu, Pages: %d", Manager::getInstance().dataManager->metadata.usedStoryBytes, pagesWritten);
-							bool result = Manager::getInstance().dataManager->storyFlash()->read(buffer,
-							                       Manager::getInstance().dataManager->metadata.usedStoryBytes,
+							DEBUG("Used: %d, Pages: %d", Manager::getInstance().dataManager->metadata.usedStoryPages, pagesWritten);
+							bool result = Manager::getInstance().dataManager->storyFlash()->readPage(buffer,
+							                       Manager::getInstance().dataManager->metadata.usedStoryPages * Flashee::Devices::userFlash().pageSize(),
 							                       pagesWritten * 4096);
 							if (result) {
 								//DEBUG("%s", data);

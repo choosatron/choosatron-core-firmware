@@ -1,4 +1,3 @@
-
 #ifndef CDAM_CONST_STRUCTS_H
 #define CDAM_CONST_STRUCTS_H
 
@@ -16,36 +15,35 @@ namespace cdam
 #define METADATA_STORYCOUNT_OFFSET  (METADATA_VALUES_OFFSET + METADATA_VALUES_COUNT)
 #define METADATA_STORYSIZES_OFFSET  (METADATA_STORYCOUNT_OFFSET + 1)*/
 
-const uint8_t kMaxStoryCount = 10;
+const uint8_t  kMaxStoryCount = 10;
 
-/* WARNING: If this grows, need to up to uint16_t!!! */
-const uint16_t  kMetadataBaseAddress = 0;
-const uint16_t  kMetadataFirmwareOffset = 1; // adding SOH byte
-const uint16_t  kMetadataFirmwareSize = 3;
-const uint16_t  kMetadataFlagsOffset = (kMetadataFirmwareOffset + kMetadataFirmwareSize);
-const uint16_t  kMetadataFlagsSize = 8; // bytes
-const uint16_t  kMetadataValuesOffset = (kMetadataFlagsOffset + kMetadataFlagsSize);
-const uint16_t  kMetadataValuesSize = 16; // bytes
-const uint16_t  kMetadataStoryCountOffset = (kMetadataValuesOffset + kMetadataValuesSize);
-const uint16_t  kMetadataStoryCountSize = 2; // bytes
-const uint16_t  kMetadataStoryUsedBytesOffset = (kMetadataStoryCountOffset + kMetadataStoryCountSize);
-const uint16_t  kMetadataStoryUsedBytesSize = 4; // bytes
-const uint16_t kMetadataStoryOffsetsOffset = (kMetadataStoryUsedBytesOffset + kMetadataStoryUsedBytesSize);
-const uint16_t kMetadataStoryOffsetsSize = kMaxStoryCount * 4; // 4 bytes each.
+const uint16_t kMetadataBaseAddress = 0;
+const uint16_t kMetadataFirmwareOffset = 1; // adding SOH byte
+const uint16_t kMetadataFirmwareSize = 3;
+const uint16_t kMetadataFlagsOffset = (kMetadataFirmwareOffset + kMetadataFirmwareSize);
+const uint16_t kMetadataFlagsSize = 8; // bytes
+const uint16_t kMetadataValuesOffset = (kMetadataFlagsOffset + kMetadataFlagsSize);
+const uint16_t kMetadataValuesSize = 16; // bytes
+const uint16_t kMetadataStoryCountOffset = (kMetadataValuesOffset + kMetadataValuesSize);
+const uint16_t kMetadataStoryCountSize = 1; // bytes
+const uint16_t kMetadataStoryUsedPagesOffset = (kMetadataStoryCountOffset + kMetadataStoryCountSize);
+const uint16_t kMetadataStoryUsedPagesSize = 1; // bytes
+const uint16_t kMetadataStoryOffsetsOffset = (kMetadataStoryUsedPagesOffset + kMetadataStoryUsedPagesSize);
+const uint16_t kMetadataStoryOffsetsSize = kMaxStoryCount; // 1 bytes each.
 const uint16_t kMetadataSize = (kMetadataStoryOffsetsOffset + kMetadataStoryOffsetsSize); // 4 bytes each.
 
 //const uint16_t kStoryBaseAddress = (kMetadataStoryOffsetsOffset + kMetadataStoryOffsetsSize);
 
 #define FLG1_OFFLINE   0x80
-#define FLG1_DEMO   0x040
-#define FLG1_SD 0x20
-#define FLG1_MULTI  0x10
-#define FLG1_ARCADE 0x08
+#define FLG1_DEMO      0x40
+#define FLG1_SD        0x20
+#define FLG1_MULTI     0x10
+#define FLG1_ARCADE    0x08
 
-#define FLG2_LOGGING 0x80
+#define FLG2_LOGGING   0x80
 #define FLG2_LOG_LOCAL 0x40
-#define FLG2_LOG_LIVE 0x20
-
+#define FLG2_LOG_LIVE  0x20
+#define FLG2_LOG_PRINT 0x10
 
 /* Generic Structures */
 
@@ -75,7 +73,8 @@ typedef struct MetaFlags_t {
 			uint8_t logging 		:1;
 	        uint8_t logLocation		:1;
 	        uint8_t logLive			:1;
-	        uint8_t rsvd2 			:5;
+	        uint8_t logPrint        :1;
+	        uint8_t rsvd2 			:4;
 		};
     };
 	union {
@@ -141,9 +140,9 @@ typedef struct Metadata_t {
 	Version firmwareVer;
 	MetaFlags flags;
 	MetaValues values;
-	uint16_t storyCount;
-	uint32_t usedStoryBytes;
-	uint32_t storyOffsets[kMaxStoryCount];
+	uint8_t storyCount;
+	uint8_t usedStoryPages;
+	uint8_t storyOffsets[kMaxStoryCount];
 	//std::vector<uint32_t> storyOffsets;
 } Metadata;
 
@@ -196,14 +195,13 @@ typedef struct StoryHeader_t {
 	StoryVars vars;
     uint32_t storySize;
     Version storyVersion;
-    String languageCode;
-    String title;
-    String subtitle;
-    String author;
-    String credits;
-    String contact;
-    String website;
-    TimeClass releaseDate;
+    char languageCode[4];
+    char title[64];
+    char subtitle[32];
+    char author[48];
+    char credits[80];
+    char contact[128];
+    tm releaseDate;
 } StoryHeader ;
 
 }
