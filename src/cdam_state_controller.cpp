@@ -25,7 +25,7 @@ void StateController::initialize() {
 }
 
 const char* StateController::stateString() {
-	return GameStateDesc[this->state].stateDesc;
+	return GameStateDesc[_state].stateDesc;
 }
 
 void StateController::changeState(GameState aState) {

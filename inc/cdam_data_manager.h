@@ -38,7 +38,6 @@ class DataManager
         DataManager();
 
         bool initialize();
-        const char* gameStateStr();
 
         uint32_t getStoryOffset(uint8_t aIndex);
         bool addStoryMetadata(uint8_t aPosition, uint8_t aPages);
@@ -54,7 +53,6 @@ class DataManager
         StoryHeader storyHeader;
         //std::vector<StoryHeader> storyHeaders;
 
-        GameState state;
         uint8_t credits;
 
     private:

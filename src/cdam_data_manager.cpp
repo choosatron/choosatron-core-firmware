@@ -11,8 +11,6 @@ DataManager::DataManager() {
 }
 
 bool DataManager::initialize() {
-	this->state = STATE_INIT;
-
 	this->credits = 0;
 
 	this->metadata = {};
@@ -58,10 +56,6 @@ bool DataManager::initialize() {
 
 	//_storyFlash->eraseAll();
 	return true;
-}
-
-const char* DataManager::gameStateStr() {
-	return GameStateDesc[this->state].stateDesc;
 }
 
 uint32_t DataManager::getStoryOffset(uint8_t aIndex) {

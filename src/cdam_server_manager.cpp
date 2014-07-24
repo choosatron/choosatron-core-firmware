@@ -277,7 +277,8 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	} else if (strcmp(command, kServerCmdSwapStoryPositions) == 0) {
 		/* TODO */
 	} else if (strcmp(command, kServerCmdGetState) == 0) {
-		Spark.publish(kServerCmdGetState, Manager::getInstance().dataManager->gameStateStr(), kServerTTLDefault, PRIVATE);
+		/* TODO */
+		//Spark.publish(kServerCmdGetState, Manager::getInstance().dataManager->gameStateStr(), kServerTTLDefault, PRIVATE);
 		return kServerReturnEventIncoming;
 	} else if (strcmp(command, kServerCmdGetStoryCount) == 0) {
 		return Manager::getInstance().dataManager->metadata.storyCount;

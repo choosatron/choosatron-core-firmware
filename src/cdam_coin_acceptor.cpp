@@ -62,12 +62,12 @@ return true;
 boolean CoinAcceptor::checkForCoin() {
 // When coin pin is high, track the length with a counter.
 	uint8_t coinSenseCounter = 0;
-	while (digitalRead(COIN_PIN)) {
+	while (digitalRead(PIN_COIN)) {
 		delay(1);
 		coinSenseCounter++;
 	}
 	if ((coinSenseCounter <= 60) && (coinSenseCounter >= 15)) {
-		slogln(coinSenseCounter);
+		DEBUG("Senser Count: %d", coinSenseCounter);
 		coinInserted();
 		return true;
 	}
@@ -76,8 +76,7 @@ boolean CoinAcceptor::checkForCoin() {
 
 void CoinAcceptor::coinInserted() {
 	_coins++;
-	slog("Total Coins: ");
-	slogln(_coins);
+	DEBUG("Total Coins: %d", _coins);
 	this->nextCredit++;
 	if (this->nextCredit == this->coinsPerCredit) {
 		_credits++;

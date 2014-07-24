@@ -140,10 +140,11 @@ void Printer::printProgStr(const unsigned char *str) {
 	char c;
 	if (!str) {
 		return;
-	}IsBitSet(aMetadata->flags.flag2, 4)
-	if (Manager::getInstance().dataManager->metadata.flags.flag2.logPrint) {
-
 	}
+	//IsBitSet(aMetadata->flags.flag2, 4)
+	/*if (Manager::getInstance().dataManager->metadata.flags.flag2.logPrint) {
+
+	}*/
 	while (c = (*str)) {
 
 #if (PRINT >= 1)
