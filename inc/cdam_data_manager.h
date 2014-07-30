@@ -88,7 +88,6 @@ class DataManager
 
 
         /* Private Variables */
-        StateController* _stateController;
         Flashee::FlashDevice* _metaFlash;
         Flashee::FlashDevice* _storyFlash;
 

@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ufwb version="1.8">
-    <grammar name="Choosatron Metadata" start="id:298" author="Jerry Belich" email="jerry@monkeytheater.com" fileextension="mcdam" uti="com.choosatron">
+    <grammar name="Choosatron Metadata" start="id:61" author="Jerry Belich" email="jerry@monkeytheater.com" fileextension="mcdam" uti="com.choosatron">
         <description>Metadata for Choosatron settings and story table of contents.</description>
-        <structure name="Metadata" id="298" encoding="ISO_8859-1:1987" endian="big" signed="no">
-            <binary name="StartHeader" mustmatch="yes" id="299" fillcolor="FF9688" length="1">
+        <structure name="Metadata" id="61" encoding="ISO_8859-1:1987" endian="big" signed="no">
+            <binary name="StartHeader" mustmatch="yes" id="62" fillcolor="FF9688" length="1">
                 <fixedvalues>
                     <fixedvalue name="SOH" value="01"/>
                 </fixedvalues>
             </binary>
-            <structure name="FirmwareVersion" id="300" length="3">
-                <number name="Major" id="301" fillcolor="FFE645" type="integer" length="1"/>
-                <number name="Minor" id="302" fillcolor="FFE83E" type="integer" length="1"/>
-                <number name="Revision" id="303" fillcolor="FFE84B" type="integer" length="1"/>
+            <structure name="FirmwareVersion" id="63" length="3">
+                <number name="Major" id="64" fillcolor="FFE645" type="integer" length="1"/>
+                <number name="Minor" id="65" fillcolor="FFE83E" type="integer" length="1"/>
+                <number name="Revision" id="66" fillcolor="FFE84B" type="integer" length="1"/>
             </structure>
-            <structure name="Flags" id="305" length="8" fillcolor="8EFA9B">
-                <number name="Flag1" id="306" type="integer" length="8" lengthunit="bit" display="binary" minval="00000000" maxval="0111111111111111111111111111111111111111111111111111111111111111">
+            <structure name="Flags" id="68" length="8" fillcolor="8EFA9B">
+                <number name="Flag1" id="69" type="integer" length="8" lengthunit="bit" display="binary">
                     <mask name="Offline" value="0x80">
                         <fixedvalue name="Yes" value="0x80"/>
                         <fixedvalue name="No" value="0x0"/>
@@ -36,7 +36,7 @@
                         <fixedvalue name="No" value="0x0"/>
                     </mask>
                 </number>
-                <number name="Flag2" id="307" type="integer" length="8" lengthunit="bit" display="binary">
+                <number name="Flag2" id="70" type="integer" length="8" lengthunit="bit" display="binary">
                     <mask name="Logging" value="0x80">
                         <fixedvalue name="Yes" value="0x80"/>
                         <fixedvalue name="No" value="0x0"/>
@@ -53,41 +53,41 @@
                         <fixedvalue name="NoPrint" value="0x10"/>
                     </mask>
                 </number>
-                <number name="Flag3" id="308" type="integer" length="8" lengthunit="bit" display="binary">
+                <number name="Flag3" id="71" type="integer" length="8" lengthunit="bit" display="binary">
                     <mask name="DictOffsetBytes" value="0x80">
                         <fixedvalue name="2 bytes" value="0x0"/>
                         <fixedvalue name="3 bytes" value="0x80"/>
                     </mask>
                 </number>
-                <number name="Flag4" id="309" type="integer" length="8" lengthunit="bit" display="binary"/>
-                <number name="Flag5" id="310" type="integer" length="1"/>
-                <number name="Flag6" id="311" type="integer" length="1"/>
-                <number name="Flag7" id="312" type="integer" length="1"/>
-                <number name="Flag8" id="313" type="integer" length="1"/>
+                <number name="Flag4" id="72" type="integer" length="8" lengthunit="bit" display="binary"/>
+                <number name="Flag5" id="73" type="integer" length="8" lengthunit="bit" display="binary"/>
+                <number name="Flag6" id="74" type="integer" length="8" lengthunit="bit" display="binary"/>
+                <number name="Flag7" id="75" type="integer" length="8" lengthunit="bit" display="binary"/>
+                <number name="Flag8" id="76" type="integer" length="8" lengthunit="bit" display="binary"/>
             </structure>
-            <structure name="Values" id="315" length="16" fillcolor="FFBE6B">
-                <number name="CoinsPerCredit" id="316" type="integer" length="1"/>
-                <number name="CoinDenomination" id="317" type="integer" length="1"/>
-                <number name="Value3" id="318" type="integer" length="1"/>
-                <number name="Value4" id="319" type="integer" length="1"/>
-                <number name="Value5" id="320" type="integer" length="1"/>
-                <number name="Value6" id="321" type="integer" length="1"/>
-                <number name="Value7" id="322" type="integer" length="1"/>
-                <number name="Value8" id="323" type="integer" length="1"/>
-                <number name="Value9" id="324" type="integer" length="1"/>
-                <number name="Value10" id="325" type="integer" length="1"/>
-                <number name="Value11" id="326" type="integer" length="1"/>
-                <number name="Value12" id="327" type="integer" length="1"/>
-                <number name="Value13" id="328" type="integer" length="1"/>
-                <number name="Value14" id="329" type="integer" length="1"/>
-                <number name="Value15" id="330" type="integer" length="1"/>
-                <number name="Value16" id="331" type="integer" length="1"/>
+            <structure name="Values" id="78" length="16" fillcolor="FFBE6B">
+                <number name="CoinsPerCredit" id="79" type="integer" length="1"/>
+                <number name="CoinDenomination" id="80" type="integer" length="1"/>
+                <number name="Value3" id="81" type="integer" length="1"/>
+                <number name="Value4" id="82" type="integer" length="1"/>
+                <number name="Value5" id="83" type="integer" length="1"/>
+                <number name="Value6" id="84" type="integer" length="1"/>
+                <number name="Value7" id="85" type="integer" length="1"/>
+                <number name="Value8" id="86" type="integer" length="1"/>
+                <number name="Value9" id="87" type="integer" length="1"/>
+                <number name="Value10" id="88" type="integer" length="1"/>
+                <number name="Value11" id="89" type="integer" length="1"/>
+                <number name="Value12" id="90" type="integer" length="1"/>
+                <number name="Value13" id="91" type="integer" length="1"/>
+                <number name="Value14" id="92" type="integer" length="1"/>
+                <number name="Value15" id="93" type="integer" length="1"/>
+                <number name="Value16" id="94" type="integer" length="1"/>
             </structure>
-            <number name="StoryCount" id="333" fillcolor="FF6CEE" type="integer" length="2" endian="little" minval="0" maxval="10"/>
-            <number name="UsedStoryBytes" id="334" type="integer" length="4" endian="little" minval="0" maxval="1048576">
+            <number name="StoryCount" id="96" fillcolor="FF6CEE" type="integer" length="2" endian="little" minval="0" maxval="10"/>
+            <number name="UsedStoryBytes" id="97" type="integer" length="4" endian="little" minval="0" maxval="1048576">
                 <description>Total bytes used.</description>
             </number>
-            <number name="StoryOffset" id="335" fillcolor="4CCDFF" repeatmin="StoryCount" repeatmax="StoryCount" type="integer" length="4" endian="little" minval="0" maxval="1048576"/>
+            <number name="StoryOffset" id="98" fillcolor="4CCDFF" repeatmin="StoryCount" repeatmax="StoryCount" type="integer" length="4" endian="little" minval="0" maxval="1048576"/>
         </structure>
     </grammar>
 </ufwb>

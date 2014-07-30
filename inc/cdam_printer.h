@@ -15,20 +15,33 @@
 namespace cdam
 {
 
+// Printer Status Binary Flags
+typedef enum PrinterStatus_t {
+    PS_ONLINE = 0,
+    PS_BUFFER_FULL,
+    PS_NO_PAPER,
+    PS_HIGH_VOLTAGE,
+    PS_UNKNOWN_ONE,
+    PS_UNKNOWN_TWO,
+    PS_HIGH_TEMP,
+    PS_UNKNOWN_THREE
+} PrinterStatus;
+
 class Printer : public CSN_Thermal {
 
 public:
     Printer();
     void initialize();
     void updateState();
-    bool statusUnknownOne();
+    bool statusOf(PrinterStatus aStatus);
+    /*bool statusUnknownOne();
     bool statusHighTemp();
     bool statusUnknownTwo();
     bool statusUnknownThree();
     bool statusHighVoltage();
     bool statusNoPaper();
     bool statusBufferFull();
-    bool statusOnline();
+    bool statusOnline();*/
 
     void begin(int heatTime=200);
     void printProgStr(const unsigned char *str);

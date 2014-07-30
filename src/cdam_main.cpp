@@ -1,7 +1,7 @@
 #include "cdam_main.h"
 #include "cdam_constants.h"
 #include "cdam_manager.h"
-#include "cdam_keypad.h"
+#include "cdam_state_controller.h"
 
 #if (OFFLINE == 1)
 #include "spark_disable_wlan.h"
@@ -15,12 +15,8 @@ Choosatron::Choosatron() {
 }
 
 bool Choosatron::setup() {
-	Manager::getInstance().initialize();
-	_dataManager = Manager::getInstance().dataManager;
-	_hardwareManager = Manager::getInstance().hardwareManager;
-	_serverManager = Manager::getInstance().serverManager;
-
-	Manager::getInstance().hardwareManager->keypad()->active = true;
+	_stateController = new StateController();
+	_stateController->initialize();
 
 	/*DataManager::getInstance().initialize();
 	ServerManager::getInstance().initialize();
@@ -46,6 +42,7 @@ int Choosatron::loop() {
 	Manager::getInstance().hardwareManager->updateIntervalTimers();
 	Manager::getInstance().serverManager->handlePendingActions();
 
+	_stateController->updateState();
 
 	//uint16_t newMillis = millis();
 	//uint16_t diff = newMillis - _lastMillis;

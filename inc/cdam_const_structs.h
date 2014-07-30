@@ -59,29 +59,29 @@ typedef struct MetaFlags_t {
 	union {
 	    uint8_t flag1;
 	    struct {
-	        uint8_t offline			:1;
-	        uint8_t demo			:1;
-	        uint8_t sdCard			:1;
-	        uint8_t multiplayer		:1;
-	        uint8_t arcade			:1;
 	    	uint8_t rsvd1 			:3;
+	    	uint8_t arcade			:1;
+	    	uint8_t multiplayer		:1;
+	    	uint8_t sdCard			:1;
+	    	uint8_t demo			:1;
+	    	uint8_t offline			:1;
 	    };
 	};
 	union {
 		uint8_t flag2;
 		struct {
-			uint8_t logging 		:1;
-	        uint8_t logLocation		:1;
-	        uint8_t logLive			:1;
-	        uint8_t logPrint        :1;
-	        uint8_t rsvd2 			:4;
+		    uint8_t rsvd2 			:4;
+		    uint8_t logPrint        :1;
+		    uint8_t logLive			:1;
+		    uint8_t logLocation		:1;
+		    uint8_t logging 		:1;
 		};
     };
 	union {
 		uint8_t flag3;
 		struct {
-	        uint8_t dictOffsetBytes	:1; // 0 = 2byte length dict codes, 1 = 3 bytes
 	        uint8_t rsvd3 			:7;
+	        uint8_t dictOffsetBytes	:1; // 0 = 2byte length dict codes, 1 = 3 bytes
 		};
     };
     union {
@@ -154,19 +154,19 @@ typedef struct StoryFlags_t
 	union {
 	    uint8_t flag1;
 	    struct {
-	        uint8_t scripting			:1;
-	        uint8_t variables			:1;
-	        uint8_t images				:1;
 	    	uint8_t rsvd1 				:5;
+	    	uint8_t images				:1;
+	    	uint8_t variables			:1;
+	    	uint8_t scripting			:1;
 	    };
 	};
 	union {
 		uint8_t flag2;
 		struct {
-			uint8_t continueGame	:1;
-	        uint8_t multiplayer		:1;
-	        uint8_t hideUsed		:1;
 	        uint8_t rsvd2 			:5;
+	        uint8_t hideUsed		:1;
+	        uint8_t multiplayer		:1;
+	        uint8_t continueGame	:1;
 		};
     };
 	union {

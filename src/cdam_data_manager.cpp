@@ -44,6 +44,7 @@ bool DataManager::initialize() {
 	if (!loadMetadata()) {
 		return false;
 	}
+
 	DEBUG("Stories: %d, Used Pages: %d", this->metadata.storyCount, this->metadata.usedStoryPages);
 	_storyFlash = Flashee::Devices::createWearLevelErase(128 * 4096, 384 * 4096);
 	if (_storyFlash == NULL) {
@@ -251,7 +252,6 @@ bool DataManager::readMetadata(Metadata *aMetadata) {
 }
 
 bool DataManager::writeMetadata(Metadata *aMetadata) {
-	Errors::clearError();
 	DEBUG("Size of Metadata: %d", sizeof(*aMetadata));
 	DEBUG("Write Story Data: %d, %d, %lu", aMetadata->storyCount, kMetadataStoryCountOffset, kMetadataStoryCountSize + kMetadataStoryUsedPagesSize +
 		                 kMetadataStoryOffsetsSize);
@@ -262,6 +262,17 @@ bool DataManager::writeMetadata(Metadata *aMetadata) {
 	if (Errors::lastError != E_NO_ERROR) {
 		return false;
 	}
+	char data[40] = "";
+	result = _metaFlash->read(data, 0, 40);
+	DEBUG("META DEBUG BEGIN");
+	DEBUG("HEX");
+	for (int i = 0; i < 40; ++i) {
+		if (data[i]<0x10) {Serial.print("0");}
+          Serial.print(data[i],HEX);
+          Serial.print(" ");
+	}
+	Serial.println("END");
+	DEBUG("META DEBUG END");
 	return true;
 }
 

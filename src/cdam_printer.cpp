@@ -11,15 +11,14 @@
 namespace cdam
 {
 
-// Printer Status Binary Flags
-#define PS_UNKNOWN_ONE   7
+/*#define PS_UNKNOWN_ONE   7
 #define PS_HIGH_TEMP     6
 #define PS_UNKNOWN_TWO   5
 #define PS_UNKNOWN_THREE 4
 #define PS_HIGH_VOLTAGE  3
 #define PS_NO_PAPER      2
 #define PS_BUFFER_FULL   1
-#define PS_ONLINE        0
+#define PS_ONLINE        0*/
 
 /*#define PS_UNKNOWN_ONE   0x80
 #define PS_HIGH_TEMP     0x40
@@ -53,7 +52,11 @@ void Printer::updateState() {
 	}
 }
 
-bool Printer::statusUnknownOne() {
+bool Printer::statusOf(PrinterStatus aStatus) {
+	return IsBitSet(_status, aStatus);
+}
+
+/*bool Printer::statusUnknownOne() {
 	return IsBitSet(_status, PS_UNKNOWN_ONE);
 }
 
@@ -82,8 +85,8 @@ bool Printer::statusBufferFull() {
 }
 
 bool Printer::statusOnline() {
-	return IsBitSet(_status, PS_ONLINE) ? true : false;
-}
+	return IsBitSet(_status, PS_ONLINE);
+}*/
 
 // This method sets the estimated completion time for a just-issued task.
 /*void Printer::timeoutSet(unsigned long x) {

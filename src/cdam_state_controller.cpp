@@ -1,4 +1,6 @@
 #include "cdam_state_controller.h"
+#include "cdam_manager.h"
+#include "cdam_keypad.h"
 
 namespace cdam {
 
@@ -41,10 +43,17 @@ void StateController::updateState() {
 /* Private Methods */
 
 void StateController::initState(GameState aState) {
+	LOG("Init State: %s", stateString());
+
 	if (aState == STATE_INIT) {
+		Manager::getInstance().initialize();
+		_dataManager = Manager::getInstance().dataManager;
+		_hardwareManager = Manager::getInstance().hardwareManager;
+		_serverManager = Manager::getInstance().serverManager;
 
+		_hardwareManager->keypad()->active = true;
 	} else if (aState == STATE_READY) {
-
+		//_hardwareManager->printFirstStart();
 	} else if (aState == STATE_SELECT) {
 
 	} else if (aState == STATE_PLAY) {
@@ -60,7 +69,7 @@ void StateController::initState(GameState aState) {
 
 void StateController::loopState(GameState aState) {
 	if (aState == STATE_INIT) {
-
+		changeState(STATE_READY);
 	} else if (aState == STATE_READY) {
 
 	} else if (aState == STATE_SELECT) {
@@ -78,6 +87,8 @@ void StateController::loopState(GameState aState) {
 
 
 void StateController::endState(GameState aState) {
+	LOG("End State: %s", stateString());
+
 	if (aState == STATE_INIT) {
 
 	} else if (aState == STATE_READY) {
