@@ -15,6 +15,8 @@ class CoinAcceptor {
 
 public:
     CoinAcceptor();
+    void initialize();
+    void updateState();
     //static void waitForCoin(const Keypad *aKeypad);
     boolean checkForCoin();
     void coinInserted();
@@ -29,6 +31,9 @@ public:
     byte coinsPerCredit;
     // Coins To Continue
     byte coinsToContinue;
+
+    // Should the coin acceptor respond to update requests.
+    bool active;
 
 private:
     // Plays queued

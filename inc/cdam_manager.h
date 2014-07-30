@@ -28,10 +28,8 @@
 #include "cdam_server_manager.h"
 #include "cdam_hardware_manager.h"
 
-
 namespace cdam
 {
-
 
 class Manager
 {

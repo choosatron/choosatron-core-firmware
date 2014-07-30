@@ -5,9 +5,11 @@
 #include "debug.h"
 #include "spark_wiring.h"
 #include "spark_wiring_usbserial.h"
+#include "cdam_errors.h"
+#include "cdam_const_config.h"
 #include "cdam_const_structs.h"
 #include "cdam_const_ascii.h"
-#include "cdam_errors.h"
+#include "cdam_const_strings.h"
 
 namespace cdam
 {
@@ -22,10 +24,6 @@ namespace cdam
 const uint8_t kFirmwareVersionMajor = 0;
 const uint8_t kFirmwareVersionMinor = 0;
 const uint8_t kFirmwareVersionRevision = 1;
-
-const uint8_t kServerTTLDefault = 60;
-
-const unsigned int kIntervalKeypadMillis = 5;
 
 typedef enum {
 #if (BOARD_DOT_VERSION >= 6)

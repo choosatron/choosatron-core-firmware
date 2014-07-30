@@ -26,23 +26,10 @@
 #include "cdam_constants.h"
 #include "flashee-eeprom.h"
 
-
 namespace cdam
 {
 
-const uint32_t kFlashMaxStoryBytes = 1048576;
-
-// Game States
-typedef enum GameState_t {
-    STATE_ERROR,
-    STATE_INIT,
-    STATE_READY,
-    STATE_SELECT,
-    STATE_PLAY,
-    STATE_CONTINUE,
-    STATE_AUTH,
-    STATE_ADMIN
-} GameState;
+class StateController;
 
 class DataManager
 {
@@ -51,10 +38,9 @@ class DataManager
         DataManager();
 
         bool initialize();
-        const char* gameStateStr();
 
         uint32_t getStoryOffset(uint8_t aIndex);
-        bool addStoryMetadata(uint8_t aPosition, uint32_t aByteSize);
+        bool addStoryMetadata(uint8_t aPosition, uint8_t aPages);
         //bool removeStoryMetadata(uint8_t aPosition);
         bool removeAllStoryData();
 
@@ -64,10 +50,10 @@ class DataManager
         // The hard-coded firmware version
         Version firmwareVersion;
         Metadata metadata;
-        std::vector<StoryHeader> storyHeaders;
+        StoryHeader storyHeader;
+        //std::vector<StoryHeader> storyHeaders;
 
-        GameState gameState;
-        uint8_t gameCredits;
+        uint8_t credits;
 
     private:
         /* Private Methods */
@@ -99,8 +85,6 @@ class DataManager
         void logStoryBytes(Metadata *aMetadata);
         // For debugging: print out all the metadata values.
         void logMetadata(Metadata *aMetadata);
-
-
 
 
         /* Private Variables */

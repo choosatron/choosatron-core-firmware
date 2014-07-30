@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ufwb version="1.8">
+    <grammar name="CDAM Story Header" start="id:171" author="Jerry Belich" email="jerry@choosatron.com" fileextension="cdam" uti="com.choosatron" complete="yes">
+        <description>Story Header</description>
+        <scripts>
+            <script name="TextBody" type="DataType" id="64">
+                <source language="Python"># Text Body - Used for passage body text and choice text.
+
+def parseByteRange(element, byteView, bitPos, bitLength, results):
+    # this method parses data starting at bitPos, bitLength bits are remaining
+    &quot;&quot;&quot;parseByteRange method&quot;&quot;&quot;
+    logMessageHighlight(&quot;TESTING&quot;)
+    textStr = &quot;&quot;
+    # how many bytes were processed?
+    processedBytes = 0
+    iteration = 0
+    # we are only working with bytes
+    startPos = bytePos = bitPos / 8
+    
+    processedBytes = 0
+    byteLength = bitLength / 8
+    logMessageHighlight(&quot;TESTING&quot;)
+    result = results.addStructureStart(element.getEnclosingStructure(), 0, &quot;TextBody&quot;)
+    #structure = result.getStructure()    
+    #structure.setLength('5', LENGTH_UNIT_BYTES)
+
+    while (bytePos - startPos) &lt; byteLength:
+        byteRead = byteView.readByte(bytePos)
+        bytePos += 1
+        processedBytes += 1
+        if byteRead == 0x1A or byteRead == 0x05 or (bytePos - startPos) == byteLength:
+            print(&quot;End of Text&quot;)
+            if len(textStr) &gt; 0:
+                if (bytePos - startPos) == byteLength:
+                    textStr += chr(byteRead)
+                    processedBytes += 1
+                textValue = StringValue()
+                textValue.setString(textStr)
+                textElement = StringElement(1, &quot;Text&quot;, True)
+                #textElement.setLength(LENGTH_UNIT_BYTES, len(textStr))
+                textStr = &quot;&quot;
+                print(&quot;Text Len: &quot; + str(textElement.getLength()))
+                results.addElement(textElement, processedBytes - 1, iteration, textValue)
+                # The currently read byte is part of a SUB or CMD
+                processedBytes = 1
+
+        # SUB or Substitute byte means a word lookup, 3 byte address
+        if byteRead == 0x1A:
+            print(&quot;Starting SUB&quot;)
+            subByteElement = Element(1, &quot;Start Substitute&quot;, True)
+            subValue = StringValue()
+            subValue.setString(&quot;SUB: 1A&quot;)
+            results.addElement(subByteElement, 1, iteration, subValue)
+            address = byteView.readUnsignedInt(bytePos, 3, ENDIAN_BIG)
+            addressVal = NumberValue()
+            addressVal.setName(&quot;Lookup Address&quot;)
+            addressVal.setUnsigned(address)
+            bytePos += 3
+            subElement = Element(2, &quot;Substitution&quot;, True)
+            results.addElement(subElement, 3, iteration, addressVal)
+            processedBytes = 0
+        elif byteRead == 0x05:
+            print(&quot;Starting CMD&quot;)
+            cmdStartElement = StringElement(ELEMENT_STRING, &quot;Start Command&quot;, True)
+            cmdStartValue = StringValue()
+            cmdStartValue.setString(&quot;ENQ: 05&quot;)
+            results.addElement(cmdStartElement, 1, iteration, cmdStartValue)
+            commandType = byteView.readByte(bytePos)
+            bytePos += 1
+            cmdTypeElement = NumberElement(ELEMENT_NUMBER, &quot;Command Type&quot;, True)
+            cmdTypeValue = NumberValue()
+            cmdTypeValue.setUnsigned(commandType)
+            results.addElement(cmdTypeElement, 1, iteration, cmdTypeValue)
+            cmdBody = &quot;&quot;
+            processedBytes = 0
+            while byteRead != 0x06:
+                byteRead = byteView.readByte(bytePos)
+                if byteRead != 0x06:
+                    bytePos += 1
+                    processedBytes += 1
+                    cmdBody += chr(byteRead)
+            if len(cmdBody) &gt; 0:
+                commandVal = StringValue()
+                commandVal.setName(&quot;Command Body&quot;)
+                commandVal.setString(cmdBody)
+                cmdElement = StringElement(ELEMENT_STRING, &quot;Command&quot;, True)
+                results.addElement(cmdElement, processedBytes, iteration, commandVal)
+            bytePos += 1
+            cmdEndElement = Element(1, &quot;End Command&quot;, True)
+            cmdEndValue = StringValue()
+            cmdEndValue.setString(&quot;ACK: 06&quot;)
+            results.addElement(cmdEndElement, 1, iteration, cmdEndValue)
+            processedBytes = 0
+        else:
+            textStr += chr(byteRead)
+
+    results.addStructureEnd(bytePos - startPos)
+    print(str(bytePos - startPos))
+    return bytePos - startPos
+
+
+def fillByteRange(value, byteArray, bitPos, bitLength):
+    # this method translates edited values back to the file
+    &quot;&quot;&quot;fillByteRange method&quot;&quot;&quot;</source>
+            </script>
+        </scripts>
+        <structure name="StoryHeader" id="171" encoding="ISO_8859-1:1987" endian="big" signed="no">
+            <binary name="StartHeader" mustmatch="yes" id="172" fillcolor="BA1A00" length="1">
+                <description>Start of Heading byte.</description>
+                <fixedvalues>
+                    <fixedvalue name="SOH" value="01"/>
+                </fixedvalues>
+            </binary>
+            <structure name="BinaryVersion" id="173" length="2">
+                <number name="Major" id="174" fillcolor="E7D3FF" type="integer" length="1"/>
+                <number name="Minor" id="175" fillcolor="E6D2FF" type="integer" length="1"/>
+            </structure>
+            <structure name="Flags" id="177" length="4">
+                <number name="Features Used" id="178" fillcolor="BEFBA9" type="integer" length="8" lengthunit="bit" display="binary" minval="00000000" maxval="0111111111111111111111111111111111111111111111111111111111111111">
+                    <mask name="Scripting" value="0x80">
+                        <fixedvalue name="Yes" value="0x80"/>
+                        <fixedvalue name="No" value="0x0"/>
+                    </mask>
+                    <mask name="Variables" value="0x40">
+                        <fixedvalue name="Yes" value="0x40"/>
+                        <fixedvalue name="No" value="0x0"/>
+                    </mask>
+                    <mask name="Images" value="0x20">
+                        <fixedvalue name="Yes" value="0x20"/>
+                        <fixedvalue name="No" value="0x0"/>
+                    </mask>
+                </number>
+                <number name="Toggles" id="179" fillcolor="BFFBA9" type="integer" length="8" lengthunit="bit" display="binary" minval="00000000">
+                    <mask name="Continue" value="0x80">
+                        <fixedvalue name="Yes" value="0x80"/>
+                        <fixedvalue name="No" value="0x0"/>
+                    </mask>
+                    <mask name="Multiplayer" value="0x40">
+                        <fixedvalue name="Yes" value="0x40"/>
+                        <fixedvalue name="No" value="0x0"/>
+                    </mask>
+                    <mask name="Hide Used" value="0x20">
+                        <fixedvalue name="Yes" value="0x20"/>
+                        <fixedvalue name="No" value="0x0"/>
+                    </mask>
+                </number>
+                <number name="Flags3" id="180" fillcolor="BDFBA7" type="integer" length="8" lengthunit="bit" minval="0" maxval="11111111"/>
+                <number name="Flags4" id="181" fillcolor="C1FBA9" type="integer" length="8" lengthunit="bit" minval="0" maxval="11111111"/>
+            </structure>
+            <structure name="Variables" id="183" length="3">
+                <number name="Bits" id="184" fillcolor="FFF3A6" type="integer" length="1" minval="0" maxval="255"/>
+                <number name="Small" id="185" fillcolor="FFEFA6" type="integer" length="1" minval="0" maxval="255">
+                    <description>The number of small variables to allocate space for (8 bit).</description>
+                </number>
+                <number name="Big" id="186" fillcolor="FFF67D" type="integer" length="1" minval="0" maxval="255">
+                    <description>The number of big variables to allocate space for (16 bit).</description>
+                </number>
+            </structure>
+            <number name="StorySize" id="188" fillcolor="B764FF" type="integer" length="4" minval="1" maxval="1572864">
+                <description>The story size in bytes.</description>
+            </number>
+            <structure name="StoryVersion" id="189" length="3" fillcolor="F9DCFF">
+                <number name="Major" id="190" fillcolor="E0C6FF" type="integer" length="1"/>
+                <number name="Minor" id="191" fillcolor="E4D1FF" type="integer" length="1"/>
+                <number name="Revision" id="192" fillcolor="DCCFFF" type="integer" length="1"/>
+            </structure>
+            <string name="LanguageCode" id="194" fillcolor="FFB85D" type="fixed-length" length="3"/>
+            <string name="Title" id="195" fillcolor="FFBA68" type="pascal"/>
+            <string name="Subtitle" id="196" fillcolor="FFB24F" type="pascal"/>
+            <string name="Author" id="197" fillcolor="FFBA64" type="pascal"/>
+            <string name="Credits" id="198" fillcolor="FFB961" type="pascal"/>
+            <string name="Contact" id="199" fillcolor="FFB962" type="pascal"/>
+            <string name="Website" id="200" fillcolor="FFB957" type="pascal"/>
+            <structure name="ReleaseDate" id="201" length="4">
+                <number name="Year" id="202" type="integer" length="2"/>
+                <number name="Month" id="203" type="integer" length="1"/>
+                <number name="Day" id="204" type="integer" length="1"/>
+            </structure>
+        </structure>
+    </grammar>
+</ufwb>

@@ -8,15 +8,22 @@
 namespace cdam
 {
 
+class StateController;
+
 class Choosatron
 {
  public:
+ 	/* Public Methods */
     Choosatron(void);
 
     bool setup(void);
     int loop(void);
 
  private:
+ 	/* Private Methods */
+
+ 	/* Private Variables */
+ 	StateController* _stateController;
 
 };
 

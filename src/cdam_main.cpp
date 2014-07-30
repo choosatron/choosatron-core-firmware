@@ -1,7 +1,7 @@
 #include "cdam_main.h"
 #include "cdam_constants.h"
 #include "cdam_manager.h"
-#include "cdam_keypad.h"
+#include "cdam_state_controller.h"
 
 #if (OFFLINE == 1)
 #include "spark_disable_wlan.h"
@@ -11,22 +11,12 @@
 namespace cdam
 {
 
-
-// Extern C seems to mess up declaring this in the header.
-
-//IntervalTimer _timer;
-
-
-//const uint16_t KEYPAD_UPDATE_MILLIS = 500;
-//uint16_t _lastMillis;
-//uint16_t _delta;
-
 Choosatron::Choosatron() {
 }
 
 bool Choosatron::setup() {
-	Manager::getInstance().initialize();
-	Manager::getInstance().hardwareManager->keypad()->active = true;
+	_stateController = new StateController();
+	_stateController->initialize();
 
 	/*DataManager::getInstance().initialize();
 	ServerManager::getInstance().initialize();
@@ -50,8 +40,10 @@ bool Choosatron::setup() {
 
 int Choosatron::loop() {
 	Manager::getInstance().hardwareManager->updateIntervalTimers();
-
 	Manager::getInstance().serverManager->handlePendingActions();
+
+	_stateController->updateState();
+
 	//uint16_t newMillis = millis();
 	//uint16_t diff = newMillis - _lastMillis;
 

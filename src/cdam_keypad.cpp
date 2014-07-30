@@ -33,7 +33,6 @@ void Keypad::initialize() {
     this->buttonData[3] = btnFour;
 
     this->state = KEYPAD_IDLE_STATE;
-    this->active = true;
     this->buttons = 0;
     this->keypadValue = 0;
     this->lastValue = 0;
@@ -42,6 +41,50 @@ void Keypad::initialize() {
     this->multiUp = 0;
     this->multiUpValue = 0;
     this->clearEvents();
+    this->active = true;
+}
+
+void Keypad::updateState() {
+    if (this->active) {
+        getFilteredButtons();
+    }
+
+    /*for (int i = NUM_BUTTONS - 1; i >= 0; i--) { // notice reverse count order, to accomodate left shift
+        ButtonEvent event = buttonData[i].event;
+        switch (event) {
+            case BTN_DOWN_EVENT:
+                Serial.print("Btn Down Event: ");
+                Serial.println(buttonData[i].num);
+                break;
+            case BTN_HELD_EVENT:
+                Serial.print("Btn Held Event: ");
+                Serial.println(buttonData[i].num);
+                break;
+            case BTN_UP_EVENT:
+                Serial.print("Btn Up Event: ");
+                Serial.println(buttonData[i].num);
+                break;
+            default:
+                break;
+        }
+    }
+
+    switch (this->lastEvent) {
+        case KEYPAD_MULTI_UP_EVENT:
+            Serial.print("Multi-Up Event: ");
+            printBinary(this->multiUpEvent);
+            Serial.print("Value: ");
+            Serial.println(this->lastValue);
+            break;
+        case KEYPAD_MULTI_DOWN_EVENT:
+            Serial.print("Multi-Down Event: ");
+            printBinary(this->multiDownEvent);
+            Serial.print("Value: ");
+            Serial.println(this->lastValue);
+            break;
+        default:
+            break;
+    }*/
 }
 
 ButtonEvent Keypad::filterButton(ButtonData *aBtnData) {
@@ -245,51 +288,6 @@ void Keypad::getFilteredButtons(void) {
 // detect button events
 //
 
-void Keypad::updateKeypad() {
-    //__disable_irq();
-    if (this->active) {
-        getFilteredButtons();
-    }
-
-    /*for (int i = NUM_BUTTONS - 1; i >= 0; i--) { // notice reverse count order, to accomodate left shift
-        ButtonEvent event = buttonData[i].event;
-        switch (event) {
-            case BTN_DOWN_EVENT:
-                Serial.print("Btn Down Event: ");
-                Serial.println(buttonData[i].num);
-                break;
-            case BTN_HELD_EVENT:
-                Serial.print("Btn Held Event: ");
-                Serial.println(buttonData[i].num);
-                break;
-            case BTN_UP_EVENT:
-                Serial.print("Btn Up Event: ");
-                Serial.println(buttonData[i].num);
-                break;
-            default:
-                break;
-        }
-    }
-
-    switch (this->lastEvent) {
-        case KEYPAD_MULTI_UP_EVENT:
-            Serial.print("Multi-Up Event: ");
-            printBinary(this->multiUpEvent);
-            Serial.print("Value: ");
-            Serial.println(this->lastValue);
-            break;
-        case KEYPAD_MULTI_DOWN_EVENT:
-            Serial.print("Multi-Down Event: ");
-            printBinary(this->multiDownEvent);
-            Serial.print("Value: ");
-            Serial.println(this->lastValue);
-            break;
-        default:
-            break;
-    }*/
-    //__enable_irq();
-}
-
 bool Keypad::buttonsDown() {
     if (this->lastButtons) {
         return true;
@@ -298,7 +296,6 @@ bool Keypad::buttonsDown() {
 }
 
 uint8_t Keypad::buttonEvent(ButtonEvent aEvent, uint8_t aRange) {
-    __disable_irq();
     uint8_t result = 0;
     for (int i = NUM_BUTTONS - 1; i >= 0; i--) {
         if (this->buttonData[i].event == aEvent) {
@@ -314,12 +311,10 @@ uint8_t Keypad::buttonEvent(ButtonEvent aEvent, uint8_t aRange) {
             }
         }
     }
-    __enable_irq();
     return result;
 }
 
 uint8_t Keypad::buttonEventValue(uint8_t aBtnNum, ButtonEvent aEvent) {
-    __disable_irq();
     uint8_t result = 0;
     if (buttonData[aBtnNum].event == aEvent) {
         this->buttonData[aBtnNum].event = BTN_NO_EVENT;
@@ -329,7 +324,6 @@ uint8_t Keypad::buttonEventValue(uint8_t aBtnNum, ButtonEvent aEvent) {
         Serial.println(buttonData[aBtnNum].num);*/
         result = buttonData[aBtnNum].num;
     }
-    __enable_irq();
     return result;
 }
 
@@ -342,21 +336,16 @@ char Keypad::buttonEventChar(uint8_t aBtnNum, ButtonEvent aEvent) {
 }
 
 uint8_t Keypad::buttonValue(uint8_t aBtnNum) {
-    __disable_irq();
     uint8_t result = buttonData[aBtnNum].num;
-    __enable_irq();
     return result;
 }
 
 char Keypad::buttonChar(uint8_t aBtnNum) {
-    __disable_irq();
     char result = buttonData[aBtnNum].num + '0';
-    __enable_irq();
     return result;
 }
 
 bool Keypad::keypadEvent(KeypadEvent aEvent, uint8_t aRange) {
-    __disable_irq();
     bool result = false;
     if (this->event == aEvent) {
         //Serial.print("Range: ");
@@ -371,18 +360,15 @@ bool Keypad::keypadEvent(KeypadEvent aEvent, uint8_t aRange) {
             result = true;
         }
     }
-    __enable_irq();
     return result;
 }
 
 uint8_t Keypad::keypadEventValue(KeypadEvent aEvent) {
-    __disable_irq();
     uint8_t result = 0;
     if (this->event == aEvent) {
         this->event = KEYPAD_NO_EVENT;
         result = this->lastValue;
     }
-    __enable_irq();
     return result;
 }
 
@@ -395,7 +381,6 @@ char Keypad::keypadEventChar(KeypadEvent aEvent) {
 }
 
 void Keypad::clearEvents() {
-    __disable_irq();
     for (int i = NUM_BUTTONS - 1; i >= 0; i--) {
         this->buttonData[i].event = BTN_NO_EVENT;
         //Serial.print("Btn event: ");
@@ -408,7 +393,6 @@ void Keypad::clearEvents() {
     this->heldEvents = 0;
     this->multiDownEvent = 0;
     this->multiUpEvent = 0;
-    __enable_irq();
 }
 
 }
