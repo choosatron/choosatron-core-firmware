@@ -12,6 +12,12 @@ const unsigned int kIntervalPrinterMillis = 50;
 const unsigned int kIntervalKeypadMillis = 5;
 // How often to update the Coin Acceptor state.
 const unsigned int kIntervalCoinAcceptorMillis = 5;
+// How often to allow printing Insert Coin message.
+const unsigned int kIntervalCoinInsertMessage = 10000;
+// Min value for coin sensing.
+const uint8_t kCoinAcceptorSenseMin = 15;
+// Max value for coin sensing.
+const uint8_t kCoinAcceptorSenseMax = 60;
 // Maximum bytes available for stories. (1MB)
 const uint32_t kFlashMaxStoryBytes = 1048576;
 

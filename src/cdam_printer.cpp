@@ -6,7 +6,6 @@
 #include "cdam_manager.h"
 #include "cdam_printer.h"
 #include "cdam_story_load.h"
-#include "spark_wiring_usartserial.h"
 
 namespace cdam
 {
@@ -45,15 +44,192 @@ void Printer::initialize() {
 void Printer::updateState() {
 	if (this->active) {
 		if (Printer::available()) {
+			_lastStatus = _status;
 			_status = Printer::read();
 		}
 	} else {
+		_lastStatus = ASCII_NULL;
 		_status = ASCII_NULL;
 	}
 }
 
 bool Printer::statusOf(PrinterStatus aStatus) {
 	return IsBitSet(_status, aStatus);
+}
+
+bool Printer::statusChanged(PrinterStatus aStatus) {
+	if (IsBitSet(_lastStatus, aStatus) != IsBitSet(_status, aStatus)) {
+		return true;
+	}
+	return false;
+}
+
+void Printer::logChangedStatus() {
+	if (statusChanged(PS_ONLINE)) {
+		if (statusOf(PS_ONLINE)) {
+			DEBUG("Status: Online");
+		} else {
+			DEBUG("Status: Offline");
+		}
+	}
+	if (statusChanged(PS_BUFFER_FULL)) {
+		if (statusOf(PS_BUFFER_FULL)) {
+			DEBUG("Status: Buffer Full");
+		} else {
+			DEBUG("Status: Buffer Not Full");
+		}
+	}
+	if (statusChanged(PS_NO_PAPER)) {
+		if (statusOf(PS_NO_PAPER)) {
+			DEBUG("Status: No Paper");
+		} else {
+			DEBUG("Status: Paper");
+		}
+	}
+	if (statusChanged(PS_HIGH_VOLTAGE)) {
+		if (statusOf(PS_HIGH_VOLTAGE)) {
+			DEBUG("Status: High Voltage");
+		} else {
+			DEBUG("Status: Normal Voltage");
+		}
+	}
+	if (statusChanged(PS_UNKNOWN_ONE)) {
+		if (statusOf(PS_UNKNOWN_ONE)) {
+			DEBUG("Status: Unknown One ON");
+		} else {
+			DEBUG("Status: Unknown One OFF");
+		}
+	}
+	if (statusChanged(PS_UNKNOWN_TWO)) {
+		if (statusOf(PS_UNKNOWN_TWO)) {
+			DEBUG("Status: Unknown Two ON");
+		} else {
+			DEBUG("Status: Unknown Two OFF");
+		}
+	}
+	if (statusChanged(PS_HIGH_TEMP)) {
+		if (statusOf(PS_HIGH_TEMP)) {
+			DEBUG("Status: High Temp");
+		} else {
+			DEBUG("Status: Normal Temp");
+		}
+	}
+	if (statusChanged(PS_UNKNOWN_THREE)) {
+		if (statusOf(PS_UNKNOWN_THREE)) {
+			DEBUG("Status: Unknown Three ON");
+		} else {
+			DEBUG("Status: Unknown Three OFF");
+		}
+	}
+}
+
+void Printer::printInsertCoin(uint8_t aCoins, uint8_t aCoinsPerCredit) {
+	CSN_Thermal::inverseOn();
+	CSN_Thermal::justify('C');
+
+	char buffer[31];
+	snprintf(buffer, sizeof(buffer), CDAM_ARCADE_CREDITS, aCoins, aCoinsPerCredit);
+	println(buffer);
+	/*if (aNextCredit == 0) {
+		print("CREDITS 0 - INSERT ");
+		println(" COIN(S)");
+	} else {
+		print("CREDITS ");
+		print(aNextCredit);
+		print("/");
+		print(COINS_PER_CREDIT);
+		println(" - INSERT COIN(S)");
+	}*/
+	CSN_Thermal::inverseOff();
+	CSN_Thermal::justify('L');
+	feed(2);
+}
+
+void Printer::printPressButton() {
+	CSN_Thermal::justify('C');
+
+	println(CDAM_PRESS_BUTTON);
+
+	CSN_Thermal::justify('L');
+}
+
+void Printer::printTitle() {
+	CSN_Thermal::boldOn();
+	CSN_Thermal::justify('C');
+	CSN_Thermal::doubleHeightOn();
+
+	println(CDAM_TITLE);
+
+	CSN_Thermal::doubleHeightOff();
+
+	println(CDAM_SUBTITLE);
+
+	CSN_Thermal::boldOff();
+	CSN_Thermal::justify('L');
+}
+
+void Printer::printMenu(char *aStories) {
+	if (aStories == NULL) {
+		println(CDAM_EMPTY);
+		return;
+	}
+
+	println(CDAM_START);
+
+	println(aStories);
+	feed(1);
+}
+
+void Printer::printAuthors(char* aAuthor, char* aCredits) {
+	CSN_Thermal::boldOn();
+	CSN_Thermal::justify('C');
+
+	char buffer[31];
+	snprintf(buffer, sizeof(buffer), CDAM_AUTHOR, aAuthor);
+
+	println(buffer);
+
+	if (sizeof(aCredits) > 0) {
+		DEBUG("Printing credits...");
+		snprintf(buffer, sizeof(buffer), CDAM_CREDITS, aCredits);
+	}
+
+	CSN_Thermal::justify('L');
+	CSN_Thermal::boldOff();
+}
+
+void Printer::printPoints(int16_t aPoints, int16_t aPerfectScore) {
+	CSN_Thermal::boldOn();
+	CSN_Thermal::justify('C');
+
+	char buffer[20];
+	if (aPerfectScore) { // 0 means there isn't a perfect score.
+		snprintf(buffer, sizeof(buffer), CDAM_POINTS_OUT_OF, aPoints, aPerfectScore);
+		println(buffer);
+
+		if (aPoints == aPerfectScore) {
+			println(CDAM_POINTS_PERFECT);
+		}
+	} else {
+		snprintf(buffer, sizeof(buffer), CDAM_POINTS, aPoints);
+		println(buffer);
+	}
+
+	CSN_Thermal::justify('L');
+	CSN_Thermal::boldOff();
+}
+
+void Printer::printContinue(uint8_t aCoinsToContinue) {
+	CSN_Thermal::boldOn();
+	CSN_Thermal::justify('C');
+
+	char buffer[32];
+	snprintf(buffer, sizeof(buffer), CDAM_ARCADE_CONTINUE, aCoinsToContinue);
+	println(buffer);
+
+	CSN_Thermal::boldOff();
+  	CSN_Thermal::justify('L');
+	feed(2);
 }
 
 /*bool Printer::statusUnknownOne() {
@@ -322,153 +498,6 @@ int Printer::printWrapped(char *aMsg, byte aColumns, boolean aBufferMode) {
 	return length;
 }
 
-void Printer::printInsertCoin(byte aNextCredit) {
-  //CSN_Thermal::wake();
-	CSN_Thermal::inverseOn();
-	CSN_Thermal::justify('C');
-	if (aNextCredit == 0) {
-    //printProgStr(INSERT_COINS);
-		print("CREDITS 0 - INSERT ");
-		//print(COINS_PER_CREDIT);
-		println(" COIN(S)");
-	} else {
-		print("CREDITS ");
-		print(aNextCredit);
-		print("/");
-		//print(COINS_PER_CREDIT);
-		println(" - INSERT COIN(S)");
-	}
-	CSN_Thermal::inverseOff();
-	CSN_Thermal::justify('L');
-	feed(2);
-	delay(100);
-  //CSN_Thermal::sleep();
-}
-
-void Printer::printAuthor(byte aStoryId) {
-	char path[4] = {'\0'};
-	path[0] = aStoryId;
-	path[1] = '/';
-	path[2] = 'A';
-	unsigned long fileSize = StoryLoad::getFileSize(path);
-	char *author = StoryLoad::getStringFromFile(path, fileSize, 0);
-	CSN_Thermal::boldOn();
-	print("Story by ");
-	println(author);
-	CSN_Thermal::boldOff();
-	free(author);
-}
-
-void Printer::itoa(int value, char *sp, int radix)
-{
-    char tmp[16];// be careful with the length of the buffer
-    char *tp = tmp;
-    int i;
-    unsigned v;
-    int sign;
-
-    sign = (radix == 10 && value < 0);
-    if (sign)   v = -value;
-    else    v = (unsigned)value;
-
-    while (v || tp == tmp)
-    {
-    	i = v % radix;
-        v /= radix; // v/=radix uses less CPU clocks than v=v/radix does
-        if (i < 10)
-        	*tp++ = i+'0';
-        else
-        	*tp++ = i + 'a' - 10;
-    }
-
-    if (sign)
-    	*sp++ = '-';
-    while (tp > tmp)
-    	*sp++ = *--tp;
-}
-
-void Printer::printPoints(byte aTotalPoints, byte aPerfectScore) {
-	if (aTotalPoints > 0) {
-
-    //CSN_Thermal::justify('C');
-		println();
-		CSN_Thermal::boldOn();
-		char score[31] = {'\0'};
-
-		Printer::itoa(aTotalPoints, score, 10);
-		unsigned int index = strlen(score);
-		if ((aPerfectScore > 0) && (aTotalPoints <= aPerfectScore)) {
-			score[index] = ' ';
-			score[index+1] = '/';
-			score[index+2] = ' ';
-			Printer::itoa(aPerfectScore, score + index + 3, 10);
-			index = strlen(score);
-		}
-    //memcpy(score + index, " Points", 7);
-    //score[index+6] = '\0';
-    //strcpy(score + index, " Points");
-
-		score[index] = ' ';
-		score[index+1] = 'P';
-		score[index+2] = 'o';
-		score[index+3] = 'i';
-		score[index+4] = 'n';
-		score[index+5] = 't';
-		score[index+6] = 's';
-		score[index+7] = '\0';
-
-		println(score);
-		CSN_Thermal::boldOff();
-		return;
-    // TRY BUILDING OUT STRING AND THEN PRINTING IT CENTERED
-    /*print(_totalPoints);
-    if ((_perfectScore > 0) && (_totalPoints <= _perfectScore)) {
-      print(" / ");
-      print(_perfectScore);
-    }
-    println(F(" Points"));*/
-    CSN_Thermal::boldOff();
-   // CSN_Thermal::justify('L');
-    delay(100);
-}
-}
-
-void Printer::printCoinToContinue() {
-	CSN_Thermal::boldOn();
-  //CSN_Thermal::justify('C');
-	print("**INSERT ");
-	//print(COINS_TO_CONTINUE);
-	println(" COIN(S) TO CONTINUE**");
-	CSN_Thermal::boldOff();
-  //CSN_Thermal::justify('L');
-	feed(2);
-	delay(100);
-}
-
-void Printer::printTitleMenu(char *stories) {
-  //CSN_Thermal::wake();
-	CSN_Thermal::boldOn();
-	delay(50);
-	CSN_Thermal::justify('C');
-	delay(50);
-	CSN_Thermal::doubleHeightOn();
-	delay(50);
-	println(CDAM_TITLE);
-  //println("Choosatronz");
-	CSN_Thermal::doubleHeightOff();
-	println(CDAM_SUBTITLE);
-  //println("Deluxe Adventure Matrix v1.0\nby Jerry Belich - choosatron.com\n\nChoose your story below!\n");
-  //delay(100);
-  //printProgStr(CDAM_INTRO);
-	CSN_Thermal::boldOff();
-	CSN_Thermal::justify('L');
-	delay(100);
-	println(stories);
-	feed(1);
-	delay(100);
-  //CSN_Thermal::sleep();
-}
-
 boolean Printer::available() {
 	return Serial1.available();
 }
@@ -498,11 +527,10 @@ void Printer::setPrinting(bool aPrinting) {
   this->printing = aPrinting;*/
 }
 
-void Printer::setABS(boolean aTurnOn) {
+void Printer::setABS(bool aTurnOn) {
 	byte setting = 0b00000000;
 	if (aTurnOn) {
 		setting = 0b00100100;
-    //setting = 0b00000000;
 	}
 	writeBytes(29, 97, setting);
 }

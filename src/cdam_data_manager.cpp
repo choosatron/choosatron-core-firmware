@@ -11,8 +11,6 @@ DataManager::DataManager() {
 }
 
 bool DataManager::initialize() {
-	this->credits = 0;
-
 	this->metadata = {};
 	DEBUG("Page Size: %d", Flashee::Devices::userFlash().pageSize());
 	DEBUG("Page Count: %d", Flashee::Devices::userFlash().pageCount());
@@ -60,16 +58,6 @@ bool DataManager::initialize() {
 }
 
 uint32_t DataManager::getStoryOffset(uint8_t aIndex) {
-	/*uint32_t size;
-	bool result = _metaFlash->read(&size, sizeof(this->metadata) +
-	                          (aIndex * sizeof(uint32_t)),
-				              sizeof(uint32_t));
-	if (!result) {
-		Errors::setError(E_METADATA_READ_STORY_OFFSET_FAIL);
-		ERROR(Errors::errorString());
-		return 0;
-	}
-	return size;*/
 	return this->metadata.storyOffsets[aIndex];
 }
 
@@ -255,6 +243,7 @@ bool DataManager::writeMetadata(Metadata *aMetadata) {
 	DEBUG("Size of Metadata: %d", sizeof(*aMetadata));
 	DEBUG("Write Story Data: %d, %d, %lu", aMetadata->storyCount, kMetadataStoryCountOffset, kMetadataStoryCountSize + kMetadataStoryUsedPagesSize +
 		                 kMetadataStoryOffsetsSize);
+	Errors::clearError();
 	bool result = _metaFlash->writePage(aMetadata, kMetadataBaseAddress, sizeof(*aMetadata));
 	if (!result) {
 		Errors::setError(E_METADATA_WRITE_FAIL);
@@ -394,7 +383,7 @@ void DataManager::setTestMetadata(Metadata *aMetadata) {
 
 	aMetadata->values.coinsPerCredit = 2;
 	aMetadata->values.coinDenomination = 25;
-	aMetadata->values.value3 = 3;
+	aMetadata->values.coinsToContinue = 1;
 	aMetadata->values.value4 = 4;
 	aMetadata->values.value5 = 5;
 	aMetadata->values.value6 = 6;
@@ -487,7 +476,7 @@ void DataManager::logMetadata(Metadata *aMetadata) {
 	logBinary(aMetadata->flags.flag8);
 	DEBUG("Coins Per Credit: %d", aMetadata->values.coinsPerCredit);
 	DEBUG("Coin Denom: %d", aMetadata->values.coinDenomination);
-	DEBUG("Value 3: %d", aMetadata->values.value3);
+	DEBUG("Coins to Continue: %d", aMetadata->values.coinsToContinue);
 	DEBUG("Value 4: %d", aMetadata->values.value4);
 	DEBUG("Value 5: %d", aMetadata->values.value5);
 	DEBUG("Value 6: %d", aMetadata->values.value6);

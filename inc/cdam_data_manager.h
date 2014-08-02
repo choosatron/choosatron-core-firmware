@@ -53,7 +53,7 @@ class DataManager
         StoryHeader storyHeader;
         //std::vector<StoryHeader> storyHeaders;
 
-        uint8_t credits;
+        int16_t points;
 
     private:
         /* Private Methods */

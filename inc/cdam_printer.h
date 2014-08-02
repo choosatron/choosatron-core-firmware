@@ -34,6 +34,17 @@ public:
     void initialize();
     void updateState();
     bool statusOf(PrinterStatus aStatus);
+    bool statusChanged(PrinterStatus aStatus);
+    void logChangedStatus();
+
+    void printInsertCoin(uint8_t aCoins, uint8_t aCreditValue);
+    void printPressButton();
+    void printTitle();
+    void printMenu(char* aStories);
+    void printAuthors(char* aAuthor, char* aCredits);
+    void printPoints(int16_t aPoints, int16_t aPerfectScore);
+    void printContinue(uint8_t aCoinsToContinue);
+
     /*bool statusUnknownOne();
     bool statusHighTemp();
     bool statusUnknownTwo();
@@ -46,14 +57,11 @@ public:
     void begin(int heatTime=200);
     void printProgStr(const unsigned char *str);
     void logProgStr(const unsigned char *str);
-    void printFile(const char *aPath, boolean aWrapped, boolean aLinefeed, byte aPrependLen, byte aOffset);
-    int printWrapped(char *aMsg, byte aColumns, boolean aBufferMode);
-    void printInsertCoin(byte aNextCredit);
-    void printAuthor(byte aStoryId);
+    void printFile(const char *aPath, bool aWrapped, bool aLinefeed, byte aPrependLen, byte aOffset);
+    int printWrapped(char *aMsg, byte aColumns, bool aBufferMode);
+
     void itoa(int value, char *sp, int radix);
-    void printPoints(byte aTotalPoints, byte aPerfectScore);
-    void printCoinToContinue();
-    void printTitleMenu(char *stories);
+
 
     //void timeoutSet(unsigned long);
     void printTimeSet(unsigned long);
@@ -63,7 +71,7 @@ public:
     bool available();
     byte read();
     byte peek();
-    void setABS(boolean aTurnOn);
+    void setABS(bool aTurnOn);
     void setPrinting(bool aPrinting);
     bool isPrinting();
     bool isReady();
@@ -85,6 +93,7 @@ protected:
     unsigned long printTime;
 private:
     char _status;
+    char _lastStatus;
 };
 
 }

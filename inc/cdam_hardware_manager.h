@@ -25,13 +25,16 @@
 
 #include "cdam_constants.h"
 #include "elapsed_time.h"
+#include "cdam_keypad.h"
+#include "cdam_printer.h"
+#include "cdam_coin_acceptor.h"
 
 namespace cdam
 {
 
-class Keypad;
-class Printer;
-class CoinAcceptor;
+// class Keypad;
+// class Printer;
+// class CoinAcceptor;
 
 class HardwareManager
 {
@@ -48,6 +51,9 @@ class HardwareManager
 
         // Call once per loop, check intervals.
         void updateIntervalTimers();
+
+        // See if enough time has passed to print again.
+        void printCoinInsertIntervalUpdate();
 
         /* Public Variables */
 
@@ -77,6 +83,7 @@ class HardwareManager
         ElapsedMillis _printerElapsed;
         ElapsedMillis _keypadElapsed;
         ElapsedMillis _coinElapsed;
+        ElapsedMillis _printInsertElapsed;
 
 };
 

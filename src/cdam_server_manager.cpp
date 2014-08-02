@@ -102,7 +102,9 @@ void ServerManager::handlePendingActions() {
 
 /* Static Methods */
 int ServerManager::serverCommand(String aCommandAndArgs) {
+	DataManager* dataMan = Manager::getInstance().dataManager;
 	ServerManager* serverMan = Manager::getInstance().serverManager;
+	HardwareManager* hardMan = Manager::getInstance().hardwareManager;
 
 	//aCommandAndArgs.trim();
     //aCommandAndArgs.toLowerCase();
@@ -137,12 +139,13 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		return kServerReturnSuccess;
 	} else if (strcmp(command, kServerCmdAdjustCredits) == 0) {
 		String creditsStr = aCommandAndArgs.substring(delimiterPos + 1, aCommandAndArgs.length());
-		Manager::getInstance().dataManager->credits += atoi(creditsStr.c_str());
-		return Manager::getInstance().dataManager->credits;
+		//uint8_t credits = += atoi(creditsStr.c_str());
+		hardMan->coinAcceptor()->addCredits(atoi(creditsStr.c_str()));
+		return hardMan->coinAcceptor()->getCredits();
 	} else if (strcmp(command, kServerCmdSetCredits) == 0) {
 		String creditsStr = aCommandAndArgs.substring(delimiterPos + 1, aCommandAndArgs.length());
-		Manager::getInstance().dataManager->credits = atoi(creditsStr.c_str());
-		return Manager::getInstance().dataManager->credits;
+		hardMan->coinAcceptor()->setCredits(atoi(creditsStr.c_str()));
+		return hardMan->coinAcceptor()->getCredits();
 	/*} else if (strcmp(command, kServerCmdRemoveStory) == 0) {
 		uint8_t storyIndex = ((aCommandAndArgs.charAt(delimiterPos + 1) - '0') % 48) - 1;
 		if (storyIndex < (Manager::getInstance().dataManager->metadata.storyCount)) {
@@ -151,13 +154,13 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		}
 		return kServerReturnInvalidIndex;*/
 	} else if (strcmp(command, kServerCmdRemoveAllStories) == 0) {
-		Manager::getInstance().dataManager->removeAllStoryData();
+		dataMan->removeAllStoryData();
 		return kServerReturnSuccess;
 	} else if (strcmp(command, kServerCmdAddStory) == 0) {
 		// We only want to deal with one server connection at a time.
 		if (serverMan->pendingAction) {
 			return kServerReturnBusy;
-		} else if (Manager::getInstance().dataManager->metadata.storyCount >= kMaxStoryCount) {
+		} else if (dataMan->metadata.storyCount >= kMaxStoryCount) {
 			return kServerReturnMaxReached;
 		}
 
@@ -185,8 +188,9 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		serverMan->newStorySize = atol(buffer);
 		DEBUG("Incoming story size: %lu", serverMan->newStorySize);
 
-		DEBUG("Total Pages: %d", Manager::getInstance().dataManager->metadata.usedStoryPages);
-		if (serverMan->newStorySize > (kFlashMaxStoryBytes - (Manager::getInstance().dataManager->metadata.usedStoryPages * Flashee::Devices::userFlash().pageSize()))) {
+		DEBUG("Total Pages: %d", dataMan->metadata.usedStoryPages);
+		if (serverMan->newStorySize > (kFlashMaxStoryBytes -
+		    (dataMan->metadata.usedStoryPages * Flashee::Devices::userFlash().pageSize()))) {
 			Errors::setError(E_SERVER_ADD_STORY_NO_SPACE);
 			ERROR(Errors::errorString());
 			return kServerReturnFail;
@@ -281,17 +285,17 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		//Spark.publish(kServerCmdGetState, Manager::getInstance().dataManager->gameStateStr(), kServerTTLDefault, PRIVATE);
 		return kServerReturnEventIncoming;
 	} else if (strcmp(command, kServerCmdGetStoryCount) == 0) {
-		return Manager::getInstance().dataManager->metadata.storyCount;
+		return dataMan->metadata.storyCount;
 	} else if (strcmp(command, kServerCmdGetMillis) == 0) {
 		return millis();
 	} else if (strcmp(command, kServerCmdGetSeconds) == 0) {
 		return millis() / 1000;
 	} else if (strcmp(command, kServerCmdGetFreeSpace) == 0) {
-		return kFlashMaxStoryBytes - (Manager::getInstance().dataManager->metadata.usedStoryPages * Flashee::Devices::userFlash().pageSize());
+		return kFlashMaxStoryBytes - (dataMan->metadata.usedStoryPages * Flashee::Devices::userFlash().pageSize());
 	} else if (strcmp(command, kServerCmdGetUsedSpace) == 0) {
-		return Manager::getInstance().dataManager->metadata.usedStoryPages * Flashee::Devices::userFlash().pageSize();
+		return dataMan->metadata.usedStoryPages * Flashee::Devices::userFlash().pageSize();
 	} else if (strcmp(command, kServerCmdGetCredits) == 0) {
-		return Manager::getInstance().dataManager->credits;
+		return hardMan->coinAcceptor()->getCredits();
 	} else if (strcmp(command, kServerCmdGetSSID) == 0) {
 		Spark.publish(kServerCmdGetSSID, Network.SSID(), kServerTTLDefault, PRIVATE);
 		return kServerReturnEventIncoming;
@@ -305,7 +309,7 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		byte macVal[6];
 		Network.macAddress(macVal);
 		char macAddr[18];
-		snprintf(macAddr, 19, "%02x:%02x:%02x:%02x:%02x:%02x", macVal[5], macVal[4], macVal[3], macVal[2], macVal[1], macVal[0]);
+		snprintf(macAddr, 18, "%02x:%02x:%02x:%02x:%02x:%02x", macVal[5], macVal[4], macVal[3], macVal[2], macVal[1], macVal[0]);
 		Spark.publish(kServerCmdGetMacAddr, macAddr, kServerTTLDefault, PRIVATE);
 		return kServerReturnEventIncoming;
 	} else if (strcmp(command, kServerCmdGetSubnetMask) == 0) {

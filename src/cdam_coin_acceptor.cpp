@@ -7,22 +7,81 @@
 namespace cdam
 {
 
-	CoinAcceptor::CoinAcceptor() {
+/* Public Methods */
+
+CoinAcceptor::CoinAcceptor(uint8_t aCoinsPerCredit, uint8_t aCoinsToContinue) {
+	coinsPerCredit = aCoinsPerCredit;
+	coinsToContinue = aCoinsToContinue;
+}
+
+void CoinAcceptor::initialize() {
+	_coinSenseCounter = 0;
+	this->active = true;
+}
+
+void CoinAcceptor::updateState() {
+	if (this->active) {
+		checkForCoin();
 	}
+}
 
-	void CoinAcceptor::initialize() {
-		_credits = 0;
-		_coins = 0;
-		this->nextCredit = 0;
-		this->insertCoinTime = 0;
-		this->active = true;
+void CoinAcceptor::addCredits(uint8_t aCredits) {
+	coins += (aCredits * coinsPerCredit);
+}
+
+void CoinAcceptor::setCredits(uint8_t aCredits) {
+	coins = (aCredits * coinsPerCredit);
+}
+
+uint8_t CoinAcceptor::getCredits() {
+	return coins / coinsPerCredit;
+}
+
+bool CoinAcceptor::consumeCredit() {
+	if (coins >= coinsPerCredit) {
+		coins -= coinsPerCredit;
+		return true;
 	}
+	return false;
+}
 
-	void CoinAcceptor::updateState() {
-		if (this->active) {
+bool CoinAcceptor::consumeContinue() {
+	if (coins >= coinsToContinue) {
+		coins -= coinsToContinue;
+		return true;
+	}
+	return false;
+}
 
+/* Accessors */
+
+// uint8_t CoinAcceptor::getCoinsPerCredit() {
+// 	return _coinsPerCredit;
+// }
+
+// void CoinAcceptor::setCoinsPerCredit(uint8_t aCoinsPerCredit) {
+// 	_coinsPerCredit = aCoinsPerCredit;
+// }
+
+// void CoinAcceptor::setCoinsToContinue(uint8_t aCoinsToContinue) {
+// 	_coinsToContinue = aCoinsToContinue;
+// }
+
+/* Private Methods */
+
+void CoinAcceptor::checkForCoin() {
+	if (digitalRead(PIN_COIN)) {
+		_coinSenseCounter++;
+	} else {
+		if ((_coinSenseCounter >= kCoinAcceptorSenseMin) &&
+		    (_coinSenseCounter <= kCoinAcceptorSenseMax)) {
+			DEBUG("Senser Count: %d", _coinSenseCounter);
+			coins++;
 		}
+		_coinSenseCounter = 0;
 	}
+}
+
 /*void CoinAcceptor::waitForCoin(const Keypad *aKeypad) {
 while (!digitalRead(COIN_PIN)) {
   char key = aKeypad->getKey();
@@ -59,7 +118,7 @@ if (!digitalRead(COIN_PIN)) {
 return true;
 }*/
 
-boolean CoinAcceptor::checkForCoin() {
+/*bool CoinAcceptor::checkForCoinOld() {
 // When coin pin is high, track the length with a counter.
 	uint8_t coinSenseCounter = 0;
 	while (digitalRead(PIN_COIN)) {
@@ -72,39 +131,6 @@ boolean CoinAcceptor::checkForCoin() {
 		return true;
 	}
 	return false;
-}
-
-void CoinAcceptor::coinInserted() {
-	_coins++;
-	DEBUG("Total Coins: %d", _coins);
-	this->nextCredit++;
-	if (this->nextCredit == this->coinsPerCredit) {
-		_credits++;
-		this->nextCredit = 0;
-	}
-}
-
-boolean CoinAcceptor::consumeCredit() {
-	if (_credits > 0) {
-		_credits--;
-		return true;
-	}
-	return false;
-}
-
-boolean CoinAcceptor::consumeContinue() {
-#if (COIN_MODE < 2)
-	return false;
-#endif
-	if (this->nextCredit >= this->coinsToContinue) {
-		this->nextCredit -= this->coinsToContinue;
-		return true;
-	} else if (_credits > 0) {
-		_credits--;
-		this->nextCredit += (this->coinsPerCredit - this->coinsToContinue);
-		return true;
-	}
-	return false;
-}
+}*/
 
 }

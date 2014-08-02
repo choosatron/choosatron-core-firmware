@@ -59,7 +59,8 @@ typedef struct MetaFlags_t {
 	union {
 	    uint8_t flag1;
 	    struct {
-	    	uint8_t rsvd1 			:3;
+	    	uint8_t rsvd1 			:2;
+	    	uint8_t continues       :1;
 	    	uint8_t arcade			:1;
 	    	uint8_t multiplayer		:1;
 	    	uint8_t sdCard			:1;
@@ -119,7 +120,7 @@ typedef struct MetaFlags_t {
 typedef struct MetaValues_t {
 	uint8_t coinsPerCredit;
 	uint8_t coinDenomination;
-	uint8_t value3;
+	uint8_t coinsToContinue;
 	uint8_t value4;
 	uint8_t value5;
 	uint8_t value6;

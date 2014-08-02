@@ -1,8 +1,6 @@
 #include "cdam_hardware_manager.h"
 #include "cdam_constants.h"
-#include "cdam_keypad.h"
-#include "cdam_printer.h"
-#include "cdam_coin_acceptor.h"
+#include "cdam_manager.h"
 
 namespace cdam
 {
@@ -13,9 +11,18 @@ HardwareManager::HardwareManager() {
 }
 
 bool HardwareManager::initialize() {
+	_coinAcceptor = NULL;
 	setupHardwarePins();
 	initHardware();
 	return true;
+}
+
+void HardwareManager::printCoinInsertIntervalUpdate() {
+	if (_printInsertElapsed > kIntervalCoinInsertMessage) {
+		_printer->printInsertCoin(_coinAcceptor->coins,
+		                          _coinAcceptor->coinsPerCredit);
+		_printInsertElapsed = 0;
+	}
 }
 
 // Calls each setup interval timer.
@@ -35,6 +42,10 @@ Keypad* HardwareManager::keypad() {
 	return _keypad;
 }
 
+CoinAcceptor* HardwareManager::coinAcceptor() {
+	return _coinAcceptor;
+}
+
 /* Private Methods */
 
 void HardwareManager::setupHardwarePins() {
@@ -44,6 +55,9 @@ void HardwareManager::setupHardwarePins() {
 	pinMode(PIN_RED_LED, OUTPUT);
 	pinMode(PIN_GREEN_LED, OUTPUT);
 	pinMode(PIN_BLUE_LED, OUTPUT);
+	digitalWrite(PIN_RED_LED, HIGH);
+	digitalWrite(PIN_GREEN_LED, HIGH);
+	digitalWrite(PIN_BLUE_LED, HIGH);
 	// Pin for Coin Acceptor
 	pinMode(PIN_COIN, INPUT);
 }
@@ -82,7 +96,8 @@ void HardwareManager::keypadIntervalUpdate() {
 }
 
 void HardwareManager::coinAcceptorIntervalUpdate() {
-	if (_coinElapsed > kIntervalCoinAcceptorMillis) {
+	if (Manager::getInstance().dataManager->metadata.flags.arcade &&
+	    	_coinElapsed > kIntervalCoinAcceptorMillis) {
 		_coinAcceptor->updateState();
 		_coinElapsed = 0;
 	}
