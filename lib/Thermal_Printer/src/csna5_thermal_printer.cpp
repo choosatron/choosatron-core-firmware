@@ -402,7 +402,7 @@ void CSN_Thermal::printBitmap(
 
     for(y=0; y < chunkHeight; y++) {
       for(x=0; x < rowBytesClipped; x++, i++) {
-        PRINTER_PRINT(fromProgMem ? pgm_read_byte(bitmap + i) : *(bitmap+i));
+        PRINTER_PRINT(*(bitmap + i));
       }
       i += rowBytes - rowBytesClipped;
     }

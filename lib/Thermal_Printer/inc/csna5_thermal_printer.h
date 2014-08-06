@@ -30,11 +30,7 @@
 #define MSI    10
 
 #define SERIAL_IMPL      Serial1
-#define PRINTER_PRINT(a) Serial1.write(a);
-
-#ifndef pgm_read_byte
-#define pgm_read_byte(x) (*x)
-#endif
+#define PRINTER_PRINT(a) SERIAL_IMPL.write(a);
 
 class CSN_Thermal : public Print {
 

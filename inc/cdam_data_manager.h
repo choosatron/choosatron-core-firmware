@@ -47,6 +47,7 @@ class DataManager
         Flashee::FlashDevice* storyFlash();
 
         /* Public Variables */
+        bool runState;
         // The hard-coded firmware version
         Version firmwareVersion;
         Metadata metadata;

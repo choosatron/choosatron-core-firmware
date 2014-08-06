@@ -5,10 +5,6 @@
 #ifndef CDAM_STORY_LOAD_H
 #define CDAM_STORY_LOAD_H
 
-// Instead of "Arduino.h"
-//#include <stdint.h>
-//#include <stddef.h>
-//#include <stdlib.h>
 #include "cdam_constants.h"
 
 namespace cdam

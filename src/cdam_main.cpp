@@ -42,7 +42,9 @@ int Choosatron::loop() {
 	Manager::getInstance().hardwareManager->updateIntervalTimers();
 	Manager::getInstance().serverManager->handlePendingActions();
 
-	_stateController->updateState();
+	if (Manager::getInstance().dataManager->runState) {
+		_stateController->updateState();
+	}
 
 	//uint16_t newMillis = millis();
 	//uint16_t diff = newMillis - _lastMillis;

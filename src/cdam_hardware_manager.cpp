@@ -84,6 +84,11 @@ void HardwareManager::initHardware() {
 void HardwareManager::printerIntervalUpdate() {
 	if (_printerElapsed > kIntervalPrinterMillis) {
 		_printer->updateState();
+		_printer->logChangedStatus();
+		// Allow printing to continue across loops.
+		/*if (_printer->printing) {
+			_printer->finishPrinting();
+		}*/
 		_printerElapsed = 0;
 	}
 }

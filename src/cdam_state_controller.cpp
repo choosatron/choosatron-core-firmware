@@ -57,14 +57,13 @@ void StateController::initState(GameState aState) {
 		}
 	} else if (aState == STATE_READY) {
 		_hardwareManager->printer()->active = true;
-		_hardwareManager->printer()->test();
-		/*if (_dataManager->metadata.flags.arcade) {
+		if (_dataManager->metadata.flags.arcade) {
 			_hardwareManager->printer()->printInsertCoin(_hardwareManager->coinAcceptor()->coins,
 			                                             _hardwareManager->coinAcceptor()->coinsPerCredit);
 		} else {
 			_hardwareManager->printer()->printPressButton();
 		}
-		_hardwareManager->keypad()->active = true;*/
+		_hardwareManager->keypad()->active = true;
 	} else if (aState == STATE_SELECT) {
 
 	} else if (aState == STATE_PLAY) {
@@ -82,7 +81,7 @@ void StateController::loopState(GameState aState) {
 	if (aState == STATE_INIT) {
 		changeState(STATE_READY);
 	} else if (aState == STATE_READY) {
-		/*if (_hardwareManager->keypad()->buttonEvent(BTN_UP_EVENT)) {
+		if (_hardwareManager->keypad()->buttonEvent(BTN_UP_EVENT)) {
 			DEBUG("Button Pressed!");
 			if (_dataManager->metadata.flags.arcade) {
 				if (_hardwareManager->coinAcceptor()->consumeCredit()) {
@@ -93,8 +92,7 @@ void StateController::loopState(GameState aState) {
 			} else {
 				_hardwareManager->printer()->printTitle();
 			}
-		}*/
-		//_hardwareManager->printer()->logChangedStatus();
+		}
 		//_hardwareManager->printer()->printTitle();
 	} else if (aState == STATE_SELECT) {
 

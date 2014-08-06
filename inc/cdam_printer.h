@@ -5,11 +5,8 @@
 #ifndef CDAM_PRINTER_H
 #define CDAM_PRINTER_H
 
-#include <stdint.h>
-#include "spark_wiring_stream.h"
-#include "spark_wiring_print.h"
-
-#include "cdam_constants.h"
+//#include <stdint.h>
+//#include "cdam_constants.h"
 #include "csna5_thermal_printer.h"
 
 namespace cdam
@@ -21,7 +18,7 @@ typedef enum PrinterStatus_t {
     PS_BUFFER_FULL,
     PS_NO_PAPER,
     PS_HIGH_VOLTAGE,
-    PS_UNKNOWN_ONE,
+    PS_UNKNOWN_ONE, // Triggers when buffer full, doesn't reset when empty. Data loss flag?
     PS_UNKNOWN_TWO,
     PS_HIGH_TEMP,
     PS_UNKNOWN_THREE
@@ -45,22 +42,9 @@ public:
     void printPoints(int16_t aPoints, int16_t aPerfectScore);
     void printContinue(uint8_t aCoinsToContinue);
 
-    /*bool statusUnknownOne();
-    bool statusHighTemp();
-    bool statusUnknownTwo();
-    bool statusUnknownThree();
-    bool statusHighVoltage();
-    bool statusNoPaper();
-    bool statusBufferFull();
-    bool statusOnline();*/
-
     void begin(int heatTime=200);
-    void printProgStr(const unsigned char *str);
-    void logProgStr(const unsigned char *str);
-    void printFile(const char *aPath, bool aWrapped, bool aLinefeed, byte aPrependLen, byte aOffset);
-    int printWrapped(char *aMsg, byte aColumns, bool aBufferMode);
-
-    void itoa(int value, char *sp, int radix);
+    //void printFile(const char *aPath, bool aWrapped, bool aLinefeed, uint8_t aPrependLen, uint8_t aOffset);
+    //int printWrapped(char *aMsg, uint8_t aColumns, bool aBufferMode);
 
 
     //void timeoutSet(unsigned long);
@@ -69,16 +53,13 @@ public:
     void printerWait();
 
     bool available();
-    byte read();
-    byte peek();
+    uint8_t read();
+    uint8_t peek();
     void setABS(bool aTurnOn);
-    void setPrinting(bool aPrinting);
     bool isPrinting();
     bool isReady();
-    void bufferStatus();
-    void printerStatus();
     // Number of chars to indent for autojump text.
-    byte jumpIndent;
+    uint8_t jumpIndent;
 
     bool bufferFull;
 
@@ -94,6 +75,7 @@ protected:
 private:
     char _status;
     char _lastStatus;
+    bool _statusUpdated;
 };
 
 }

@@ -11,6 +11,7 @@ DataManager::DataManager() {
 }
 
 bool DataManager::initialize() {
+	this->runState = true;
 	this->metadata = {};
 	DEBUG("Page Size: %d", Flashee::Devices::userFlash().pageSize());
 	DEBUG("Page Count: %d", Flashee::Devices::userFlash().pageCount());

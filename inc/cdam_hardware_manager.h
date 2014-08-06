@@ -36,8 +36,7 @@ namespace cdam
 // class Printer;
 // class CoinAcceptor;
 
-class HardwareManager
-{
+class HardwareManager {
     public:
         /* Public Methods */
         HardwareManager();

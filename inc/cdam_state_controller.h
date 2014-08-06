@@ -47,7 +47,6 @@ private:
 	DataManager* _dataManager;
  	HardwareManager* _hardwareManager;
  	ServerManager* _serverManager;
-
 };
 
 }

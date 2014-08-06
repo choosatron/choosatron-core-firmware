@@ -376,6 +376,7 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 						(bytesRead == aStorySize)) {
 						// Write data
 						DEBUG("Writing page #: %d", pagesWritten);
+						DEBUG("Buf: %s", buffer);
 						bool result = Manager::getInstance().dataManager->storyFlash()->writePage(buffer,
 						                       (Manager::getInstance().dataManager->metadata.usedStoryPages * Flashee::Devices::userFlash().pageSize()) +
 						                       (pagesWritten * Flashee::Devices::userFlash().pageSize()), Flashee::Devices::userFlash().pageSize());

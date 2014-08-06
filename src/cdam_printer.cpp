@@ -5,7 +5,6 @@
 #include "cdam_constants.h"
 #include "cdam_manager.h"
 #include "cdam_printer.h"
-#include "cdam_story_load.h"
 
 namespace cdam
 {
@@ -43,9 +42,19 @@ void Printer::initialize() {
 
 void Printer::updateState() {
 	if (this->active) {
-		if (Printer::available()) {
+		if (available()) {
 			_lastStatus = _status;
-			_status = Printer::read();
+			_status = read();
+			_statusUpdated = true;
+			DEBUG("0x%c%c%c%c%c%c%c%c",
+	    (IsBitSet(_status, 7) ? '1' : '0'),
+	    (IsBitSet(_status, 6) ? '1' : '0'),
+	    (IsBitSet(_status, 5) ? '1' : '0'),
+	    (IsBitSet(_status, 4) ? '1' : '0'),
+	    (IsBitSet(_status, 3) ? '1' : '0'),
+	    (IsBitSet(_status, 2) ? '1' : '0'),
+	    (IsBitSet(_status, 1) ? '1' : '0'),
+	    (IsBitSet(_status, 0) ? '1' : '0'));
 		}
 	} else {
 		_lastStatus = ASCII_NULL;
@@ -65,60 +74,63 @@ bool Printer::statusChanged(PrinterStatus aStatus) {
 }
 
 void Printer::logChangedStatus() {
-	if (statusChanged(PS_ONLINE)) {
-		if (statusOf(PS_ONLINE)) {
-			DEBUG("Status: Online");
-		} else {
-			DEBUG("Status: Offline");
+	if (_statusUpdated) {
+		_statusUpdated = false;
+		if (statusChanged(PS_ONLINE)) {
+			if (statusOf(PS_ONLINE)) {
+				DEBUG("Status: Online");
+			} else {
+				DEBUG("Status: Offline");
+			}
 		}
-	}
-	if (statusChanged(PS_BUFFER_FULL)) {
-		if (statusOf(PS_BUFFER_FULL)) {
-			DEBUG("Status: Buffer Full");
-		} else {
-			DEBUG("Status: Buffer Not Full");
+		if (statusChanged(PS_BUFFER_FULL)) {
+			if (statusOf(PS_BUFFER_FULL)) {
+				DEBUG("Status: Buffer Full");
+			} else {
+				DEBUG("Status: Buffer Not Full");
+			}
 		}
-	}
-	if (statusChanged(PS_NO_PAPER)) {
-		if (statusOf(PS_NO_PAPER)) {
-			DEBUG("Status: No Paper");
-		} else {
-			DEBUG("Status: Paper");
+		if (statusChanged(PS_NO_PAPER)) {
+			if (statusOf(PS_NO_PAPER)) {
+				DEBUG("Status: No Paper");
+			} else {
+				DEBUG("Status: Paper");
+			}
 		}
-	}
-	if (statusChanged(PS_HIGH_VOLTAGE)) {
-		if (statusOf(PS_HIGH_VOLTAGE)) {
-			DEBUG("Status: High Voltage");
-		} else {
-			DEBUG("Status: Normal Voltage");
+		if (statusChanged(PS_HIGH_VOLTAGE)) {
+			if (statusOf(PS_HIGH_VOLTAGE)) {
+				DEBUG("Status: High Voltage");
+			} else {
+				DEBUG("Status: Normal Voltage");
+			}
 		}
-	}
-	if (statusChanged(PS_UNKNOWN_ONE)) {
-		if (statusOf(PS_UNKNOWN_ONE)) {
-			DEBUG("Status: Unknown One ON");
-		} else {
-			DEBUG("Status: Unknown One OFF");
+		if (statusChanged(PS_UNKNOWN_ONE)) {
+			if (statusOf(PS_UNKNOWN_ONE)) {
+				DEBUG("Status: Unknown One ON");
+			} else {
+				DEBUG("Status: Unknown One OFF");
+			}
 		}
-	}
-	if (statusChanged(PS_UNKNOWN_TWO)) {
-		if (statusOf(PS_UNKNOWN_TWO)) {
-			DEBUG("Status: Unknown Two ON");
-		} else {
-			DEBUG("Status: Unknown Two OFF");
+		if (statusChanged(PS_UNKNOWN_TWO)) {
+			if (statusOf(PS_UNKNOWN_TWO)) {
+				DEBUG("Status: Unknown Two ON");
+			} else {
+				DEBUG("Status: Unknown Two OFF");
+			}
 		}
-	}
-	if (statusChanged(PS_HIGH_TEMP)) {
-		if (statusOf(PS_HIGH_TEMP)) {
-			DEBUG("Status: High Temp");
-		} else {
-			DEBUG("Status: Normal Temp");
+		if (statusChanged(PS_HIGH_TEMP)) {
+			if (statusOf(PS_HIGH_TEMP)) {
+				DEBUG("Status: High Temp");
+			} else {
+				DEBUG("Status: Normal Temp");
+			}
 		}
-	}
-	if (statusChanged(PS_UNKNOWN_THREE)) {
-		if (statusOf(PS_UNKNOWN_THREE)) {
-			DEBUG("Status: Unknown Three ON");
-		} else {
-			DEBUG("Status: Unknown Three OFF");
+		if (statusChanged(PS_UNKNOWN_THREE)) {
+			if (statusOf(PS_UNKNOWN_THREE)) {
+				DEBUG("Status: Unknown Three ON");
+			} else {
+				DEBUG("Status: Unknown Three OFF");
+			}
 		}
 	}
 }
@@ -232,38 +244,6 @@ void Printer::printContinue(uint8_t aCoinsToContinue) {
 	feed(2);
 }
 
-/*bool Printer::statusUnknownOne() {
-	return IsBitSet(_status, PS_UNKNOWN_ONE);
-}
-
-bool Printer::statusHighTemp() {
-	return IsBitSet(_status, PS_HIGH_TEMP);
-}
-
-bool Printer::statusUnknownTwo() {
-	return IsBitSet(_status, PS_UNKNOWN_TWO);
-}
-
-bool Printer::statusUnknownThree() {
-	return IsBitSet(_status, PS_UNKNOWN_THREE);
-}
-
-bool Printer::statusHighVoltage() {
-	return IsBitSet(_status, PS_HIGH_VOLTAGE);
-}
-
-bool Printer::statusNoPaper() {
-	return IsBitSet(_status, PS_NO_PAPER);
-}
-
-bool Printer::statusBufferFull() {
-	return IsBitSet(_status, PS_BUFFER_FULL);
-}
-
-bool Printer::statusOnline() {
-	return IsBitSet(_status, PS_ONLINE);
-}*/
-
 // This method sets the estimated completion time for a just-issued task.
 /*void Printer::timeoutSet(unsigned long x) {
   //Serial.println("Setting Timeout");
@@ -284,17 +264,16 @@ void Printer::begin(int heatTime) {
 
 // Override for easier print debugging.
 size_t Printer::write(uint8_t c) {
-#if (PRINT >= 1)
+	while (statusOf(PS_BUFFER_FULL)) {
+		updateState();
+		logChangedStatus();
+	}
 	CSN_Thermal::write(c);
-#else
-	Serial.println(c);
-#endif
 	return 1;
 }
 
 /* default implementation: may be overridden */
-size_t Printer::write(const uint8_t *buffer, size_t size)
-{
+size_t Printer::write(const uint8_t *buffer, size_t size) {
 	this->printing = true;
 	size_t n = 0;
 	while (size--) {
@@ -304,51 +283,28 @@ size_t Printer::write(const uint8_t *buffer, size_t size)
 	return n;
 }
 
-bool Printer::isPrinting() {
-	return this->printing;
+bool Printer::available() {
+	return Serial1.available();
 }
 
-bool Printer::isReady() {
-	return this->ready;
+uint8_t Printer::read() {
+	return Serial1.read();
 }
 
-// given a PROGMEM string, use Serial.print() to send it out
-// this is needed to save precious memory
-// thanks to todbot for this http://todbot.com/blog/category/programming/
-void Printer::printProgStr(const unsigned char *str) {
-	char c;
-	if (!str) {
-		return;
-	}
-	//IsBitSet(aMetadata->flags.flag2, 4)
-	/*if (Manager::getInstance().dataManager->metadata.flags.flag2.logPrint) {
-
-	}*/
-	while (c = (*str)) {
-
-#if (PRINT >= 1)
-		print(c);
-#else
-		Serial.print(c);
-#endif
-		str++;
-	}
-
-#if (PRINT >= 1)
-	println("");
-#else
-	Serial.println("");
-#endif
+uint8_t Printer::peek() {
+	return Serial1.peek();
 }
 
-void Printer::logProgStr(const unsigned char *str) {
-	if (!str) {
-		return;
+void Printer::setABS(bool aTurnOn) {
+	uint8_t setting = 0b00000000;
+	if (aTurnOn) {
+		setting = 0b00100100;
 	}
-	DEBUG("%s", str);
+	writeBytes(29, 97, setting);
 }
 
 // Load up to the max number of bytes, print, and repeat until end of file.
+/*
 void Printer::printFile(const char *aPath, boolean aWrapped, boolean aLinefeed, byte aPrependLen, byte aOffset = 0) {
   //CSN_Thermal::wake();
 	unsigned long fileSize = StoryLoad::getFileSize(aPath);
@@ -415,9 +371,9 @@ void Printer::printFile(const char *aPath, boolean aWrapped, boolean aLinefeed, 
   //slog(F("Jump indent: "));
   //DEBUG(this->jumpIndent);
   //CSN_Thermal::sleep();
-}
+}*/
 
-//
+/*
 int Printer::printWrapped(char *aMsg, byte aColumns, boolean aBufferMode) {
 	DEBUG(aMsg);
 	int length = strlen(aMsg);
@@ -496,130 +452,6 @@ int Printer::printWrapped(char *aMsg, byte aColumns, boolean aBufferMode) {
 		}
 	}
 	return length;
-}
+}*/
 
-boolean Printer::available() {
-	return Serial1.available();
-}
-
-byte Printer::read() {
-	return Serial1.read();
-}
-
-byte Printer::peek() {
-	return Serial1.peek();
-}
-
-void Printer::setPrinting(bool aPrinting) {
-  /*if (aPrinting) {
-    //__disable_irq();
-    DEBUG("PRINTING!");
-    digitalWrite(RED_PIN, LOW);
-    digitalWrite(GREEN_PIN, HIGH);
-    digitalWrite(BLUE_PIN, HIGH);
-  } else {
-    //__enable_irq();
-    DEBUG("NO PRINTING");
-    digitalWrite(RED_PIN, HIGH);
-    digitalWrite(GREEN_PIN, LOW);
-    digitalWrite(BLUE_PIN, HIGH);
-  }
-  this->printing = aPrinting;*/
-}
-
-void Printer::setABS(bool aTurnOn) {
-	byte setting = 0b00000000;
-	if (aTurnOn) {
-		setting = 0b00100100;
-	}
-	writeBytes(29, 97, setting);
-}
-
-void Printer::bufferStatus() {
-	char stat;
-	char bit;
-
-	if (Printer::available()) {
-		stat = Printer::read();
-		bit = stat & 0b000010;
-    if (bit == 0b000010) { // If yes, buffer full?
-    	DEBUG("?1: yes");
-    	this->bufferFull = true;
-    } else if (bit == 0b000000){
-    	DEBUG("?1: no");
-    	this->bufferFull = false;
-    }
-}
-}
-
-void Printer::printerStatus() {
-  	//writeBytes(27, 118, 0);
-
-	char stat;
-	char bit;
-
-	if (Printer::available()) {
-		stat = Printer::read();
-
-		bit = stat & 0b000001;
-		if (bit == 0b000001) {
-			DEBUG("Online: yes");
-		} else if (bit == 0b000000){
-			DEBUG("Online: no");
-		}
-
-		bit = stat & 0b000010;
-    if (bit == 0b000010) { // If yes, buffer full
-    	DEBUG("?1: yes");
-    } else if (bit == 0b000000){
-    	DEBUG("?1: no");
-    }
-
-    // Mask the 3 LSB, this seems to be the one we care about.
-    bit = stat & 0b000100;
-
-    // If it's set, no paper, if it's clear, we have paper.
-    if (bit == 0b000100) { // CORRECT
-    	DEBUG("Paper: no");
-    } else if (bit == 0b000000){
-    	DEBUG("Paper: yes");
-    }
-
-    bit = stat & 0b001000;
-    if (bit == 0b001000) { // CORRECT
-    	DEBUG("Volt: v > 9.5");
-    } else if (bit == 0b000000){
-    	DEBUG("Volt: normal");
-    }
-
-    bit = stat & 0b010000;
-    if (bit == 0b010000) { // Printer is ready maybe?
-    	DEBUG("?4: yes");
-    } else if (bit == 0b000000){
-    	DEBUG("?4: no");
-    }
-
-    bit = stat & 0b100000;
-    if (bit == 0b100000) {
-    	DEBUG("?5: yes");
-    } else if (bit == 0b000000){
-    	DEBUG("?5: no");
-    }
-
-    bit = stat & 0b1000000;
-    if (bit == 0b1000000) {
-    	DEBUG("Temp: over 60");
-    } else if (bit == 0b000000){
-    	DEBUG("Temp: normal");
-    }
-
-    bit = stat & 0b10000000;
-    if (bit == 0b10000000) {
-    	DEBUG("?7: yes");
-    } else if (bit == 0b000000){
-    	DEBUG("?7: no");
-    }
-    DEBUG("\n");
-}
-}
 }
