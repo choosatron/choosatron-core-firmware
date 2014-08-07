@@ -59,7 +59,8 @@ typedef struct MetaFlags_t {
 	union {
 	    uint8_t flag1;
 	    struct {
-	    	uint8_t rsvd1 			:2;
+	    	uint8_t rsvd1 			:1;
+	    	uint8_t random          :1;
 	    	uint8_t continues       :1;
 	    	uint8_t arcade			:1;
 	    	uint8_t multiplayer		:1;
@@ -74,7 +75,7 @@ typedef struct MetaFlags_t {
 		    uint8_t rsvd2 			:4;
 		    uint8_t logPrint        :1;
 		    uint8_t logLive			:1;
-		    uint8_t logLocation		:1;
+		    uint8_t logLocal		:1;
 		    uint8_t logging 		:1;
 		};
     };

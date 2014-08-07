@@ -44,7 +44,7 @@ class Manager
             return instance;
         }
 
-        void initialize();
+        void initialize(StateController* aStatecontroller);
 
         /* Public Variables */
         DataManager *dataManager;

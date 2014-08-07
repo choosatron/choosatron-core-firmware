@@ -1,14 +1,15 @@
 #include "cdam_manager.h"
+#include "cdam_state_controller.h"
 
 namespace cdam
 {
 
 /* Public Methods */
 
-void Manager::initialize() {
-	dataManager->initialize();
-	serverManager->initialize();
-	hardwareManager->initialize();
+void Manager::initialize(StateController* aStateController) {
+	dataManager->initialize(aStateController);
+	serverManager->initialize(aStateController);
+	hardwareManager->initialize(aStateController);
 }
 
 

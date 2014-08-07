@@ -37,12 +37,16 @@ class DataManager
         /* Public Methods */
         DataManager();
 
-        bool initialize();
+        bool initialize(StateController *aStateController);
 
         uint32_t getStoryOffset(uint8_t aIndex);
         bool addStoryMetadata(uint8_t aPosition, uint8_t aPages);
         //bool removeStoryMetadata(uint8_t aPosition);
         bool removeAllStoryData();
+        // Resets metadata to default values.
+        bool resetMetadata();
+        // Erase entire flash memory, includes metadata.
+        bool eraseFlash();
 
         Flashee::FlashDevice* storyFlash();
 
@@ -89,6 +93,7 @@ class DataManager
 
 
         /* Private Variables */
+        StateController* _stateControl;
         Flashee::FlashDevice* _metaFlash;
         Flashee::FlashDevice* _storyFlash;
 

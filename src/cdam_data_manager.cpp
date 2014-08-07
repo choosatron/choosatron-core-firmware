@@ -10,7 +10,8 @@ namespace cdam
 DataManager::DataManager() {
 }
 
-bool DataManager::initialize() {
+bool DataManager::initialize(StateController *aStateController) {
+	_stateControl = aStateController;
 	this->runState = true;
 	this->metadata = {};
 	DEBUG("Page Size: %d", Flashee::Devices::userFlash().pageSize());
@@ -50,11 +51,11 @@ bool DataManager::initialize() {
 		ERROR("Story Flash is NULL!");
 		return false;
 	}
+	//_storyFlash->eraseAll();
 	//logStoryOffsets(&this->metadata);
 	logStoryBytes(&this->metadata);
 	DEBUG("Ready!");
 
-	//_storyFlash->eraseAll();
 	return true;
 }
 
@@ -125,6 +126,14 @@ bool DataManager::removeAllStoryData() {
 	return writeStoryCountData(&this->metadata);
 }
 
+bool DataManager::resetMetadata() {
+	return initializeMetadata(&this->metadata);
+}
+
+bool DataManager::eraseFlash() {
+	return Flashee::Devices::userFlash().eraseAll();
+}
+
 /* Accessors */
 
 Flashee::FlashDevice* DataManager::storyFlash() {
@@ -181,16 +190,23 @@ bool DataManager::initializeMetadata(Metadata *aMetadata) {
 	aMetadata->firmwareVer.minor = this->firmwareVersion.minor;
 	aMetadata->firmwareVer.revision = this->firmwareVersion.revision;
 
-	//aMetadata->flags.flag1 |= FLG1_OFFLINE;
-	//aMetadata->flags.flag1 |= FLG1_DEMO;
-	//aMetadata->flags.flag1 |= FLG1_SD;
-	//aMetadata->flags.flag1 |= FLG1_MULTI;
-	//aMetadata->flags.flag1 |= FLG1_ARCADE;
+	aMetadata->flags.rsvd1 = 0;
+	aMetadata->flags.offline = 0;
+	aMetadata->flags.demo = 0;
+	aMetadata->flags.sdCard = 0;
+	aMetadata->flags.multiplayer = 0;
+	aMetadata->flags.arcade = 0;
+	aMetadata->flags.continues = 0;
+	aMetadata->flags.random = 0;
 
-	aMetadata->flags.flag2 |= FLG2_LOGGING;
-	aMetadata->flags.flag2 |= FLG2_LOG_LOCAL;
-	//aMetadata->flags.flag2 |= FLG2_LOG_LIVE;
-	//aMetadata->flags.flag2 |= FLG2_LOG_PRINT;
+	aMetadata->flags.rsvd2 = 0;
+	aMetadata->flags.logging = 1;
+	aMetadata->flags.logLocal = 1;
+	aMetadata->flags.logLive = 0;
+	aMetadata->flags.logPrint = 0;
+
+	aMetadata->flags.rsvd3 = 0;
+	aMetadata->flags.dictOffsetBytes = 0;
 
 	aMetadata->values.coinsPerCredit = 2;
 	aMetadata->values.coinDenomination = 25;
@@ -245,7 +261,7 @@ bool DataManager::writeMetadata(Metadata *aMetadata) {
 	DEBUG("Write Story Data: %d, %d, %lu", aMetadata->storyCount, kMetadataStoryCountOffset, kMetadataStoryCountSize + kMetadataStoryUsedPagesSize +
 		                 kMetadataStoryOffsetsSize);
 	Errors::clearError();
-	bool result = _metaFlash->writePage(aMetadata, kMetadataBaseAddress, sizeof(*aMetadata));
+	bool result = _metaFlash->write(aMetadata, kMetadataBaseAddress, sizeof(*aMetadata));
 	if (!result) {
 		Errors::setError(E_METADATA_WRITE_FAIL);
 	}
@@ -364,18 +380,24 @@ void DataManager::setTestMetadata(Metadata *aMetadata) {
 	aMetadata->firmwareVer.minor = 8;
 	aMetadata->firmwareVer.revision = 76;
 
-	// Flag 1
-	// Set bit to 0
-	aMetadata->flags.flag1 &= (~FLG1_OFFLINE);
-	// Set bit to 1
-	aMetadata->flags.flag1 |= FLG1_OFFLINE;
-	aMetadata->flags.flag1 |= FLG1_SD;
-	aMetadata->flags.flag1 |= FLG1_ARCADE;
+	aMetadata->flags.rsvd1 = 0;
+	aMetadata->flags.offline = 1;
+	aMetadata->flags.demo = 0;
+	aMetadata->flags.sdCard = 1;
+	aMetadata->flags.multiplayer = 0;
+	aMetadata->flags.arcade = 1;
+	aMetadata->flags.continues = 0;
+	aMetadata->flags.random = 1;
 
-	// Flag 2
-	aMetadata->flags.flag2 |= FLG2_LOG_LOCAL;
+	aMetadata->flags.rsvd2 = 0;
+	aMetadata->flags.logging = 1;
+	aMetadata->flags.logLocal = 0;
+	aMetadata->flags.logLive = 1;
+	aMetadata->flags.logPrint = 0;
 
-	aMetadata->flags.flag3 = 0xAA;
+	aMetadata->flags.rsvd3 = 0;
+	aMetadata->flags.dictOffsetBytes = 1;
+
 	aMetadata->flags.flag4 = 0x55;
 	aMetadata->flags.flag5 = 0xAA;
 	aMetadata->flags.flag6 = 0x55;
@@ -436,9 +458,9 @@ void DataManager::logStoryOffsets(Metadata *aMetadata) {
 
 void DataManager::logStoryBytes(Metadata *aMetadata) {
 #ifdef DEBUG_BUILD
-	char data[1000] = "";
+	char data[4097] = "";
 	for (int i = 0; i < aMetadata->storyCount; ++i) {
-		bool result = _storyFlash->read(data, aMetadata->storyOffsets[i] * Flashee::Devices::userFlash().pageSize(), 1000);
+		bool result = _storyFlash->read(data, aMetadata->storyOffsets[i] * Flashee::Devices::userFlash().pageSize(), 4096);
 		if (result) {
 			DEBUG("Story #: %d, Offset: %d", i, aMetadata->storyOffsets[i]);
 			Serial.println(data);
@@ -453,18 +475,18 @@ void DataManager::logMetadata(Metadata *aMetadata) {
 	DEBUG("METADATA");
 	DEBUG("Firmware v%d.%d.%d", aMetadata->firmwareVer.major,
 		aMetadata->firmwareVer.minor, aMetadata->firmwareVer.revision);
-	DEBUG("Offline: %s", (IsBitSet(aMetadata->flags.flag1, 7) ? "on" : "off"));
-	DEBUG("Demo: %s", (IsBitSet(aMetadata->flags.flag1, 6) ? "on" : "off"));
-	DEBUG("SD: %s", (IsBitSet(aMetadata->flags.flag1, 5) ? "on" : "off"));
-	DEBUG("Multi: %s", (IsBitSet(aMetadata->flags.flag1, 4) ? "on" : "off"));
-	DEBUG("Arcade: %s", (IsBitSet(aMetadata->flags.flag1, 3) ? "on" : "off"));
-	DEBUG("Rsvd: %s", (IsBitSet(aMetadata->flags.flag1, 2) ? "on" : "off"));
-	DEBUG("Rsvd: %s", (IsBitSet(aMetadata->flags.flag1, 1) ? "on" : "off"));
-	DEBUG("Rsvd: %s", (IsBitSet(aMetadata->flags.flag1, 0) ? "on" : "off"));
-	DEBUG("Logging: %s", (IsBitSet(aMetadata->flags.flag2, 7) ? "on" : "off"));
-	DEBUG("Log Local: %s", (IsBitSet(aMetadata->flags.flag2, 6) ? "on" : "off"));
-	DEBUG("Log Live: %s", (IsBitSet(aMetadata->flags.flag2, 5) ? "on" : "off"));
-	DEBUG("Log Print: %s", (IsBitSet(aMetadata->flags.flag2, 4) ? "on" : "off"));
+	DEBUG("Offline: %s", (aMetadata->flags.offline ? "on" : "off"));
+	DEBUG("Demo: %s", (aMetadata->flags.demo ? "on" : "off"));
+	DEBUG("SD: %s", (aMetadata->flags.sdCard ? "on" : "off"));
+	DEBUG("Multi: %s", (aMetadata->flags.multiplayer ? "on" : "off"));
+	DEBUG("Arcade: %s", (aMetadata->flags.arcade ? "on" : "off"));
+	DEBUG("Continues: %s", (aMetadata->flags.continues ? "on" : "off"));
+	DEBUG("Random: %s", (aMetadata->flags.random ? "on" : "off"));
+	DEBUG("Rsvd: %s", (aMetadata->flags.rsvd1 ? "on" : "off"));
+	DEBUG("Logging: %s", (aMetadata->flags.logging ? "on" : "off"));
+	DEBUG("Log Local: %s", (aMetadata->flags.logLocal ? "on" : "off"));
+	DEBUG("Log Live: %s", (aMetadata->flags.logLive ? "on" : "off"));
+	DEBUG("Log Print: %s", (aMetadata->flags.logPrint ? "on" : "off"));
 	DEBUG("Rsvd: %s", (IsBitSet(aMetadata->flags.flag2, 3) ? "on" : "off"));
 	DEBUG("Rsvd: %s", (IsBitSet(aMetadata->flags.flag2, 2) ? "on" : "off"));
 	DEBUG("Rsvd: %s", (IsBitSet(aMetadata->flags.flag2, 1) ? "on" : "off"));

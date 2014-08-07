@@ -9,6 +9,7 @@ struct GameStateStr_t {
 	GameState state;
 	const char *stateDesc;
 } GameStateDesc[] = {
+	{ STATE_NONE, "none" },
 	{ STATE_ERROR, "error" },
 	{ STATE_INIT, "init" },
 	{ STATE_READY, "ready" },
@@ -47,7 +48,7 @@ void StateController::initState(GameState aState) {
 	LOG("Init State: %s", stateString());
 
 	if (aState == STATE_INIT) {
-		Manager::getInstance().initialize();
+		Manager::getInstance().initialize(this);
 		_dataManager = Manager::getInstance().dataManager;
 		_hardwareManager = Manager::getInstance().hardwareManager;
 		_serverManager = Manager::getInstance().serverManager;

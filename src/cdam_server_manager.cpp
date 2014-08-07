@@ -1,7 +1,6 @@
 #include "cdam_manager.h"
 #include "cdam_constants.h"
-#include "spark_wiring_network.h"
-#include "memory_free.h"
+#include "spark_wiring_wifi.h"
 
 namespace cdam
 {
@@ -27,6 +26,9 @@ const char* kServerCmdRemoveStory = "remove_story";
 const char* kServerCmdRemoveAllStories = "remove_all_stories";
 const char* kServerCmdAddStory = "add_story";
 const char* kServerCmdSwapStoryPositions = "swap_story_pos";
+
+const char* kServerCmdAdminResetMetadata = "reset_metadata";
+const char* kServerCmdAdminEraseFlash = "erase_flash";
 
 // Commands that cause the Choosatron to throw events.
 const char* kServerCmdGetState = "get_state";
@@ -57,7 +59,9 @@ const uint8_t kServerStoryPortBytes = 6;
 ServerManager::ServerManager() {
 }
 
-void ServerManager::initialize() {
+void ServerManager::initialize(StateController *aStateController) {
+	_stateControl = aStateController;
+
 	// Setup our command function hook for the server.
 	Spark.function(kServerCmd, serverCommand);
 	// Expose the last command issued.
@@ -280,6 +284,16 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 
 	} else if (strcmp(command, kServerCmdSwapStoryPositions) == 0) {
 		/* TODO */
+	} else if (strcmp(command, kServerCmdAdminResetMetadata) == 0) {
+		if (dataMan->resetMetadata()) {
+			return kServerReturnSuccess;
+		}
+		return kServerReturnFail;
+	} else if (strcmp(command, kServerCmdAdminEraseFlash) == 0) {
+		if (dataMan->eraseFlash()) {
+			return kServerReturnSuccess;
+		}
+		return kServerReturnFail;
 	} else if (strcmp(command, kServerCmdGetState) == 0) {
 		/* TODO */
 		//Spark.publish(kServerCmdGetState, Manager::getInstance().dataManager->gameStateStr(), kServerTTLDefault, PRIVATE);
@@ -297,35 +311,35 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	} else if (strcmp(command, kServerCmdGetCredits) == 0) {
 		return hardMan->coinAcceptor()->getCredits();
 	} else if (strcmp(command, kServerCmdGetSSID) == 0) {
-		Spark.publish(kServerCmdGetSSID, Network.SSID(), kServerTTLDefault, PRIVATE);
+		Spark.publish(kServerCmdGetSSID, WiFi.SSID(), kServerTTLDefault, PRIVATE);
 		return kServerReturnEventIncoming;
 	} else if (strcmp(command, kServerCmdGetGatewayIP) == 0) {
-		uint8_t *address = Network.gatewayIP().raw_address();
+		uint8_t *address = WiFi.gatewayIP().raw_address();
 		char addr[16] = "";
 		snprintf(addr, 16, "%d.%d.%d.%d", address[0], address[1], address[2], address[3]);
 		Spark.publish(kServerCmdGetGatewayIP, addr, kServerTTLDefault, PRIVATE);
 		return kServerReturnEventIncoming;
 	} else if (strcmp(command, kServerCmdGetMacAddr) == 0) {
 		byte macVal[6];
-		Network.macAddress(macVal);
+		WiFi.macAddress(macVal);
 		char macAddr[18];
 		snprintf(macAddr, 18, "%02x:%02x:%02x:%02x:%02x:%02x", macVal[5], macVal[4], macVal[3], macVal[2], macVal[1], macVal[0]);
 		Spark.publish(kServerCmdGetMacAddr, macAddr, kServerTTLDefault, PRIVATE);
 		return kServerReturnEventIncoming;
 	} else if (strcmp(command, kServerCmdGetSubnetMask) == 0) {
-		uint8_t *address = Network.subnetMask().raw_address();
+		uint8_t *address = WiFi.subnetMask().raw_address();
 		char addr[16] = "";
 		snprintf(addr, 16, "%d.%d.%d.%d", address[0], address[1], address[2], address[3]);
 		Spark.publish(kServerCmdGetSubnetMask, addr, kServerTTLDefault, PRIVATE);
 		return kServerReturnEventIncoming;
 	} else if (strcmp(command, kServerCmdGetLocalIP) == 0) {
-		uint8_t *address = Network.localIP().raw_address();
+		uint8_t *address = WiFi.localIP().raw_address();
 		char addr[16] = "";
 		snprintf(addr, 16, "%d.%d.%d.%d", address[0], address[1], address[2], address[3]);
 		Spark.publish(kServerCmdGetLocalIP, addr, kServerTTLDefault, PRIVATE);
 		return kServerReturnEventIncoming;
 	} else if (strcmp(command, kServerCmdGetRSSI) == 0) {
-		return Network.RSSI();
+		return WiFi.RSSI();
 	}
 
 	return kServerReturnInvalidCmd;
@@ -359,7 +373,7 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 			uint16_t index = 0;
 			uint32_t bytesRead = 0;
 			uint8_t pagesWritten = 0;
-			uint8_t buffer[kServerDataBufferSize + 1] = "";
+			uint8_t buffer[kServerDataBufferSize + 1];
 			memset(&buffer[0], 0, sizeof(buffer));
 			DEBUG("Story Size: %lu", aStorySize);
 
@@ -376,8 +390,7 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 						(bytesRead == aStorySize)) {
 						// Write data
 						DEBUG("Writing page #: %d", pagesWritten);
-						DEBUG("Buf: %s", buffer);
-						bool result = Manager::getInstance().dataManager->storyFlash()->writePage(buffer,
+						bool result = Manager::getInstance().dataManager->storyFlash()->write(buffer,
 						                       (Manager::getInstance().dataManager->metadata.usedStoryPages * Flashee::Devices::userFlash().pageSize()) +
 						                       (pagesWritten * Flashee::Devices::userFlash().pageSize()), Flashee::Devices::userFlash().pageSize());
 

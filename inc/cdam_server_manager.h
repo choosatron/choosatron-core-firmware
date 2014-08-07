@@ -8,12 +8,14 @@
 namespace cdam
 {
 
+class StateController;
+
 class ServerManager
 {
     public:
         /* Public Methods */
         ServerManager();
-        void initialize();
+        void initialize(StateController* aStatecontroller);
         void handlePendingActions();
 
         /* Public Variables */
@@ -32,6 +34,7 @@ class ServerManager
         bool getStoryData(TCPClient *aClient, uint32_t aStorySize);
 
         /* Private Variables */
+        StateController* _stateControl;
         ElapsedMillis _actionsElapsed;
 };
 

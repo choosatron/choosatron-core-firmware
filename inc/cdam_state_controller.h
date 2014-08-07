@@ -7,6 +7,7 @@ namespace cdam
 
 // Game States
 typedef enum GameState_t {
+    STATE_NONE,
     STATE_ERROR,
     STATE_INIT,
     STATE_READY,

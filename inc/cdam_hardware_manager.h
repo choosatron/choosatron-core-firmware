@@ -35,13 +35,14 @@ namespace cdam
 // class Keypad;
 // class Printer;
 // class CoinAcceptor;
+class StateController;
 
 class HardwareManager {
     public:
         /* Public Methods */
         HardwareManager();
 
-        bool initialize();
+        bool initialize(StateController* aStatecontroller);
 
         // Accessors
         Printer* printer();
@@ -75,6 +76,7 @@ class HardwareManager {
         void coinAcceptorIntervalUpdate();
 
         /* Private Variables */
+        StateController* _stateControl;
         Printer* _printer;
         Keypad* _keypad;
         CoinAcceptor* _coinAcceptor;

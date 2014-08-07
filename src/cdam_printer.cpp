@@ -163,6 +163,7 @@ void Printer::printPressButton() {
 	println(CDAM_PRESS_BUTTON);
 
 	CSN_Thermal::justify('L');
+	feed(2);
 }
 
 void Printer::printTitle() {

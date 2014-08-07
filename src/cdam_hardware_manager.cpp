@@ -10,7 +10,8 @@ namespace cdam
 HardwareManager::HardwareManager() {
 }
 
-bool HardwareManager::initialize() {
+bool HardwareManager::initialize(StateController *aStateController) {
+	_stateControl = aStateController;
 	_coinAcceptor = NULL;
 	setupHardwarePins();
 	initHardware();
