@@ -24,7 +24,9 @@
 #define CDAM_DATA_MANAGER_H
 
 #include "cdam_constants.h"
+#include "cdam_state_controller.h"
 #include "flashee-eeprom.h"
+
 
 namespace cdam
 {
@@ -43,10 +45,14 @@ class DataManager
         bool addStoryMetadata(uint8_t aPosition, uint8_t aPages);
         //bool removeStoryMetadata(uint8_t aPosition);
         bool removeAllStoryData();
+        // Set and write a flag.
+        bool setFlag(uint8_t aFlagIndex, uint8_t aBitIndex, bool aValue);
         // Resets metadata to default values.
         bool resetMetadata();
         // Erase entire flash memory, includes metadata.
         bool eraseFlash();
+        // Change the game state.
+        void changeState(GameState aState);
 
         Flashee::FlashDevice* storyFlash();
 

@@ -50,6 +50,10 @@ Random: If there are more than 4 stories, randomize a menu of 4 choices.</descri
                         <fixedvalue name="Yes" value="0x2"/>
                         <fixedvalue name="No" value="0x0"/>
                     </mask>
+                    <mask name="Rsvd1" value="0x1">
+                        <fixedvalue name="Yes" value="0x1"/>
+                        <fixedvalue name="No" value="0x0"/>
+                    </mask>
                 </number>
                 <number name="Flag2" id="24" type="integer" length="8" lengthunit="bit" display="binary">
                     <mask name="Logging" value="0x80">

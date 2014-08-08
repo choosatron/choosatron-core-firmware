@@ -126,12 +126,37 @@ bool DataManager::removeAllStoryData() {
 	return writeStoryCountData(&this->metadata);
 }
 
+bool DataManager::setFlag(uint8_t aFlagIndex, uint8_t aBitIndex, bool aValue) {
+	if (aValue) {
+		// Access the flag byte at the appropriate offset and set it.
+		(*((uint8_t *) &this->metadata + kMetadataFlagsOffset + aFlagIndex)) |= 1 << aBitIndex;
+	} else {
+		// Access the flag byte at the appropriate offset and clear it.
+		(*((uint8_t *) &this->metadata + kMetadataFlagsOffset + aFlagIndex)) &= ~(1 << aBitIndex);
+	}
+	uint8_t flag = (*((uint8_t *) &this->metadata + kMetadataFlagsOffset + aFlagIndex));
+	Errors::clearError();
+	bool result = _metaFlash->writeEraseByte(flag, kMetadataFlagsOffset + aFlagIndex);
+	if (!result) {
+		Errors::setError(E_METADATA_WRITE_FAIL);
+	}
+	if (Errors::lastError != E_NO_ERROR) {
+		return false;
+	}
+	return true;
+}
+
 bool DataManager::resetMetadata() {
 	return initializeMetadata(&this->metadata);
 }
 
 bool DataManager::eraseFlash() {
 	return Flashee::Devices::userFlash().eraseAll();
+}
+
+// Change the game state.
+void DataManager::changeState(GameState aState) {
+	_stateControl->changeState(aState);
 }
 
 /* Accessors */

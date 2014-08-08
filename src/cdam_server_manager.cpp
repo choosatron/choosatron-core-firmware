@@ -26,9 +26,11 @@ const char* kServerCmdRemoveStory = "remove_story";
 const char* kServerCmdRemoveAllStories = "remove_all_stories";
 const char* kServerCmdAddStory = "add_story";
 const char* kServerCmdSwapStoryPositions = "swap_story_pos";
+const char* kServerCmdSetFlag = "set_flag";
 
 const char* kServerCmdAdminResetMetadata = "reset_metadata";
 const char* kServerCmdAdminEraseFlash = "erase_flash";
+const char* kServerCmdAdminResetUnit = "reset_unit";
 
 // Commands that cause the Choosatron to throw events.
 const char* kServerCmdGetState = "get_state";
@@ -284,6 +286,16 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 
 	} else if (strcmp(command, kServerCmdSwapStoryPositions) == 0) {
 		/* TODO */
+	} else if (strcmp(command, kServerCmdSetFlag) == 0) {
+		uint8_t flagIndex = aCommandAndArgs.charAt(delimiterPos + 1) - '0';
+		uint8_t bitIndex = aCommandAndArgs.charAt(delimiterPos + 2) - '0';
+		bool value = aCommandAndArgs.charAt(delimiterPos + 3) - '0';
+		DEBUG("Flag Index: %d, Bit Index: %d, Value: %d", flagIndex, bitIndex, value);
+		if (dataMan->setFlag(flagIndex, bitIndex, value)) {
+			return kServerReturnSuccess;
+		}
+		ERROR(Errors::errorString());
+		return kServerReturnFail;
 	} else if (strcmp(command, kServerCmdAdminResetMetadata) == 0) {
 		if (dataMan->resetMetadata()) {
 			return kServerReturnSuccess;
@@ -294,6 +306,8 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 			return kServerReturnSuccess;
 		}
 		return kServerReturnFail;
+	} else if (strcmp(command, kServerCmdAdminResetUnit) == 0) {
+		dataMan->changeState(STATE_INIT);
 	} else if (strcmp(command, kServerCmdGetState) == 0) {
 		/* TODO */
 		//Spark.publish(kServerCmdGetState, Manager::getInstance().dataManager->gameStateStr(), kServerTTLDefault, PRIVATE);
