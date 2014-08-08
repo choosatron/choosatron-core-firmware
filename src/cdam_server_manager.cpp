@@ -294,7 +294,6 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		if (dataMan->setFlag(flagIndex, bitIndex, value)) {
 			return kServerReturnSuccess;
 		}
-		ERROR(Errors::errorString());
 		return kServerReturnFail;
 	} else if (strcmp(command, kServerCmdAdminResetMetadata) == 0) {
 		if (dataMan->resetMetadata()) {
@@ -307,10 +306,9 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		}
 		return kServerReturnFail;
 	} else if (strcmp(command, kServerCmdAdminResetUnit) == 0) {
-		dataMan->changeState(STATE_INIT);
+		dataMan->stateController()->changeState(STATE_INIT);
 	} else if (strcmp(command, kServerCmdGetState) == 0) {
-		/* TODO */
-		//Spark.publish(kServerCmdGetState, Manager::getInstance().dataManager->gameStateStr(), kServerTTLDefault, PRIVATE);
+		Spark.publish(kServerCmdGetState, dataMan->stateController()->stateString(), kServerTTLDefault, PRIVATE);
 		return kServerReturnEventIncoming;
 	} else if (strcmp(command, kServerCmdGetStoryCount) == 0) {
 		return dataMan->metadata.storyCount;

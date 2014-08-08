@@ -51,9 +51,8 @@ class DataManager
         bool resetMetadata();
         // Erase entire flash memory, includes metadata.
         bool eraseFlash();
-        // Change the game state.
-        void changeState(GameState aState);
 
+        StateController* stateController();
         Flashee::FlashDevice* storyFlash();
 
         /* Public Variables */

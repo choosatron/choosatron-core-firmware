@@ -46,6 +46,8 @@ int Choosatron::loop() {
 		_stateController->updateState();
 	}
 
+	Manager::getInstance().hardwareManager->keypad()->clearEvents();
+
 	//uint16_t newMillis = millis();
 	//uint16_t diff = newMillis - _lastMillis;
 

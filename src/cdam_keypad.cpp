@@ -13,8 +13,9 @@ namespace cdam
 #define BTN_THREE 0x04
 #define BTN_FOUR  0x08
 
-Keypad::Keypad() {
-}
+/* Public Methods */
+
+Keypad::Keypad() {}
 
 void Keypad::initialize() {
     pinMode(PIN_BTN_ONE, INPUT_PULLUP);
@@ -86,6 +87,108 @@ void Keypad::updateState() {
             break;
     }*/
 }
+
+//
+// detect button events
+//
+
+bool Keypad::buttonsDown() {
+    if (this->lastButtons) {
+        return true;
+    }
+    return false;
+}
+
+uint8_t Keypad::buttonEvent(ButtonEvent aEvent, uint8_t aRange) {
+    uint8_t result = 0;
+    for (int i = NUM_BUTTONS - 1; i >= 0; i--) {
+        if (this->buttonData[i].event == aEvent) {
+            if (aRange == 0) {
+                result = this->buttonData[i].num;
+            } else if ((0 < buttonData[i].num) && (buttonData[i].num <= aRange)) {
+                result = this->buttonData[i].num;
+            }
+        }
+    }
+    clearEvents();
+    return result;
+}
+
+uint8_t Keypad::buttonEventValue(ButtonEvent aEvent, uint8_t aBtnNum) {
+    uint8_t result = 0;
+    if (buttonData[aBtnNum].event == aEvent) {
+        //this->buttonData[aBtnNum].event = BTN_NO_EVENT;
+        result = buttonData[aBtnNum].num;
+    }
+    clearEvents();
+    return result;
+}
+
+/*char Keypad::buttonEventChar(ButtonEvent aEvent, uint8_t aBtnNum) {
+    uint8_t value = buttonEventValue(aEvent, aBtnNum);
+    if (value != 0) {
+        return value + '0';
+    }
+    return '\0';
+}*/
+
+uint8_t Keypad::buttonValue(uint8_t aBtnNum) {
+    uint8_t result = buttonData[aBtnNum].num;
+    return result;
+}
+
+/*char Keypad::buttonChar(uint8_t aBtnNum) {
+    char result = buttonData[aBtnNum].num + '0';
+    return result;
+}*/
+
+uint8_t Keypad::keypadEvent(KeypadEvent aEvent, uint8_t aRange) {
+    uint8_t result = 0;
+    if (this->event == aEvent) {
+        if (aRange == 0) {
+            result = this->lastValue;
+        } else if ((0 < this->lastValue) && (this->lastValue <= aRange)) {
+            result = this->lastValue;
+        }
+    }
+    clearEvents();
+    return result;
+}
+
+uint8_t Keypad::keypadEventValue(KeypadEvent aEvent) {
+    uint8_t result = 0;
+    if (this->event == aEvent) {
+        //this->event = KEYPAD_NO_EVENT;
+        result = this->lastValue;
+    }
+    clearEvents();
+    return result;
+}
+
+/*char Keypad::keypadEventChar(KeypadEvent aEvent) {
+    uint8_t value = keypadEventValue(aEvent);
+    if (value != 0) {
+        return value + '0';
+    }
+    return '\0';
+}*/
+
+void Keypad::clearEvents() {
+    for (int i = NUM_BUTTONS - 1; i >= 0; i--) {
+        this->buttonData[i].event = BTN_NO_EVENT;
+        //Serial.print("Btn event: ");
+        //Serial.println(this->buttonData[i].event);
+    }
+    this->lastEvent = this->event;
+    this->event = KEYPAD_NO_EVENT;
+    this->pressedEvents = 0;
+    this->releasedEvents = 0;
+    this->heldEvents = 0;
+    this->multiDownEvent = 0;
+    this->multiUpEvent = 0;
+}
+
+/* Private Methods */
 
 ButtonEvent Keypad::filterButton(ButtonData *aBtnData) {
     uint8_t val = !digitalRead(aBtnData->pin);
@@ -211,11 +314,6 @@ void Keypad::getFilteredButtons(void) {
                     // Filter multi-up.
                     this->multiUp = this->lastButtons;
                     this->multiUpValue = keypadTotal(this->lastButtons);
-                    //Serial.println("IDLE_STATE");
-                    //Serial.print("multi-up: ");
-                    //printBinary(this->multiUp);
-                    //Serial.print("multi-up value: ");
-                    //Serial.println(this->multiUpValue);
                     this->multiCount = KEYPAD_FILTER_UP_COUNT;
                     this->state = KEYPAD_FILTER_MULTI_UP_STATE;
                 }
@@ -237,11 +335,6 @@ void Keypad::getFilteredButtons(void) {
             } else {
                 this->multiUp = this->lastButtons;
                 this->multiUpValue = keypadTotal(this->lastButtons);
-                //Serial.println("MULTI_DOWN_STATE");
-                //Serial.print("multi-up: ");
-                //printBinary(this->multiUp);
-                //Serial.print("multi-up value: ");
-                //Serial.println(this->multiUpValue);
                 this->multiCount = KEYPAD_FILTER_UP_COUNT;
                 this->state = KEYPAD_FILTER_MULTI_UP_STATE;
             }
@@ -282,117 +375,6 @@ void Keypad::getFilteredButtons(void) {
     this->lastButtons = this->buttons;
     this->buttons = 0;
     this->lastEvent = this->event;
-}
-
-//
-// detect button events
-//
-
-bool Keypad::buttonsDown() {
-    if (this->lastButtons) {
-        return true;
-    }
-    return false;
-}
-
-uint8_t Keypad::buttonEvent(ButtonEvent aEvent, uint8_t aRange) {
-    uint8_t result = 0;
-    for (int i = NUM_BUTTONS - 1; i >= 0; i--) {
-        if (this->buttonData[i].event == aEvent) {
-            //Serial.print("Range: ");
-            //Serial.print(aRange);
-            //Serial.print(", value: ");
-            //Serial.println(buttonData[i].num);
-            if (aRange == 0) {
-                result = this->buttonData[i].num;
-            } else if ((0 < buttonData[i].num) && (buttonData[i].num <= aRange)) {
-                //Serial.println("Btn in range!");
-                result = this->buttonData[i].num;
-            }
-        }
-    }
-    return result;
-}
-
-uint8_t Keypad::buttonEventValue(uint8_t aBtnNum, ButtonEvent aEvent) {
-    uint8_t result = 0;
-    if (buttonData[aBtnNum].event == aEvent) {
-        this->buttonData[aBtnNum].event = BTN_NO_EVENT;
-        /*Serial.print("BTN ");
-        Serial.print(aBtnNum);
-        Serial.print(" Event Value: ");
-        Serial.println(buttonData[aBtnNum].num);*/
-        result = buttonData[aBtnNum].num;
-    }
-    return result;
-}
-
-char Keypad::buttonEventChar(uint8_t aBtnNum, ButtonEvent aEvent) {
-    uint8_t value = buttonEventValue(aBtnNum, aEvent);
-    if (value != 0) {
-        return value + '0';
-    }
-    return '\0';
-}
-
-uint8_t Keypad::buttonValue(uint8_t aBtnNum) {
-    uint8_t result = buttonData[aBtnNum].num;
-    return result;
-}
-
-char Keypad::buttonChar(uint8_t aBtnNum) {
-    char result = buttonData[aBtnNum].num + '0';
-    return result;
-}
-
-bool Keypad::keypadEvent(KeypadEvent aEvent, uint8_t aRange) {
-    bool result = false;
-    if (this->event == aEvent) {
-        //Serial.print("Range: ");
-        //Serial.print(aRange);
-        //Serial.print(", value: ");
-        //Serial.println(this->keypadValue);
-
-        if (aRange == 0) {
-            result = true;
-        } else if ((0 < this->lastValue) && (this->lastValue <= aRange)) {
-            Serial.println("Keypad in range!");
-            result = true;
-        }
-    }
-    return result;
-}
-
-uint8_t Keypad::keypadEventValue(KeypadEvent aEvent) {
-    uint8_t result = 0;
-    if (this->event == aEvent) {
-        this->event = KEYPAD_NO_EVENT;
-        result = this->lastValue;
-    }
-    return result;
-}
-
-char Keypad::keypadEventChar(KeypadEvent aEvent) {
-    uint8_t value = keypadEventValue(aEvent);
-    if (value != 0) {
-        return value + '0';
-    }
-    return '\0';
-}
-
-void Keypad::clearEvents() {
-    for (int i = NUM_BUTTONS - 1; i >= 0; i--) {
-        this->buttonData[i].event = BTN_NO_EVENT;
-        //Serial.print("Btn event: ");
-        //Serial.println(this->buttonData[i].event);
-    }
-    this->event = KEYPAD_NO_EVENT;
-    this->lastEvent = KEYPAD_NO_EVENT;
-    this->pressedEvents = 0;
-    this->releasedEvents = 0;
-    this->heldEvents = 0;
-    this->multiDownEvent = 0;
-    this->multiUpEvent = 0;
 }
 
 }

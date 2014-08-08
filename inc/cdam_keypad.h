@@ -56,31 +56,37 @@ typedef struct {
 class Keypad {
 
 public:
+	/* Public Methods */
 	Keypad();
 	void initialize();
 	void updateState();
-	// Returns true if the provided event type has occurred.
+	// Returns value of button if the event type has occurred, otherwise 0.
 	uint8_t buttonEvent(ButtonEvent aEvent, uint8_t aRange = 0);
-	uint8_t buttonEventValue(uint8_t aBtnNum, ButtonEvent aEvent);
-	char buttonEventChar(uint8_t aBtnNum, ButtonEvent aEvent);
+	uint8_t buttonEventValue(ButtonEvent aEvent, uint8_t aBtnNum);
+	//char buttonEventChar(ButtonEvent aEvent, uint8_t aBtnNum);
 	uint8_t buttonValue(uint8_t aBtnNum);
-	char buttonChar(uint8_t aBtnNum);
-	// Returns true if the provided event type has occurred.
-	bool keypadEvent(KeypadEvent aEvent, uint8_t aRange = 0);
+	//char buttonChar(uint8_t aBtnNum);
+	// Returns value of the buttons together, otherwise 0.
+	uint8_t keypadEvent(KeypadEvent aEvent, uint8_t aRange = 0);
 	uint8_t keypadEventValue(KeypadEvent aEvent);
 	char keypadEventChar(KeypadEvent aEvent);
 	bool buttonsDown();
 	void clearEvents();
 
+	/* Public Variables */
+
 	// Should the keypad respond to update requests.
 	bool active;
 private:
+	/* Private Methods */
 	ButtonEvent filterButton(ButtonData *aBtnData);
 	void getFilteredButtons(void);
 	uint8_t keypadTotal(uint8_t aButtons);
 	void printBinary(uint8_t aValue);
 
 	ButtonData buttonData[NUM_BUTTONS];
+
+	/* Private Variables */
 
 	KeypadState state;
 	KeypadEvent event;

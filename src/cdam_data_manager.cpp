@@ -28,7 +28,7 @@ bool DataManager::initialize(StateController *aStateController) {
 	DEBUG("Sizeof: %d", sizeof(this->metadata));
 	DEBUG("Metadata Size: %d", kMetadataSize);
 	char data[40] = "";
-	bool result = _metaFlash->read(data, 0, 40);
+	_metaFlash->read(data, 0, 40);
 	DEBUG("META DEBUG BEGIN");
 	DEBUG("HEX");
 	for (int i = 0; i < 40; ++i) {
@@ -139,6 +139,7 @@ bool DataManager::setFlag(uint8_t aFlagIndex, uint8_t aBitIndex, bool aValue) {
 	bool result = _metaFlash->writeEraseByte(flag, kMetadataFlagsOffset + aFlagIndex);
 	if (!result) {
 		Errors::setError(E_METADATA_WRITE_FAIL);
+		ERROR(Errors::errorString());
 	}
 	if (Errors::lastError != E_NO_ERROR) {
 		return false;
@@ -154,12 +155,11 @@ bool DataManager::eraseFlash() {
 	return Flashee::Devices::userFlash().eraseAll();
 }
 
-// Change the game state.
-void DataManager::changeState(GameState aState) {
-	_stateControl->changeState(aState);
-}
-
 /* Accessors */
+
+StateController* DataManager::stateController() {
+	return _stateControl;
+}
 
 Flashee::FlashDevice* DataManager::storyFlash() {
 	return _storyFlash;
@@ -294,7 +294,7 @@ bool DataManager::writeMetadata(Metadata *aMetadata) {
 		return false;
 	}
 	char data[40] = "";
-	result = _metaFlash->read(data, 0, 40);
+	_metaFlash->read(data, 0, 40);
 	DEBUG("META DEBUG BEGIN");
 	DEBUG("HEX");
 	for (int i = 0; i < 40; ++i) {
@@ -332,7 +332,7 @@ bool DataManager::writeStoryCountData(Metadata *aMetadata) {
 		return false;
 	}
 	char data[40] = "";
-	result = _metaFlash->read(data, 0, 40);
+	_metaFlash->read(data, 0, 40);
 	DEBUG("META DEBUG BEGIN");
 	DEBUG("HEX");
 	for (int i = 0; i < 40; ++i) {
