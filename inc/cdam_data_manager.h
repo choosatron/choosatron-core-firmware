@@ -18,7 +18,7 @@
  * This Singleton (A) must be fully constructed before the constructor of (B)
  * is called.
  *
- */
+ **/
 
 #ifndef CDAM_DATA_MANAGER_H
 #define CDAM_DATA_MANAGER_H
@@ -26,7 +26,6 @@
 #include "cdam_constants.h"
 #include "cdam_state_controller.h"
 #include "flashee-eeprom.h"
-
 
 namespace cdam
 {
@@ -40,8 +39,11 @@ class DataManager
         DataManager();
 
         bool initialize(StateController *aStateController);
-
+void testRandArray();
         uint32_t getStoryOffset(uint8_t aIndex);
+        // Fill provided buffer with the title of the story and the provided position.
+        bool getTitle(void* aBuffer, uint8_t aStoryIndex);
+        // Add the metadata for a new story.
         bool addStoryMetadata(uint8_t aPosition, uint8_t aPages);
         //bool removeStoryMetadata(uint8_t aPosition);
         bool removeAllStoryData();
@@ -57,6 +59,8 @@ class DataManager
 
         /* Public Variables */
         bool runState;
+        // Live story order.
+        uint8_t liveStoryOrder[kMaxStoryCount];
         // The hard-coded firmware version
         Version firmwareVersion;
         Metadata metadata;

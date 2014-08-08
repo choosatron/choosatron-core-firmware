@@ -181,16 +181,12 @@ void Printer::printTitle() {
 	CSN_Thermal::justify('L');
 }
 
-void Printer::printMenu(char *aStories) {
-	if (aStories == NULL) {
-		println(CDAM_EMPTY);
-		return;
-	}
+void Printer::printEmpty() {
+	println(CDAM_EMPTY);
+}
 
+void Printer::printStart() {
 	println(CDAM_START);
-
-	println(aStories);
-	feed(1);
 }
 
 void Printer::printAuthors(char* aAuthor, char* aCredits) {
@@ -302,6 +298,11 @@ void Printer::setABS(bool aTurnOn) {
 		setting = 0b00100100;
 	}
 	writeBytes(29, 97, setting);
+}
+
+uint8_t Printer::printWrapped(char* aBuffer, uint8_t aColumns) {
+
+	return 0;
 }
 
 // Load up to the max number of bytes, print, and repeat until end of file.

@@ -37,12 +37,15 @@ public:
     void printInsertCoin(uint8_t aCoins, uint8_t aCreditValue);
     void printPressButton();
     void printTitle();
-    void printMenu(char* aStories);
+    void printEmpty();
+    void printStart();
     void printAuthors(char* aAuthor, char* aCredits);
     void printPoints(int16_t aPoints, int16_t aPerfectScore);
     void printContinue(uint8_t aCoinsToContinue);
 
     void begin(int heatTime=200);
+
+    uint8_t printWrapped(char* aBuffer, uint8_t aColumns);
     //void printFile(const char *aPath, bool aWrapped, bool aLinefeed, uint8_t aPrependLen, uint8_t aOffset);
     //int printWrapped(char *aMsg, uint8_t aColumns, bool aBufferMode);
 

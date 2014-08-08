@@ -9,8 +9,10 @@ namespace cdam
 typedef enum GameState_t {
     STATE_NONE,
     STATE_ERROR,
+    STATE_BOOTING,
     STATE_INIT,
     STATE_READY,
+    STATE_IDLE,
     STATE_SELECT,
     STATE_PLAY,
     STATE_CONTINUE,

@@ -7,8 +7,7 @@ namespace cdam
 
 /* Public Methods */
 
-DataManager::DataManager() {
-}
+DataManager::DataManager() {}
 
 bool DataManager::initialize(StateController *aStateController) {
 	_stateControl = aStateController;
@@ -27,11 +26,11 @@ bool DataManager::initialize(StateController *aStateController) {
 	//_metaFlash->eraseAll();
 	DEBUG("Sizeof: %d", sizeof(this->metadata));
 	DEBUG("Metadata Size: %d", kMetadataSize);
-	char data[40] = "";
-	_metaFlash->read(data, 0, 40);
+	char data[kMetadataSize] = "";
+	_metaFlash->read(data, 0, kMetadataSize);
 	DEBUG("META DEBUG BEGIN");
 	DEBUG("HEX");
-	for (int i = 0; i < 40; ++i) {
+	for (int i = 0; i < kMetadataSize; ++i) {
 		if (data[i]<0x10) {Serial.print("0");}
           Serial.print(data[i],HEX);
           Serial.print(" ");
@@ -46,14 +45,20 @@ bool DataManager::initialize(StateController *aStateController) {
 	}
 
 	DEBUG("Stories: %d, Used Pages: %d", this->metadata.storyCount, this->metadata.usedStoryPages);
-	_storyFlash = Flashee::Devices::createWearLevelErase(128 * 4096, 384 * 4096);
+	_storyFlash = Flashee::Devices::createWearLevelErase(
+	                                128 * Flashee::Devices::userFlash().pageSize(),
+	                                384 * Flashee::Devices::userFlash().pageSize());
 	if (_storyFlash == NULL) {
 		ERROR("Story Flash is NULL!");
 		return false;
 	}
+	// Setup story order.
+	memcpy(&this->liveStoryOrder, &this->metadata.storyOrder, sizeof(this->metadata.storyOrder));
+
 	//_storyFlash->eraseAll();
 	//logStoryOffsets(&this->metadata);
 	logStoryBytes(&this->metadata);
+	testRandArray();
 	DEBUG("Ready!");
 
 	return true;
@@ -61,6 +66,13 @@ bool DataManager::initialize(StateController *aStateController) {
 
 uint32_t DataManager::getStoryOffset(uint8_t aIndex) {
 	return this->metadata.storyOffsets[aIndex];
+}
+
+bool getTitle(void* aBuffer, uint8_t aStoryIndex) {
+
+	//bool result = _metaFlash->read(aBuffer, kMetadataBaseAddress, kStoryTitleSize);
+	//((uint8_t*)data, baseAddress + address, length);
+	return true;
 }
 
 bool DataManager::addStoryMetadata(uint8_t aIndex, uint8_t aPages) {
@@ -73,15 +85,17 @@ bool DataManager::addStoryMetadata(uint8_t aIndex, uint8_t aPages) {
 	} else {
 		// Shift existing story indexes 'up', until the slot for the new story is free.
 		while (count > aIndex) {
-			this->metadata.storyOffsets[count] = this->metadata.storyOffsets[count - 1];
+			this->metadata.storyOrder[count] = this->metadata.storyOrder[count - 1];
 			count--;
 		}
 	}
 
+	// Set the offset for this story.
+	this->metadata.storyOffsets[this->metadata.storyCount] = this->metadata.usedStoryPages;
+	// Set the position for this story.
+	this->metadata.storyOrder[aIndex] = this->metadata.storyCount;
 	// Increase the story count.
 	this->metadata.storyCount += 1;
-	// Set the offset for this story.
-	this->metadata.storyOffsets[aIndex] = this->metadata.usedStoryPages;
 	// Add the total story bytes to the total used.
 	this->metadata.usedStoryPages += aPages;
 
@@ -248,7 +262,7 @@ bool DataManager::initializeMetadata(Metadata *aMetadata) {
 bool DataManager::readMetadata(Metadata *aMetadata) {
 	DEBUG("Size of Metadata: %d", sizeof(*aMetadata));
 	if (_metaFlash->readByte(kMetadataBaseAddress) == ASCII_SOH) {
-		bool result = _metaFlash->read(aMetadata, kMetadataBaseAddress, sizeof(*aMetadata));
+		bool result = _metaFlash->read(aMetadata, kMetadataBaseAddress, kMetadataSize);
 		/*result = _metaFlash->read(&aMetadata->storyCount,
 		                 kMetadataStoryCountOffset,
 		                 kMetadataStoryCountSize);
@@ -286,18 +300,18 @@ bool DataManager::writeMetadata(Metadata *aMetadata) {
 	DEBUG("Write Story Data: %d, %d, %lu", aMetadata->storyCount, kMetadataStoryCountOffset, kMetadataStoryCountSize + kMetadataStoryUsedPagesSize +
 		                 kMetadataStoryOffsetsSize);
 	Errors::clearError();
-	bool result = _metaFlash->write(aMetadata, kMetadataBaseAddress, sizeof(*aMetadata));
+	bool result = _metaFlash->write(aMetadata, kMetadataBaseAddress, kMetadataSize);
 	if (!result) {
 		Errors::setError(E_METADATA_WRITE_FAIL);
 	}
 	if (Errors::lastError != E_NO_ERROR) {
 		return false;
 	}
-	char data[40] = "";
-	_metaFlash->read(data, 0, 40);
+	char data[kMetadataSize] = "";
+	_metaFlash->read(data, 0, kMetadataSize);
 	DEBUG("META DEBUG BEGIN");
 	DEBUG("HEX");
-	for (int i = 0; i < 40; ++i) {
+	for (int i = 0; i < kMetadataSize; ++i) {
 		if (data[i]<0x10) {Serial.print("0");}
           Serial.print(data[i],HEX);
           Serial.print(" ");
@@ -311,7 +325,8 @@ bool DataManager::writeStoryCountData(Metadata *aMetadata) {
 	Errors::clearError();
 	bool result = _metaFlash->write(&aMetadata->storyCount,
 		                 kMetadataStoryCountOffset,
-		                 kMetadataStoryCountSize + kMetadataStoryUsedPagesSize + kMetadataStoryOffsetsSize);
+		                 kMetadataStoryCountSize + kMetadataStoryUsedPagesSize +
+		                 kMetadataStoryOffsetsSize + kMetadataStoryOrderSize);
 	if (!result) {
 		Errors::setError(E_METADATA_WRITE_FAIL);
 	}
@@ -331,11 +346,11 @@ bool DataManager::writeStoryCountData(Metadata *aMetadata) {
 	if (Errors::lastError != E_NO_ERROR) {
 		return false;
 	}
-	char data[40] = "";
-	_metaFlash->read(data, 0, 40);
+	char data[kMetadataSize] = "";
+	_metaFlash->read(data, 0, kMetadataSize);
 	DEBUG("META DEBUG BEGIN");
 	DEBUG("HEX");
-	for (int i = 0; i < 40; ++i) {
+	for (int i = 0; i < kMetadataSize; ++i) {
 		if (data[i]<0x10) {Serial.print("0");}
           Serial.print(data[i],HEX);
           Serial.print(" ");

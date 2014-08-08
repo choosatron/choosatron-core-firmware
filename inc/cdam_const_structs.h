@@ -30,7 +30,9 @@ const uint16_t kMetadataStoryUsedPagesOffset = (kMetadataStoryCountOffset + kMet
 const uint16_t kMetadataStoryUsedPagesSize = 1; // bytes
 const uint16_t kMetadataStoryOffsetsOffset = (kMetadataStoryUsedPagesOffset + kMetadataStoryUsedPagesSize);
 const uint16_t kMetadataStoryOffsetsSize = kMaxStoryCount; // 1 bytes each.
-const uint16_t kMetadataSize = (kMetadataStoryOffsetsOffset + kMetadataStoryOffsetsSize); // 4 bytes each.
+const uint16_t kMetadataStoryOrderOffset = (kMetadataStoryOffsetsOffset + kMetadataStoryOffsetsSize);
+const uint16_t kMetadataStoryOrderSize = kMaxStoryCount; // 1 bytes each.
+const uint16_t kMetadataSize = (kMetadataStoryOrderOffset + kMetadataStoryOrderSize);
 
 //const uint16_t kStoryBaseAddress = (kMetadataStoryOffsetsOffset + kMetadataStoryOffsetsSize);
 
@@ -145,11 +147,37 @@ typedef struct Metadata_t {
 	uint8_t storyCount;
 	uint8_t usedStoryPages;
 	uint8_t storyOffsets[kMaxStoryCount];
+	uint8_t storyOrder[kMaxStoryCount];
 	//std::vector<uint32_t> storyOffsets;
 } Metadata;
 
 
 /* Structure definitions for StoryHeader */
+
+const uint16_t kStoryBinaryVersionOffset = 0;
+const uint16_t kStoryBinaryVersionSize = 3;
+const uint16_t kStoryFlagsOffset = (kStoryBinaryVersionOffset + kStoryBinaryVersionSize);
+const uint16_t kStoryFlagsSize = 4; // bytes
+const uint16_t kStoryVarsOffset = (kStoryFlagsOffset + kStoryFlagsSize);
+const uint16_t kStoryVarsSize = 3; // bytes
+const uint16_t kStorySizeOffset = (kStoryVarsOffset + kStoryVarsSize);
+const uint16_t kStorySizeSize = 4; // bytes
+const uint16_t kStoryVersionOffset = (kStorySizeOffset + kStorySizeSize);
+const uint16_t kStoryVersionSize = 3; // bytes
+const uint16_t kStoryLangCodeOffset = (kStoryVersionOffset + kStoryVersionSize);
+const uint16_t kStoryLangCodeSize = 4; // bytes
+const uint16_t kStoryTitleOffset = (kStoryLangCodeOffset + kStoryLangCodeSize);
+const uint16_t kStoryTitleSize = 64; // bytes
+const uint16_t kStorySubtitleOffset = (kStoryTitleOffset + kStoryTitleSize);
+const uint16_t kStorySubtitleSize = 32; // bytes
+const uint16_t kStoryAuthorOffset = (kStorySubtitleOffset + kStorySubtitleSize);
+const uint16_t kStoryAuthorSize = 48; // bytes
+const uint16_t kStoryCreditsOffset = (kStoryAuthorOffset + kStoryAuthorSize);
+const uint16_t kStoryCreditsSize = 80; // bytes
+const uint16_t kStoryContactOffset = (kStoryCreditsOffset + kStoryCreditsSize);
+const uint16_t kStoryContactSize = 128; // bytes
+const uint16_t kStoryPublishedOffset = (kStoryContactOffset + kStoryContactSize);
+const uint16_t kStoryPublichedSize = 18; // bytes
 
 typedef struct StoryFlags_t
 {
@@ -197,13 +225,13 @@ typedef struct StoryHeader_t {
 	StoryVars vars;
     uint32_t storySize;
     Version storyVersion;
-    char languageCode[4];
-    char title[64];
-    char subtitle[32];
-    char author[48];
-    char credits[80];
-    char contact[128];
-    tm releaseDate;
+    char languageCode[kStoryLangCodeSize];
+    char title[kStoryTitleSize];
+    char subtitle[kStorySubtitleSize];
+    char author[kStoryAuthorSize];
+    char credits[kStoryCreditsSize];
+    char contact[kStoryContactSize];
+    tm publishDate;
 } StoryHeader ;
 
 }

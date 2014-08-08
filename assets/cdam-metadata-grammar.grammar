@@ -107,7 +107,8 @@ Random: If there are more than 4 stories, randomize a menu of 4 choices.</descri
             <number name="UsedStoryPages" id="51" type="integer" length="1" endian="little" minval="0" maxval="1048576">
                 <description>Total bytes used.</description>
             </number>
-            <number name="StoryOffset" id="52" fillcolor="4CCDFF" repeatmin="StoryCount" repeatmax="StoryCount" type="integer" length="1" endian="little" minval="0" maxval="1048576"/>
+            <number name="StoryOffset" id="52" fillcolor="4CCDFF" repeatmin="10" repeatmax="10" type="integer" length="1" endian="little" minval="0" maxval="255"/>
+            <number name="StoryOrder" id="55" repeatmin="10" repeatmax="10" type="integer" length="1" minval="0" maxval="255"/>
         </structure>
     </grammar>
 </ufwb>
