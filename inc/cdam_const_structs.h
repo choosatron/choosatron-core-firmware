@@ -177,7 +177,8 @@ const uint16_t kStoryCreditsSize = 80; // bytes
 const uint16_t kStoryContactOffset = (kStoryCreditsOffset + kStoryCreditsSize);
 const uint16_t kStoryContactSize = 128; // bytes
 const uint16_t kStoryPublishedOffset = (kStoryContactOffset + kStoryContactSize);
-const uint16_t kStoryPublichedSize = 18; // bytes
+const uint16_t kStoryPublishedSize = 4; // bytes
+const uint16_t kStoryHeaderSize = (kStoryPublishedOffset + kStoryPublishedSize);
 
 typedef struct StoryFlags_t
 {
@@ -196,7 +197,7 @@ typedef struct StoryFlags_t
 	        uint8_t rsvd2 			:5;
 	        uint8_t hideUsed		:1;
 	        uint8_t multiplayer		:1;
-	        uint8_t continueGame	:1;
+	        uint8_t continues		:1;
 		};
     };
 	union {
@@ -217,21 +218,24 @@ typedef struct StoryVars_t {
 	uint8_t bits; // How many 1 bit flags
 	uint8_t small; // How many 8 bit variables
 	uint8_t big; // How many 16 bit variables
+	uint8_t rsvd;
 } StoryVars;
 
-typedef struct StoryHeader_t {
-	Version binaryVersion;
+typedef struct StoryHeader_t { // Total Size: 380 bytes
+	uint8_t soh;
+	Version binaryVer;
 	StoryFlags flags;
 	StoryVars vars;
     uint32_t storySize;
-    Version storyVersion;
+    Version storyVer;
+    uint8_t rsvd;
     char languageCode[kStoryLangCodeSize];
     char title[kStoryTitleSize];
     char subtitle[kStorySubtitleSize];
     char author[kStoryAuthorSize];
     char credits[kStoryCreditsSize];
     char contact[kStoryContactSize];
-    tm publishDate;
+    time_t publishDate;
 } StoryHeader ;
 
 }

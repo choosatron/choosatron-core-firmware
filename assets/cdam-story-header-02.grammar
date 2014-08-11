@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ufwb version="1.8">
-    <grammar name="CDAM Story Header 2" start="id:212" author="Jerry Belich" email="jerry@choosatron.com" fileextension="cdam" uti="com.choosatron" complete="yes">
+    <grammar name="CDAM Story Header 2" start="id:58" author="Jerry Belich" email="jerry@choosatron.com" fileextension="cdam" uti="com.choosatron" complete="yes">
         <description>Story Header</description>
         <scripts>
             <script name="TextBody" type="DataType" id="64">
@@ -104,20 +104,20 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
     &quot;&quot;&quot;fillByteRange method&quot;&quot;&quot;</source>
             </script>
         </scripts>
-        <structure name="StoryHeader" id="212" encoding="ISO_8859-1:1987" endian="big" signed="no">
-            <binary name="StartHeader" mustmatch="yes" id="213" fillcolor="BA1A00" length="1">
+        <structure name="StoryHeader" id="58" encoding="ISO_8859-1:1987" endian="big" signed="no">
+            <binary name="StartHeader" mustmatch="yes" id="59" fillcolor="BA1A00" length="1">
                 <description>Start of Heading byte.</description>
                 <fixedvalues>
                     <fixedvalue name="SOH" value="01"/>
                 </fixedvalues>
             </binary>
-            <structure name="BinaryVersion" id="214" length="3">
-                <number name="Major" id="215" fillcolor="E7D3FF" type="integer" length="1"/>
-                <number name="Minor" id="216" fillcolor="E6D2FF" type="integer" length="1"/>
-                <number name="Revision" id="248" type="integer" length="1"/>
+            <structure name="BinaryVersion" id="60" length="3">
+                <number name="Major" id="61" fillcolor="E7D3FF" type="integer" length="1"/>
+                <number name="Minor" id="62" fillcolor="E6D2FF" type="integer" length="1"/>
+                <number name="Revision" id="63" fillcolor="EFCFFF" type="integer" length="1"/>
             </structure>
-            <structure name="Flags" id="218" length="4">
-                <number name="Features Used" id="219" fillcolor="BEFBA9" type="integer" length="8" lengthunit="bit" display="binary" minval="00000000" maxval="0111111111111111111111111111111111111111111111111111111111111111">
+            <structure name="Flags" id="65" length="4">
+                <number name="Features Used" id="66" fillcolor="BEFBA9" type="integer" length="8" lengthunit="bit" display="binary" minval="00000000" maxval="0111111111111111111111111111111111111111111111111111111111111111">
                     <mask name="Scripting" value="0x80">
                         <fixedvalue name="Yes" value="0x80"/>
                         <fixedvalue name="No" value="0x0"/>
@@ -131,7 +131,7 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
                         <fixedvalue name="No" value="0x0"/>
                     </mask>
                 </number>
-                <number name="Toggles" id="220" fillcolor="BFFBA9" type="integer" length="8" lengthunit="bit" display="binary" minval="00000000">
+                <number name="Toggles" id="67" fillcolor="BFFBA9" type="integer" length="8" lengthunit="bit" display="binary" minval="00000000">
                     <mask name="Continue" value="0x80">
                         <fixedvalue name="Yes" value="0x80"/>
                         <fixedvalue name="No" value="0x0"/>
@@ -145,43 +145,35 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
                         <fixedvalue name="No" value="0x0"/>
                     </mask>
                 </number>
-                <number name="Flags3" id="221" fillcolor="BDFBA7" type="integer" length="8" lengthunit="bit" minval="0" maxval="11111111"/>
-                <number name="Flags4" id="222" fillcolor="C1FBA9" type="integer" length="8" lengthunit="bit" minval="0" maxval="11111111"/>
+                <number name="Flags3" id="68" fillcolor="BDFBA7" type="integer" length="8" lengthunit="bit" display="binary" minval="00000000" maxval="11111111"/>
+                <number name="Flags4" id="69" fillcolor="C1FBA9" type="integer" length="8" lengthunit="bit" display="binary" minval="00000000" maxval="11111111"/>
             </structure>
-            <structure name="Variables" id="224" length="3">
-                <number name="Bits" id="225" fillcolor="FFF3A6" type="integer" length="1" minval="0" maxval="255"/>
-                <number name="Small" id="226" fillcolor="FFEFA6" type="integer" length="1" minval="0" maxval="255">
+            <structure name="Variables" id="71" length="4">
+                <number name="Bits" id="106" fillcolor="FFED78" type="integer" length="1"/>
+                <number name="Small" id="73" fillcolor="FFEFA6" type="integer" length="1" minval="0" maxval="255">
                     <description>The number of small variables to allocate space for (8 bit).</description>
                 </number>
-                <number name="Big" id="227" fillcolor="FFF67D" type="integer" length="1" minval="0" maxval="255">
+                <number name="Big" id="74" fillcolor="FFF67D" type="integer" length="1" minval="0" maxval="255">
                     <description>The number of big variables to allocate space for (16 bit).</description>
                 </number>
+                <number name="Rsvd" id="108" type="integer" length="1"/>
             </structure>
-            <number name="StorySize" id="229" fillcolor="B764FF" type="integer" length="4" minval="1" maxval="1572864">
+            <number name="StorySize" id="76" fillcolor="B764FF" type="integer" length="4" minval="1" maxval="1572864">
                 <description>The story size in bytes.</description>
             </number>
-            <structure name="StoryVersion" id="230" length="3" fillcolor="F9DCFF">
-                <number name="Major" id="231" fillcolor="E0C6FF" type="integer" length="1"/>
-                <number name="Minor" id="232" fillcolor="E4D1FF" type="integer" length="1"/>
-                <number name="Revision" id="233" fillcolor="DCCFFF" type="integer" length="1"/>
+            <structure name="StoryVersion" id="77" length="3" fillcolor="F9DCFF">
+                <number name="Major" id="78" fillcolor="E0C6FF" type="integer" length="1"/>
+                <number name="Minor" id="79" fillcolor="E4D1FF" type="integer" length="1"/>
+                <number name="Revision" id="80" fillcolor="DCCFFF" type="integer" length="1"/>
             </structure>
-            <string name="LanguageCode" id="235" fillcolor="FFB85D" type="fixed-length" length="4"/>
-            <string name="Title" id="236" fillcolor="FFBA68" type="fixed-length" length="64"/>
-            <string name="Subtitle" id="237" fillcolor="FFB24F" type="fixed-length" length="32"/>
-            <string name="Author" id="238" fillcolor="FFBA64" type="fixed-length" length="48"/>
-            <string name="Credits" id="239" fillcolor="FFB961" type="fixed-length" length="80"/>
-            <string name="Contact" id="240" fillcolor="FFB962" type="fixed-length" length="128"/>
-            <structure name="ReleaseDate" id="242" length="18">
-                <number name="Seconds" id="243" type="integer" length="2"/>
-                <number name="Minutes" id="244" type="integer" length="2"/>
-                <number name="Hours" id="245" type="integer" length="2"/>
-                <number name="DayOfMonth" id="249" type="integer" length="2"/>
-                <number name="Month" id="250" type="integer" length="2"/>
-                <number name="Year" id="251" type="integer" length="2"/>
-                <number name="DayOfWeek" id="252" type="integer" length="2"/>
-                <number name="DayInYear" id="253" type="integer" length="2"/>
-                <number name="DaylightSavingTime" id="254" type="integer" length="2"/>
-            </structure>
+            <number name="Rsvd" id="109" type="integer" length="1"/>
+            <string name="LanguageCode" id="82" fillcolor="FFB85D" type="fixed-length" length="4"/>
+            <string name="Title" id="83" fillcolor="FFBA68" type="fixed-length" length="64"/>
+            <string name="Subtitle" id="84" fillcolor="FFB24F" type="fixed-length" length="32"/>
+            <string name="Author" id="85" fillcolor="FFBA64" type="fixed-length" length="48"/>
+            <string name="Credits" id="86" fillcolor="FFB961" type="fixed-length" length="80"/>
+            <string name="Contact" id="87" fillcolor="FFB962" type="fixed-length" length="128"/>
+            <number name="PublishDate" id="100" type="integer" length="4"/>
         </structure>
     </grammar>
 </ufwb>

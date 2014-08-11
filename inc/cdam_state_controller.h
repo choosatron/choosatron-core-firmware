@@ -11,6 +11,8 @@ typedef enum GameState_t {
     STATE_ERROR,
     STATE_BOOTING,
     STATE_INIT,
+    STATE_CREDITS,
+    STATE_WAITING,
     STATE_READY,
     STATE_IDLE,
     STATE_SELECT,

@@ -92,12 +92,12 @@ void ServerManager::handlePendingActions() {
 	    			Manager::getInstance().dataManager->addStoryMetadata(this->newStoryIndex, pages);
 	    		}
 	    	}
-	    	client->stop();
 	  	} else {
 	    	DEBUG("TCPClient connection failed");
 	    	Errors::setError(E_SERVER_CONNECTION_FAIL);
 			ERROR(Errors::errorString());
 	 	}
+	 	client->stop();
 	 	free(client);
 
 	 	this->newStoryIndex = 0;

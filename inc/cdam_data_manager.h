@@ -39,10 +39,13 @@ class DataManager
         DataManager();
 
         bool initialize(StateController *aStateController);
-void testRandArray();
+
+        // Get the page offset the story begins at.
         uint32_t getStoryOffset(uint8_t aIndex);
         // Fill provided buffer with the title of the story and the provided position.
-        bool getTitle(void* aBuffer, uint8_t aStoryIndex);
+        bool getNumberedTitle(char* aBuffer, uint8_t aIndex);
+        // Story selected, load the header for the story in play.
+        bool loadStoryHeader(uint8_t aIndex);
         // Add the metadata for a new story.
         bool addStoryMetadata(uint8_t aPosition, uint8_t aPages);
         //bool removeStoryMetadata(uint8_t aPosition);
@@ -54,10 +57,15 @@ void testRandArray();
         // Erase entire flash memory, includes metadata.
         bool eraseFlash();
 
+        bool readData(char* aBuffer, uint32_t aAddress, uint32_t aLength);
+        bool writeData(char* aBuffer, uint32_t aAddress, uint32_t aLength);
+
         StateController* stateController();
         Flashee::FlashDevice* storyFlash();
 
         /* Public Variables */
+
+        // Whether or not the state machine should execute it's update loop.
         bool runState;
         // Live story order.
         uint8_t liveStoryOrder[kMaxStoryCount];
@@ -65,8 +73,9 @@ void testRandArray();
         Version firmwareVersion;
         Metadata metadata;
         StoryHeader storyHeader;
-        //std::vector<StoryHeader> storyHeaders;
-
+        // The index of the story currently in play.
+        int8_t currentStory;
+        // The number of points accumulated in the current story.
         int16_t points;
 
     private:
@@ -81,6 +90,8 @@ void testRandArray();
 
         // Read metadata from flash.
         bool readMetadata(Metadata *aMetadata);
+        // Read story header from flash.
+        bool readStoryHeader(StoryHeader *aHeader, uint8_t aIndex);
         // Write metadata to flash.
         bool writeMetadata(Metadata *aMetadata);
         // Write the storyCount and usedStoryBytes to flash.
@@ -99,6 +110,7 @@ void testRandArray();
         void logStoryBytes(Metadata *aMetadata);
         // For debugging: print out all the metadata values.
         void logMetadata(Metadata *aMetadata);
+        void logStoryHeader(StoryHeader *aHeader);
 
 
         /* Private Variables */

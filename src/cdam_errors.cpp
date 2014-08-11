@@ -12,9 +12,8 @@ struct ErrorDesc_t {
 } ErrorDesc[] = {
 	{ E_NO_ERROR, "No error." },
 	{ E_METADATA_READ_FAIL, "Failed to read from flash." },
-	{ E_METADATA_READ_STORY_OFFSET_FAIL, "Failed to read the offset bytes of a story." },
+	{ E_HEADER_READ_FAIL, "Failed to read the header of a story." },
 	{ E_METADATA_WRITE_FAIL, "Failed to write to flash." },
-	{ E_METADATA_WRITE_STORY_OFFSET_FAIL, "Failed to write the offset bytes of a story." },
 	{ E_DATA_MODEL_UPGRADE_FAIL, "Failed to upgrade data model." },
 	{ E_SERVER_CONNECTION_FAIL, "Failed to connect to server." },
 	{ E_SERVER_ADD_STORY_LEN_FAIL, "add_story command isn't correct length of bytes." },

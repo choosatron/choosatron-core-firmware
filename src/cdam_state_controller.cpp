@@ -9,11 +9,13 @@ struct GameStateStr_t {
 	GameState state;
 	const char *stateDesc;
 } GameStateDesc[] = {
-	{ STATE_NONE, "none" },
-	{ STATE_ERROR, "error" },
-	{ STATE_BOOTING, "booting" },
-	{ STATE_INIT, "init" },
-	{ STATE_READY, "ready" },
+	{ STATE_NONE, "none" }, // Only before actual state is set.
+	{ STATE_ERROR, "error" }, // Problem, report if possible.
+	{ STATE_BOOTING, "booting" }, // Only occurs during power cycle.
+	{ STATE_INIT, "init" }, // Initializes unit for new play.
+	{ STATE_CREDITS, "credits" }, // Waiting for play credits.
+	{ STATE_WAITING, "waiting" }, // Waiting for interaction.
+	{ STATE_READY, "ready" }, //
 	{ STATE_IDLE, "idle" },
 	{ STATE_SELECT, "select" },
 	{ STATE_PLAY, "play" },
@@ -58,18 +60,14 @@ void StateController::initState(GameState aState) {
 		if (_dataManager->metadata.flags.random) {
 			Utils::shuffle(_dataManager->liveStoryOrder, kMaxStoryCount);
 		}
-		if (_dataManager->metadata.flags.arcade) {
-			_hardwareManager->coinAcceptor()->active = true;
-		}
+	} else if (aState == STATE_CREDITS) {
+		_hardwareManager->coinAcceptor()->active = true;
+		_hardwareManager->printer()->printInsertCoin(_hardwareManager->coinAcceptor()->coins,
+		                                             _hardwareManager->coinAcceptor()->coinsPerCredit);
+	} else if (aState == STATE_WAITING) {
+		_hardwareManager->printer()->printPressButton();
 	} else if (aState == STATE_READY) {
-		_hardwareManager->printer()->active = true;
-		if (_dataManager->metadata.flags.arcade) {
-			_hardwareManager->printer()->printInsertCoin(_hardwareManager->coinAcceptor()->coins,
-			                                             _hardwareManager->coinAcceptor()->coinsPerCredit);
-		} else {
-			_hardwareManager->printer()->printPressButton();
-		}
-		_hardwareManager->keypad()->active = true;
+		_hardwareManager->printer()->printTitle();
 	} else if (aState == STATE_IDLE) {
 
 	} else if (aState == STATE_SELECT) {
@@ -89,34 +87,46 @@ void StateController::loopState(GameState aState) {
 	if (aState == STATE_BOOTING) {
 		changeState(STATE_INIT);
 	} else if (aState == STATE_INIT) {
-		changeState(STATE_READY);
-	} else if (aState == STATE_READY) {
+		if (_dataManager->metadata.flags.arcade) {
+			changeState(STATE_CREDITS);
+		} else {
+			changeState(STATE_WAITING);
+		}
+	} else if (aState == STATE_CREDITS) {
 		if (_hardwareManager->keypad()->buttonEvent(BTN_UP_EVENT)) {
 			DEBUG("Button Pressed!");
-			if (_dataManager->metadata.flags.arcade) {
-				if (_hardwareManager->coinAcceptor()->consumeCredit()) {
-					_hardwareManager->printer()->printTitle();
-				} else {
-					_hardwareManager->printCoinInsertIntervalUpdate();
-				}
+			if (_hardwareManager->coinAcceptor()->consumeCredit()) {
+				changeState(STATE_READY);
 			} else {
-				_hardwareManager->printer()->printTitle();
-			}
-			if (_dataManager->metadata.storyCount > 0) {
-				_hardwareManager->printer()->printStart();
-				uint8_t storyCount = _dataManager->metadata.storyCount;
-				if (_dataManager->metadata.flags.random) {
-					storyCount = 4;
-				}
-				// TODO: Print story titles up to storyCount
-
-				changeState(STATE_SELECT);
-			} else { // No stories installed!
-				_hardwareManager->printer()->printEmpty();
-				changeState(STATE_IDLE);
+				_hardwareManager->printCoinInsertIntervalUpdate();
 			}
 		}
-		//_hardwareManager->printer()->printTitle();
+	} else if (aState == STATE_WAITING) {
+		if (_hardwareManager->keypad()->buttonEvent(BTN_UP_EVENT)) {
+			DEBUG("Button Pressed!");
+			changeState(STATE_READY);
+		}
+	} else if (aState == STATE_READY) {
+		if (_dataManager->metadata.storyCount > 0) {
+			_hardwareManager->printer()->printStart();
+			uint8_t storyCount = _dataManager->metadata.storyCount;
+			if (_dataManager->metadata.flags.random) {
+				storyCount = 4;
+			}
+			// Buffer for title, max title size + 4 for numbering (ex: "10. Story Title")
+			char titleBuffer[kStoryTitleSize + 4] = "";
+			// Print story titles up to storyCount.
+			for (int i = 0; i < storyCount; ++i) {
+				if (_dataManager->getNumberedTitle(titleBuffer, i)) {
+					_hardwareManager->printer()->printWrapped(titleBuffer, kPrinterColumns);
+					_hardwareManager->printer()->feed(2);
+				}
+			}
+			changeState(STATE_SELECT);
+		} else { // No stories installed!
+			_hardwareManager->printer()->printEmpty();
+			changeState(STATE_IDLE);
+		}
 	} else if (aState == STATE_IDLE) {
 
 	} else if (aState == STATE_SELECT) {
@@ -124,7 +134,8 @@ void StateController::loopState(GameState aState) {
 		uint8_t total = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, _dataManager->metadata.storyCount);
 		if (total) {
 			// Story has been selected.
-			// TODO prepare for play!
+			_dataManager->currentStory = total;
+			_dataManager->loadStoryHeader(_dataManager->currentStory);
 			changeState(STATE_PLAY);
 		}
 	} else if (aState == STATE_PLAY) {
@@ -145,6 +156,11 @@ void StateController::endState(GameState aState) {
 	if (aState == STATE_BOOTING) {
 
 	} else if (aState == STATE_INIT) {
+		_hardwareManager->printer()->active = true;
+		_hardwareManager->keypad()->active = true;
+	} else if (aState == STATE_CREDITS) {
+
+	} else if (aState == STATE_WAITING) {
 
 	} else if (aState == STATE_READY) {
 
