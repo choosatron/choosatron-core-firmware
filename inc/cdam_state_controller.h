@@ -48,10 +48,10 @@ private:
 	void endState(GameState aState);
 
 	/* Private Variables */
+    DataManager* _dataManager;
+    HardwareManager* _hardwareManager;
+    ServerManager* _serverManager;
 	GameState _state;
-	DataManager* _dataManager;
- 	HardwareManager* _hardwareManager;
- 	ServerManager* _serverManager;
 };
 
 }

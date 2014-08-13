@@ -179,19 +179,19 @@ bool DataManager::eraseFlash() {
 	return Flashee::Devices::userFlash().eraseAll();
 }
 
-bool DataManager::readData(char* aBuffer, uint32_t aAddress, uint32_t aLength) {
+bool DataManager::readData(uint8_t* aBuffer, uint32_t aAddress, uint32_t aLength) {
 	if (this->metadata.flags.sdCard) {
 
 	} else {
-
+		_storyFlash->read(aBuffer, aAddress, aLength);
 	}
 }
 
-bool DataManager::writeData(char* aBuffer, uint32_t aAddress, uint32_t aLength) {
+bool DataManager::writeData(uint8_t* aBuffer, uint32_t aAddress, uint32_t aLength) {
 	if (this->metadata.flags.sdCard) {
 
 	} else {
-
+		_storyFlash->write(aBuffer, aAddress, aLength);
 	}
 }
 

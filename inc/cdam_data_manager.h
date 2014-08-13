@@ -57,8 +57,8 @@ class DataManager
         // Erase entire flash memory, includes metadata.
         bool eraseFlash();
 
-        bool readData(char* aBuffer, uint32_t aAddress, uint32_t aLength);
-        bool writeData(char* aBuffer, uint32_t aAddress, uint32_t aLength);
+        bool readData(uint8_t* aBuffer, uint32_t aAddress, uint32_t aLength);
+        bool writeData(uint8_t* aBuffer, uint32_t aAddress, uint32_t aLength);
 
         StateController* stateController();
         Flashee::FlashDevice* storyFlash();
