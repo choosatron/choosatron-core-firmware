@@ -81,6 +81,7 @@ void ServerManager::handlePendingActions() {
 	if (this->pendingAction) {
 		// Attempt TCP connection.
 		TCPClient *client = new TCPClient();
+		DEBUG("Connecting to client at %u.%u.%u.%u:%u", this->serverIp[0], this->serverIp[1], this->serverIp[2], this->serverIp[3], this->serverPort);
 		if (client->connect(this->serverIp, this->serverPort)) {
 			DEBUG("TCPClient connected");
 			// Add Story Command
@@ -102,7 +103,6 @@ void ServerManager::handlePendingActions() {
 					memcpy(buffer, this->pendingArguments + kServerStorySizeBytes, kServerStoryPositionBytes);
 					uint8_t newStoryIndex = atoi(buffer);
 					DEBUG("Story Index: %d", newStoryIndex);
-					DEBUG("Connecting to client at %u.%u.%u.%u:%u", this->serverIp[0], this->serverIp[1], this->serverIp[2], this->serverIp[3], this->serverPort);
 
 					if (getStoryData(client, newStorySize)) {
 						// Update the data manager metadata for the new story.
@@ -359,8 +359,6 @@ void ServerManager::parseServerAddress(char* aAddress) {
 
 	memcpy(buffer, aAddress + index, 5);
 	Manager::getInstance().serverManager->serverPort = atoi(buffer);
-
-	DEBUG("IP: %d.%d.%d.%d:%d", Manager::getInstance().serverManager->serverIp[0], Manager::getInstance().serverManager->serverIp[1], Manager::getInstance().serverManager->serverIp[2], Manager::getInstance().serverManager->serverIp[3], Manager::getInstance().serverManager->serverPort);
 }
 
 bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
@@ -376,7 +374,7 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 			uint32_t bytesRead = 0;
 			uint32_t bytesToRead = kServerDataBufferSize;
 			uint8_t pagesWritten = 0;
-			uint8_t buffer[Flashee::Devices::userFlash().pageSize() + 1];
+			uint8_t buffer[Flashee::Devices::userFlash().pageSize()];
 			memset(&buffer[0], 0, sizeof(buffer));
 			DEBUG("Story Size: %lu", aStorySize);
 
@@ -399,7 +397,7 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 						DEBUG("Used Pages: %d", Manager::getInstance().dataManager->metadata.usedStoryPages);
 						bool result = Manager::getInstance().dataManager->writeData(buffer,
 						                       (Manager::getInstance().dataManager->metadata.usedStoryPages * Flashee::Devices::userFlash().pageSize()) +
-						                       (pagesWritten * Flashee::Devices::userFlash().pageSize()), Flashee::Devices::userFlash().pageSize());
+						                       (pagesWritten * Flashee::Devices::userFlash().pageSize()), sizeof(buffer));
 
 						if (!result) {
 							Errors::setError(E_SERVER_SOCKET_DATA_FAIL);

@@ -312,8 +312,7 @@ bool DataManager::readStoryHeader(StoryHeader *aHeader, uint8_t aIndex) {
 
 bool DataManager::writeMetadata(Metadata *aMetadata) {
 	DEBUG("Size of Metadata: %d", sizeof(*aMetadata));
-	DEBUG("Write Story Data: %d, %d, %lu", aMetadata->storyCount, kMetadataStoryCountOffset, kMetadataStoryCountSize + kMetadataStoryUsedPagesSize +
-		                 kMetadataStoryOffsetsSize);
+	DEBUG("Maybe size: %d", kMetadataSize);
 	bool result = _metaFlash->write(aMetadata, kMetadataBaseAddress, kMetadataSize);
 	if (!result) {
 		Errors::setError(E_METADATA_WRITE_FAIL);
@@ -334,10 +333,15 @@ bool DataManager::writeMetadata(Metadata *aMetadata) {
 }
 
 bool DataManager::writeStoryCountData(Metadata *aMetadata) {
-	bool result = _metaFlash->write(&aMetadata->storyCount,
+	/*bool result = _metaFlash->write(&aMetadata->storyCount,
 		                 kMetadataStoryCountOffset,
 		                 kMetadataStoryCountSize + kMetadataStoryUsedPagesSize +
-		                 kMetadataStoryOffsetsSize + kMetadataStoryOrderSize);
+		                 kMetadataStoryOffsetsSize + kMetadataStoryOrderSize);*/
+	bool result = true;
+	result = _metaFlash->write(&aMetadata->storyCount, kMetadataStoryCountOffset, kMetadataStoryCountSize);
+	result = _metaFlash->write(&aMetadata->usedStoryPages, kMetadataStoryUsedPagesOffset, kMetadataStoryUsedPagesSize);
+	result = _metaFlash->write(&aMetadata->storyOffsets, kMetadataStoryOffsetsOffset, kMetadataStoryOffsetsSize);
+	result = _metaFlash->write(&aMetadata->storyOrder, kMetadataStoryOrderOffset, kMetadataStoryOrderSize);
 	if (!result) {
 		Errors::setError(E_METADATA_WRITE_FAIL);
 		ERROR(Errors::errorString());
