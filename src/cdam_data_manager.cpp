@@ -301,7 +301,8 @@ bool DataManager::readMetadata(Metadata *aMetadata) {
 bool DataManager::readStoryHeader(StoryHeader *aHeader, uint8_t aIndex) {
 	uint32_t offset = getStoryOffset(aIndex) * Flashee::Devices::userFlash().pageSize();
 
-	bool result = _metaFlash->read(aHeader, offset, kStoryHeaderSize);
+	DEBUG("StoryHeader offset: %d, size: %d", offset, kStoryHeaderSize);
+	bool result = readData((uint8_t*)aHeader, offset, kStoryHeaderSize);
 	if (!result) {
 		Errors::setError(E_HEADER_READ_FAIL);
 		ERROR(Errors::errorString());
@@ -341,7 +342,17 @@ bool DataManager::writeStoryCountData(Metadata *aMetadata) {
 		Errors::setError(E_METADATA_WRITE_FAIL);
 		ERROR(Errors::errorString());
 	}
-
+	char data[kMetadataSize] = "";
+	_metaFlash->read(data, 0, kMetadataSize);
+	DEBUG("META DEBUG BEGIN");
+	DEBUG("HEX");
+	for (int i = 0; i < kMetadataSize; ++i) {
+		if (data[i]<0x10) {Serial.print("0");}
+          Serial.print(data[i],HEX);
+          Serial.print(" ");
+	}
+	Serial.println("END");
+	DEBUG("META DEBUG END");
 	return result;
 }
 
@@ -483,14 +494,22 @@ void DataManager::logStoryOffsets(Metadata *aMetadata) {
 
 void DataManager::logStoryBytes(Metadata *aMetadata) {
 #ifdef DEBUG_BUILD
-	char data[4097] = "";
 	for (int i = 0; i < aMetadata->storyCount; ++i) {
-		bool result = _storyFlash->read(data, aMetadata->storyOffsets[i] * Flashee::Devices::userFlash().pageSize(), 4096);
-		if (result) {
-			DEBUG("Story #: %d, Offset: %d", i, aMetadata->storyOffsets[i]);
-			Serial.println(data);
+		DEBUG("Story #: %d, Offset: %d", i, aMetadata->storyOffsets[i]);
+		if (loadStoryHeader(i)) {
+			logStoryHeader(&this->storyHeader);
 		}
-		memset(&data[0], 0, sizeof(data));
+		char data[kStoryHeaderSize] = "";
+		uint32_t offset = getStoryOffset(i) * Flashee::Devices::userFlash().pageSize();
+		_storyFlash->read(data, offset, kStoryHeaderSize);
+		DEBUG("HEADER DEBUG BEGIN");
+		DEBUG("HEX");
+		for (int i = 0; i < kStoryHeaderSize; ++i) {
+			if (data[i]<0x10) {Serial.print("0");}
+	          Serial.print(data[i],HEX);
+	          Serial.print(" ");
+		}
+		Serial.println("END");
 	}
 #endif
 }
@@ -579,7 +598,7 @@ void DataManager::logStoryHeader(StoryHeader *aHeader) {
 
 	DEBUG("Story Size Bytes: %d", aHeader->storySize);
 
-	DEBUG("Binary v%d.%d.%d", aHeader->storyVer.major,
+	DEBUG("Story v%d.%d.%d", aHeader->storyVer.major,
 		aHeader->storyVer.minor, aHeader->storyVer.revision);
 
 	DEBUG("Lang Code: %s", aHeader->languageCode);

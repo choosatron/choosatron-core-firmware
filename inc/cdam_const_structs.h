@@ -61,24 +61,24 @@ typedef struct MetaFlags_t {
 	union {
 	    uint8_t flag1;
 	    struct {
-	    	uint8_t rsvd1 			:1;
+	    	uint8_t rsvd1 			:1; // Bit 0
 	    	uint8_t random          :1;
 	    	uint8_t continues       :1;
 	    	uint8_t arcade			:1;
 	    	uint8_t multiplayer		:1;
 	    	uint8_t sdCard			:1;
 	    	uint8_t demo			:1;
-	    	uint8_t offline			:1;
+	    	uint8_t offline			:1; // Bit 7
 	    };
 	};
 	union {
 		uint8_t flag2;
 		struct {
-		    uint8_t rsvd2 			:4;
+		    uint8_t rsvd2 			:4; // Bit 0
 		    uint8_t logPrint        :1;
 		    uint8_t logLive			:1;
 		    uint8_t logLocal		:1;
-		    uint8_t logging 		:1;
+		    uint8_t logging 		:1; // Bit 7
 		};
     };
 	union {
@@ -178,7 +178,9 @@ const uint16_t kStoryContactOffset = (kStoryCreditsOffset + kStoryCreditsSize);
 const uint16_t kStoryContactSize = 128; // bytes
 const uint16_t kStoryPublishedOffset = (kStoryContactOffset + kStoryContactSize);
 const uint16_t kStoryPublishedSize = 4; // bytes
-const uint16_t kStoryHeaderSize = (kStoryPublishedOffset + kStoryPublishedSize);
+//const uint16_t kStoryHeaderSize = (kStoryPublishedOffset + kStoryPublishedSize);
+
+const uint16_t kStoryHeaderSize = 380;
 
 typedef struct StoryFlags_t
 {

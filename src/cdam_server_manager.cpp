@@ -143,36 +143,26 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 
 	int cmdLen = aCommandAndArgs.length();
     int delimiterPos = aCommandAndArgs.indexOf(kServerArgumentDelimiter);
-    DEBUG("First Index: %d", delimiterPos);
 
 	char commandAndArgs[cmdLen + 1];
 	aCommandAndArgs.toCharArray(commandAndArgs, sizeof(commandAndArgs));
 	DEBUG("Command and Args: %s", commandAndArgs);
 
     if (delimiterPos > -1) {
-		DEBUG("Has Arguments");
 		int serverDelimPos = aCommandAndArgs.indexOf(kServerArgumentDelimiter, delimiterPos + 1);
-    	DEBUG("Server Index: %d", serverDelimPos);
     	if (serverDelimPos > -1) {
     		char serverAddress[cmdLen - serverDelimPos];
-    		DEBUG("Addr size: %d", sizeof(serverAddress));
     		memcpy(serverAddress, commandAndArgs + serverDelimPos + 1, cmdLen - serverDelimPos - 1);
-    		DEBUG("Server Address: %s", serverAddress);
     		serverMan->parseServerAddress(serverAddress);
     		cmdLen = serverDelimPos;
     	}
 		serverMan->pendingArguments = new char[cmdLen - delimiterPos];
 		memcpy(serverMan->pendingArguments, commandAndArgs + delimiterPos + 1, cmdLen - delimiterPos - 1);
-		DEBUG("Arguments: %s", serverMan->pendingArguments);
 		cmdLen = delimiterPos;
-	} else {
-		DEBUG("No Arguments");
 	}
 
     serverMan->pendingCommand = new char[cmdLen + 1];
     memcpy(serverMan->pendingCommand, commandAndArgs, cmdLen);
-
-	DEBUG("Cmd: %s", serverMan->pendingCommand);
 
 	if (strcmp(serverMan->pendingCommand, kServerCmdPing) == 0) {
 		//return kServerReturnSuccess;
@@ -200,6 +190,7 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdSwapStoryPositions) == 0) {
 		/* TODO */
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdSetFlag) == 0) {
+		// Byte 1: Flag Index, Byte 2: Bit Index, Byte 3: 0 or 1 for OFF or ON
 		uint8_t flagIndex = aCommandAndArgs.charAt(delimiterPos + 1) - '0';
 		uint8_t bitIndex = aCommandAndArgs.charAt(delimiterPos + 2) - '0';
 		bool value = aCommandAndArgs.charAt(delimiterPos + 3) - '0';
@@ -383,6 +374,7 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 		if (aClient->available()) {
 			//uint16_t index = 0;
 			uint32_t bytesRead = 0;
+			uint32_t bytesToRead = kServerDataBufferSize;
 			uint8_t pagesWritten = 0;
 			uint8_t buffer[Flashee::Devices::userFlash().pageSize() + 1];
 			memset(&buffer[0], 0, sizeof(buffer));
@@ -391,8 +383,10 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 			while (aClient->available()) {
 				// While data available, read data into buffer, then flash space based on page size
 				//memset(&buffer[0], 0, sizeof(buffer));
-
-				int16_t bytes = aClient->read(buffer + bytesRead, kServerDataBufferSize);
+				if ((aStorySize - bytesRead) < kServerDataBufferSize) {
+					bytesToRead = aStorySize - bytesRead;
+				}
+				int16_t bytes = aClient->read(buffer + bytesRead, bytesToRead);
 				DEBUG("Bytes read: %d", bytes);
 
 				if (bytes > 0) {
@@ -401,7 +395,8 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 					if ((bytesRead % Flashee::Devices::userFlash().pageSize() == 0) ||
 						(bytesRead == aStorySize)) {
 						// Write data
-						DEBUG("Writing page #: %d", pagesWritten);
+						DEBUG("Writing page #: %d", (pagesWritten + 1));
+						DEBUG("Used Pages: %d", Manager::getInstance().dataManager->metadata.usedStoryPages);
 						bool result = Manager::getInstance().dataManager->writeData(buffer,
 						                       (Manager::getInstance().dataManager->metadata.usedStoryPages * Flashee::Devices::userFlash().pageSize()) +
 						                       (pagesWritten * Flashee::Devices::userFlash().pageSize()), Flashee::Devices::userFlash().pageSize());
@@ -409,6 +404,7 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 						if (!result) {
 							Errors::setError(E_SERVER_SOCKET_DATA_FAIL);
 							ERROR(Errors::errorString());
+							aClient->write(Errors::errorString());
 							break;
 						}
 						memset(&buffer[0], 0, sizeof(buffer));
@@ -421,7 +417,7 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 						if (aClient->available()) {
 							Errors::setError(E_SERVER_SOCKET_DATA_FAIL);
 							ERROR(Errors::errorString());
-							aClient->write("");
+							aClient->write(Errors::errorString());
 						}
 						/*DEBUG("Used: %d, Pages: %d", Manager::getInstance().dataManager->metadata.usedStoryPages, pagesWritten);
 						bool result = Manager::getInstance().dataManager->readData(buffer,
@@ -441,6 +437,9 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 		Errors::setError(E_SERVER_CONNECTION_FAIL);
 		ERROR(Errors::errorString());
 	}
+	Errors::setError(E_SERVER_SOCKET_DATA_FAIL);
+	ERROR(Errors::errorString());
+	aClient->write(Errors::errorString());
 	return false;
 }
 

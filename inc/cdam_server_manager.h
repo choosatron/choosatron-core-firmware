@@ -38,9 +38,6 @@ class ServerManager
         void parseServerAddress(char* aAddress);
 
         /* Private Variables */
-        DataManager* _dataManager;
-        HardwareManager* _hardwareManager;
-        ServerManager* _serverManager;
         StateController* _stateControl;
         ElapsedMillis _actionsElapsed;
 };
