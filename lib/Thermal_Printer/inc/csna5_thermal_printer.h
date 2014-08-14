@@ -70,7 +70,6 @@ class CSN_Thermal : public Print {
     sleep(),
     sleepAfter(uint8_t seconds),
     wake(),
-    listen(),
 
     setSize(char value),
     setLineHeight(int val=32),
@@ -85,6 +84,7 @@ class CSN_Thermal : public Print {
     timeoutSet(unsigned long),
     timeoutWait(),
     setTimes(unsigned long, unsigned long),
+    setMaxChunkHeight(int val),
 
     setCharSpacing(int spacing), // Not working
     tab();                       // Not working
@@ -94,8 +94,6 @@ class CSN_Thermal : public Print {
   virtual size_t write(uint8_t c);
 
  protected:
-
-  //SERIAL_IMPL *_printer;
 
   uint8_t
     prevByte,      // Last character issued to printer
@@ -109,7 +107,8 @@ class CSN_Thermal : public Print {
     dotPrintTime,  // Time to print a single dot line, in microseconds
     dotFeedTime;   // Time to feed a single dot line, in microseconds
   int
-    printMode;
+    printMode,
+    maxChunkHeight;
   void
     setPrintMode(uint8_t mask),
     unsetPrintMode(uint8_t mask),

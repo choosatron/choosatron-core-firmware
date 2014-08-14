@@ -114,7 +114,6 @@ void CSN_Thermal::writeBytes(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
 // The underlying method for all high-level printing (e.g. println()).
 // The inherited Print class handles the rest!
 size_t CSN_Thermal::write(uint8_t c) {
-
   if(c != 0x13) { // Strip carriage returns
     timeoutWait();
     PRINTER_PRINT(c);
@@ -182,6 +181,7 @@ void CSN_Thermal::begin(int heatTime) {
 
   dotPrintTime = 30000; // See comments near top of file for
   dotFeedTime  =  2100; // an explanation of these values.
+  maxChunkHeight = 255;
 }
 
 // Reset printer to default state.
@@ -393,10 +393,10 @@ void CSN_Thermal::printBitmap(
   rowBytes        = (w + 7) / 8; // Round up to next byte boundary
   rowBytesClipped = (rowBytes >= 48) ? 48 : rowBytes; // 384 pixels max width
 
-  for(i=rowStart=0; rowStart < h; rowStart += 255) {
+  for(i=rowStart=0; rowStart < h; rowStart += maxChunkHeight) {
     // Issue up to 255 rows at a time:
     chunkHeight = h - rowStart;
-    if(chunkHeight > 255) chunkHeight = 255;
+    if(chunkHeight > maxChunkHeight) chunkHeight = maxChunkHeight;
 
     writeBytes(18, 42, chunkHeight, rowBytesClipped);
 
@@ -417,10 +417,10 @@ void CSN_Thermal::printBitmap(int w, int h, Stream *stream) {
   rowBytes        = (w + 7) / 8; // Round up to next byte boundary
   rowBytesClipped = (rowBytes >= 48) ? 48 : rowBytes; // 384 pixels max width
 
-  for(rowStart=0; rowStart < h; rowStart += 255) {
+  for(rowStart=0; rowStart < h; rowStart += maxChunkHeight) {
     // Issue up to 255 rows at a time:
     chunkHeight = h - rowStart;
-    if(chunkHeight > 255) chunkHeight = 255;
+    if(chunkHeight > maxChunkHeight) chunkHeight = maxChunkHeight;
 
     writeBytes(18, 42, chunkHeight, rowBytesClipped);
 
@@ -490,12 +490,6 @@ void CSN_Thermal::wake() {
   }
 }
 
-// Tell the soft serial to listen. Needed if you are using multiple
-// SoftSerial interfaces.
-void CSN_Thermal::listen() {
-  //_printer->listen();
-}
-
 // Check the status of the paper using the printers self reporting
 // ability. Doesn't match the datasheet...
 // Returns true for paper, false for no paper.
@@ -534,6 +528,10 @@ void CSN_Thermal::setLineHeight(int val) {
   // spacing.  Default line spacing is 32 (char height of 24, line
   // spacing of 8).
   writeBytes(27, 51, val);
+}
+
+void CSN_Thermal::setMaxChunkHeight(int val) {
+  maxChunkHeight = val;
 }
 
 ////////////////////// not working?
