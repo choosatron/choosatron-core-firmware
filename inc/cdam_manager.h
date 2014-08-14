@@ -17,8 +17,7 @@
  * If you use this Singleton (A) within a destructor of another Singleton (B)
  * This Singleton (A) must be fully constructed before the constructor of (B)
  * is called.
- *
- */
+ **/
 
 #ifndef CDAM_MANAGER_H
 #define CDAM_MANAGER_H

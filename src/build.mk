@@ -19,6 +19,7 @@ CPPSRC += $(TARGET_CHOOSATRON_SRC_PATH)/cdam_manager.cpp
 CPPSRC += $(TARGET_CHOOSATRON_SRC_PATH)/cdam_data_manager.cpp
 CPPSRC += $(TARGET_CHOOSATRON_SRC_PATH)/cdam_server_manager.cpp
 CPPSRC += $(TARGET_CHOOSATRON_SRC_PATH)/cdam_hardware_manager.cpp
+CPPSRC += $(TARGET_CHOOSATRON_SRC_PATH)/cdam_parser.cpp
 #CPPSRC += $(TARGET_CHOOSATRON_SRC_PATH)/cdam_flash.cpp
 CPPSRC += $(TARGET_CHOOSATRON_SRC_PATH)/cdam_state_controller.cpp
 CPPSRC += $(TARGET_CHOOSATRON_SRC_PATH)/cdam_printer.cpp

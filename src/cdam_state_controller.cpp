@@ -1,7 +1,6 @@
 #include "cdam_state_controller.h"
 #include "cdam_manager.h"
-#include "cdam_keypad.h"
-#include "cdam_printer.h"
+#include "cdam_parser.h"
 
 namespace cdam {
 
@@ -56,6 +55,7 @@ void StateController::initState(GameState aState) {
 		_dataManager = Manager::getInstance().dataManager;
 		_hardwareManager = Manager::getInstance().hardwareManager;
 		_serverManager = Manager::getInstance().serverManager;
+		_parser = new Parser();
 	} else if (aState == STATE_INIT) {
 		if (_dataManager->metadata.flags.random) {
 			Utils::shuffle(_dataManager->liveStoryOrder, kMaxStoryCount);
@@ -118,7 +118,7 @@ void StateController::loopState(GameState aState) {
 			// Print story titles up to storyCount.
 			for (int i = 0; i < storyCount; ++i) {
 				if (_dataManager->getNumberedTitle(titleBuffer, i)) {
-					_hardwareManager->printer()->printWrapped(titleBuffer, kPrinterColumns);
+					_parser->wrapText(titleBuffer, kPrinterColumns);
 					_hardwareManager->printer()->println(titleBuffer);
 				}
 			}

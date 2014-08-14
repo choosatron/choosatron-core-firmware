@@ -45,7 +45,6 @@ public:
 
     void begin(int heatTime=200);
 
-    uint8_t printWrapped(char* aBuffer, uint8_t aColumns);
     //void printFile(const char *aPath, bool aWrapped, bool aLinefeed, uint8_t aPrependLen, uint8_t aOffset);
     //int printWrapped(char *aMsg, uint8_t aColumns, bool aBufferMode);
 

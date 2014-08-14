@@ -11,6 +11,7 @@ struct ErrorDesc_t {
 	const char *message;
 } ErrorDesc[] = {
 	{ E_NO_ERROR, "No error." },
+	{ E_ERROR, "Error" },
 	{ E_METADATA_READ_FAIL, "Failed to read from flash." },
 	{ E_HEADER_READ_FAIL, "Failed to read the header of a story." },
 	{ E_METADATA_WRITE_FAIL, "Failed to write to flash." },

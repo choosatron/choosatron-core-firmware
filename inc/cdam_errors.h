@@ -7,6 +7,7 @@ namespace cdam
 
 typedef enum ErrorCode_t {
 	E_NO_ERROR = 0,
+	E_ERROR,
 	E_METADATA_READ_FAIL,
 	E_HEADER_READ_FAIL,
 	E_METADATA_WRITE_FAIL,

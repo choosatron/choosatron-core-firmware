@@ -25,6 +25,7 @@ typedef enum GameState_t {
 class DataManager;
 class HardwareManager;
 class ServerManager;
+class Parser;
 
 class StateController {
 
@@ -51,6 +52,7 @@ private:
     DataManager* _dataManager;
     HardwareManager* _hardwareManager;
     ServerManager* _serverManager;
+    Parser* _parser;
 	GameState _state;
 };
 
