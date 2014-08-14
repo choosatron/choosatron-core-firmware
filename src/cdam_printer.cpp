@@ -186,7 +186,11 @@ void Printer::printEmpty() {
 }
 
 void Printer::printStart() {
+	CSN_Thermal::justify('C');
+
 	println(CDAM_START);
+
+	CSN_Thermal::justify('L');
 }
 
 void Printer::printAuthors(char* aAuthor, char* aCredits) {
@@ -300,14 +304,88 @@ void Printer::setABS(bool aTurnOn) {
 	writeBytes(29, 97, setting);
 }
 
-uint8_t Printer::printWrapped(char* aBuffer, uint8_t aColumns) {
+/*uint8_t Printer::printWrapped(char* aBuffer, uint8_t aColumns) {
 	println(aBuffer);
 	return 0;
+}*/
+
+uint8_t Printer::printWrapped(char* aBuffer, uint8_t aColumns) {
+	DEBUG("Title: %s, Columns: %d", aBuffer, aColumns);
+	uint16_t length = strlen(aBuffer);
+	DEBUG("Length: %d", length);
+
+	// Should always represent the first char index of a line.
+	uint16_t startIndex = 0;
+	bool foundBreak;
+	// Wrap until we have less than one full line.
+	while ((length - startIndex) > aColumns) {
+		DEBUG("Start wrapping...");
+		foundBreak = false;
+		uint8_t i;
+  		// Search for a newline to break on.
+		for (i = 0; i < aColumns; ++i) {
+			if (aBuffer[startIndex + i] == '\t') {
+				aBuffer[startIndex + i] = ' ';
+      			WARN("Found tab.");
+			} else if (aBuffer[startIndex + i] == '\r') {
+      			WARN("Found carriage return.");
+			} else if (aBuffer[startIndex + i] == '\n') {
+				DEBUG("Found newline.");
+				foundBreak = true;
+				startIndex += i + 1;
+				//aBuffer[i] = '\0';
+				//println(aBuffer);
+				//length -= (i + 1);
+      			// Usage: memmove(destination, source, length);
+				//memmove(aBuffer, aBuffer + i + 1, length);
+				break;
+			}
+		}
+
+  		// Search for a space to break on.
+		if (foundBreak == false) {
+			DEBUG("Looking for a space...");
+			for (i = aColumns; i > 0; --i) {
+				if (aBuffer[startIndex + i] == ' ') {
+					DEBUG("Found space at: %d", i);
+					foundBreak = true;
+					aBuffer[startIndex + i] = '\n';
+					startIndex += i + 1;
+					//println(aBuffer);
+					//length -= (i + 1);
+        			// Usage: memmove(destination, source, length);
+					//memmove(aBuffer, aBuffer + i + 1, length);
+					break;
+				}
+			}
+			if (foundBreak) {
+				DEBUG("No spaces.");
+				// Save the char we will set to null.
+				startIndex += aColumns;
+				// Set the null so we only print one line.
+				//aBuffer[aColumns] = '\0';
+				//println(aBuffer);
+				// Replace the char.
+				//aBuffer[aColumns] = saved;
+				// Subtract the # of chars printed.
+				//length -= aColumns;
+				// Move the remaining chars (length) starting at a pointer
+				// to the first char not printed (aBuffer + aColumns) to a pointer
+				// to the beginning of the char array's memory space (aBuffer).
+				// void *memmove(void *s1, const void *s2, size_t n);
+				// memmove(destination, source, length);
+				//memmove(aBuffer, aBuffer + aColumns, length);
+			}
+
+		}
+
+	}
+	DEBUG("Last bit length: %d", length - startIndex);
+	return length - startIndex;
 }
 
 // Load up to the max number of bytes, print, and repeat until end of file.
-/*
-void Printer::printFile(const char *aPath, boolean aWrapped, boolean aLinefeed, byte aPrependLen, byte aOffset = 0) {
+/*void Printer::printFile(const char *aPath, boolean aWrapped, boolean aLinefeed, byte aPrependLen, byte aOffset = 0) {
   //CSN_Thermal::wake();
 	unsigned long fileSize = StoryLoad::getFileSize(aPath);
 	if (fileSize == 0) {
@@ -375,85 +453,7 @@ void Printer::printFile(const char *aPath, boolean aWrapped, boolean aLinefeed, 
   //CSN_Thermal::sleep();
 }*/
 
-/*
-int Printer::printWrapped(char *aMsg, byte aColumns, boolean aBufferMode) {
-	DEBUG(aMsg);
-	int length = strlen(aMsg);
-  // Not long enough to wrap.
-	if (length < aColumns) {
-    //DEBUG(F("Short line"));
-		print(aMsg);
-		aMsg[0] = '\0';
-	} else {
-    // Wrap until we have less than one full line.
-		while (length >= aColumns) {
-			byte foundBreak = 0;
-			byte i;
-      // Search for a newline to break on.
-			for (i = 0; i < aColumns; ++i) {
-				if (aMsg[i] == '\t') {
-					aMsg[i] = ' ';
-          //DEBUG(F("[W] Found tab."));
-				}
-				if (aMsg[i] == '\r') {
-          //DEBUG(F("[W] Found carriage return."));
-				}
-				if (aMsg[i] == '\n') {
-					foundBreak = 1;
-					aMsg[i] = '\0';
-					println(aMsg);
-          //delay(1000);
-					length -= (i + 1);
-          // Usage: memmove(destination, source, length);
-					memmove(aMsg, aMsg + i + 1, length);
-					break;
-				}
-			}
 
-      // Search for a space to break on.
-			if (foundBreak == 0) {
-				for (i = aColumns; i > 0; --i) {
-					if (aMsg[i] == ' ') {
-						foundBreak = 1;
-						aMsg[i] = '\0';
-						println(aMsg);
-            //delay(1000);
-						length -= (i + 1);
-            // Usage: memmove(destination, source, length);
-						memmove(aMsg, aMsg + i + 1, length);
-						break;
-					}
-				}
-			}
 
-      // There were no spaces in the line.
-			if (foundBreak == 0) {
-        // Save the char we will set to null.
-				byte saved = aMsg[aColumns];
-        // Set the null so we only print one line.
-				aMsg[aColumns] = '\0';
-				println(aMsg);
-        //delay(1000);
-        // Replace the char.
-				aMsg[aColumns] = saved;
-        // Subtract the # of chars printed.
-				length -= aColumns;
-        // Move the remaining chars (length) starting at a pointer
-        // to the first char not printed (aMsg + aColumns) to a pointer
-        // to the beginning of the char array's memory space (aMsg).
-        // void *memmove(void *s1, const void *s2, size_t n);
-        // memmove(destination, source, length);
-				memmove(aMsg, aMsg + aColumns, length);
-			}
-		}
-    //slog(F("Last bit length: "));
-		DEBUG("Last bit length: %d", length);
-		aMsg[length] = ASCII_NULL;
-		if (!aBufferMode) {
-			print(aMsg);
-		}
-	}
-	return length;
-}*/
 
 }

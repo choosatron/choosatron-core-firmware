@@ -74,9 +74,7 @@ bool DataManager::getNumberedTitle(char* aBuffer, uint8_t aIndex) {
 	memset(&aBuffer[0], 0, sizeof(aBuffer));
 	sprintf(aBuffer, "%d. ", aIndex + 1);
 
-	DEBUG("Size: %d", strlen(aBuffer));
 	uint32_t offset = getStoryOffset(aIndex) * Flashee::Devices::userFlash().pageSize() + kStoryTitleOffset;
-	DEBUG("Offset: %d", offset);
 	bool result = _storyFlash->read(aBuffer + strlen(aBuffer), offset, kStoryTitleSize);
 	if (!result) {
 		Errors::setError(E_HEADER_READ_FAIL);

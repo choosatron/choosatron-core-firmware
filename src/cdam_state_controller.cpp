@@ -119,6 +119,7 @@ void StateController::loopState(GameState aState) {
 			for (int i = 0; i < storyCount; ++i) {
 				if (_dataManager->getNumberedTitle(titleBuffer, i)) {
 					_hardwareManager->printer()->printWrapped(titleBuffer, kPrinterColumns);
+					_hardwareManager->printer()->println(titleBuffer);
 				}
 			}
 			_hardwareManager->printer()->feed(2);
