@@ -119,9 +119,9 @@ void StateController::loopState(GameState aState) {
 			for (int i = 0; i < storyCount; ++i) {
 				if (_dataManager->getNumberedTitle(titleBuffer, i)) {
 					_hardwareManager->printer()->printWrapped(titleBuffer, kPrinterColumns);
-					_hardwareManager->printer()->feed(2);
 				}
 			}
+			_hardwareManager->printer()->feed(2);
 			changeState(STATE_SELECT);
 		} else { // No stories installed!
 			_hardwareManager->printer()->printEmpty();

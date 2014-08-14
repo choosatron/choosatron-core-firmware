@@ -301,7 +301,7 @@ void Printer::setABS(bool aTurnOn) {
 }
 
 uint8_t Printer::printWrapped(char* aBuffer, uint8_t aColumns) {
-
+	println(aBuffer);
 	return 0;
 }
 

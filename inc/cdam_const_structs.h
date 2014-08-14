@@ -154,17 +154,19 @@ typedef struct Metadata_t {
 
 /* Structure definitions for StoryHeader */
 
-const uint16_t kStoryBinaryVersionOffset = 0;
+const uint16_t kStoryBinaryVersionOffset = 1; // adding SOH byte
 const uint16_t kStoryBinaryVersionSize = 3;
 const uint16_t kStoryFlagsOffset = (kStoryBinaryVersionOffset + kStoryBinaryVersionSize);
 const uint16_t kStoryFlagsSize = 4; // bytes
 const uint16_t kStoryVarsOffset = (kStoryFlagsOffset + kStoryFlagsSize);
-const uint16_t kStoryVarsSize = 3; // bytes
+const uint16_t kStoryVarsSize = 4; // bytes
 const uint16_t kStorySizeOffset = (kStoryVarsOffset + kStoryVarsSize);
 const uint16_t kStorySizeSize = 4; // bytes
 const uint16_t kStoryVersionOffset = (kStorySizeOffset + kStorySizeSize);
 const uint16_t kStoryVersionSize = 3; // bytes
-const uint16_t kStoryLangCodeOffset = (kStoryVersionOffset + kStoryVersionSize);
+const uint16_t kStoryRsvdOffset = (kStoryVersionOffset + kStoryVersionSize);
+const uint16_t kStoryRsvdSize = 1; // bytes
+const uint16_t kStoryLangCodeOffset = (kStoryRsvdOffset + kStoryRsvdSize);
 const uint16_t kStoryLangCodeSize = 4; // bytes
 const uint16_t kStoryTitleOffset = (kStoryLangCodeOffset + kStoryLangCodeSize);
 const uint16_t kStoryTitleSize = 64; // bytes

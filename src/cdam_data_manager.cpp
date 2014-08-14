@@ -60,7 +60,7 @@ bool DataManager::initialize(StateController *aStateController) {
 
 	//_storyFlash->eraseAll();
 	//logStoryOffsets(&this->metadata);
-	logStoryBytes(&this->metadata);
+	//logStoryBytes(&this->metadata);
 	DEBUG("Ready!");
 
 	return true;
@@ -76,7 +76,8 @@ bool DataManager::getNumberedTitle(char* aBuffer, uint8_t aIndex) {
 
 	DEBUG("Size: %d", strlen(aBuffer));
 	uint32_t offset = getStoryOffset(aIndex) * Flashee::Devices::userFlash().pageSize() + kStoryTitleOffset;
-	bool result = _metaFlash->read(aBuffer + strlen(aBuffer), offset, kStoryTitleSize);
+	DEBUG("Offset: %d", offset);
+	bool result = _storyFlash->read(aBuffer + strlen(aBuffer), offset, kStoryTitleSize);
 	if (!result) {
 		Errors::setError(E_HEADER_READ_FAIL);
 		ERROR(Errors::errorString());
