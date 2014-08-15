@@ -1,11 +1,14 @@
 #include "cdam_parser.h"
+#include "cdam_manager.h"
 
 namespace cdam
 {
 
 /* Public Methods */
 
-Parser::Parser() {
+void Parser::initialize() {
+	_dataManager = Manager::getInstance().dataManager;
+	_hardwareManager = Manager::getInstance().hardwareManager;
 }
 
 uint8_t Parser::wrapText(char* aBuffer, uint8_t aColumns) {
@@ -15,7 +18,7 @@ uint8_t Parser::wrapText(char* aBuffer, uint8_t aColumns) {
 
 	// Should always represent the first char index of a line.
 	uint16_t startIndex = 0;
-	bool foundBreak = false;;
+	bool foundBreak = false;
 	// Wrap until we have less than one full line.
 	while ((length - startIndex) > aColumns) {
 		DEBUG("Start wrapping...");
