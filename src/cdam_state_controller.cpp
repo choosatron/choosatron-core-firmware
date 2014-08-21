@@ -18,6 +18,7 @@ struct GameStateStr_t {
 	{ STATE_IDLE, "idle" },
 	{ STATE_SELECT, "select" },
 	{ STATE_PLAY, "play" },
+	{ STATE_CONTINUE, "continue" },
 	{ STATE_AUTH, "auth" },
 	{ STATE_ADMIN, "admin" }
 };
@@ -56,6 +57,7 @@ void StateController::initState(GameState aState) {
 		_hardwareManager = Manager::getInstance().hardwareManager;
 		_serverManager = Manager::getInstance().serverManager;
 		_parser = new Parser();
+		_hardwareManager->keypad()->active = true;
 	} else if (aState == STATE_INIT) {
 		if (_dataManager->metadata.flags.random) {
 			Utils::shuffle(_dataManager->liveStoryOrder, kMaxStoryCount);
@@ -77,15 +79,29 @@ void StateController::initState(GameState aState) {
 	} else if (aState == STATE_AUTH) {
 
 	} else if (aState == STATE_ADMIN) {
-
+		DEBUG("Hello from admin!");
 	} else if (aState == STATE_ERROR) {
-
+		ERROR("*** ERROR STATE ***");
 	}
 }
 
 void StateController::loopState(GameState aState) {
 	if (aState == STATE_BOOTING) {
-		changeState(STATE_INIT);
+		// If button 1 held (or hardset to Offline), disable WiFi.
+		if (_hardwareManager->keypad()->buttonDown(1) ||
+		    _dataManager->metadata.flags.offline) {
+			LOG("* DISABLE WIFI *");
+		}
+		// Admin mode, if pass required change to STATE_AUTH
+		if (_hardwareManager->keypad()->buttonDown(2)) {
+			if (_dataManager->metadata.flags.auth) {
+				changeState(STATE_AUTH);
+			} else {
+				changeState(STATE_ADMIN);
+			}
+		} else {
+			changeState(STATE_INIT);
+		}
 	} else if (aState == STATE_INIT) {
 		if (_dataManager->metadata.flags.arcade) {
 			changeState(STATE_CREDITS);
@@ -158,7 +174,6 @@ void StateController::endState(GameState aState) {
 
 	} else if (aState == STATE_INIT) {
 		_hardwareManager->printer()->active = true;
-		_hardwareManager->keypad()->active = true;
 	} else if (aState == STATE_CREDITS) {
 
 	} else if (aState == STATE_WAITING) {

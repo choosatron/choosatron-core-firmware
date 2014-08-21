@@ -254,7 +254,7 @@ bool DataManager::initializeMetadata(Metadata *aMetadata) {
 	aMetadata->firmwareVer.minor = this->firmwareVersion.minor;
 	aMetadata->firmwareVer.revision = this->firmwareVersion.revision;
 
-	aMetadata->flags.rsvd1 = 0;
+	aMetadata->flags.auth = 0;
 	aMetadata->flags.offline = 0;
 	aMetadata->flags.demo = 0;
 	aMetadata->flags.sdCard = 0;
@@ -419,7 +419,7 @@ void DataManager::setTestMetadata(Metadata *aMetadata) {
 	aMetadata->firmwareVer.minor = 8;
 	aMetadata->firmwareVer.revision = 76;
 
-	aMetadata->flags.rsvd1 = 0;
+	aMetadata->flags.auth = 0;
 	aMetadata->flags.offline = 1;
 	aMetadata->flags.demo = 0;
 	aMetadata->flags.sdCard = 1;
@@ -529,7 +529,7 @@ void DataManager::logMetadata(Metadata *aMetadata) {
 	DEBUG("Arcade: %s", (aMetadata->flags.arcade ? "on" : "off"));
 	DEBUG("Continues: %s", (aMetadata->flags.continues ? "on" : "off"));
 	DEBUG("Random: %s", (aMetadata->flags.random ? "on" : "off"));
-	DEBUG("Rsvd: %s", (aMetadata->flags.rsvd1 ? "on" : "off"));
+	DEBUG("Auth: %s", (aMetadata->flags.auth ? "on" : "off"));
 	DEBUG("Logging: %s", (aMetadata->flags.logging ? "on" : "off"));
 	DEBUG("Log Local: %s", (aMetadata->flags.logLocal ? "on" : "off"));
 	DEBUG("Log Live: %s", (aMetadata->flags.logLive ? "on" : "off"));

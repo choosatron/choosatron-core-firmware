@@ -47,9 +47,9 @@ typedef struct {
   	volatile uint8_t count;
   	volatile ButtonState state; // The current button state
   	volatile ButtonEvent event;
-  	volatile unsigned char value:1; // the last digital read value
-  	volatile unsigned char active:1; // the boolean button (active or not)
-  	volatile unsigned char heldFlag:1;
+  	volatile uint8_t value:1; // the last digital read value
+  	volatile uint8_t active:1; // the boolean button (active or not)
+  	volatile uint8_t heldFlag:1;
 } ButtonData;
 
 
@@ -60,17 +60,18 @@ public:
 	Keypad();
 	void initialize();
 	void updateState();
+	bool buttonsDown();
+	bool buttonDown(uint8_t aBtnNum);
 	// Returns value of button if the event type has occurred, otherwise 0.
 	uint8_t buttonEvent(ButtonEvent aEvent, uint8_t aRange = 0);
 	uint8_t buttonEventValue(ButtonEvent aEvent, uint8_t aBtnNum);
 	//char buttonEventChar(ButtonEvent aEvent, uint8_t aBtnNum);
-	uint8_t buttonValue(uint8_t aBtnNum);
+	uint8_t buttonValue(ButtonState aState, uint8_t aBtnNum);
 	//char buttonChar(uint8_t aBtnNum);
 	// Returns value of the buttons together, otherwise 0.
 	uint8_t keypadEvent(KeypadEvent aEvent, uint8_t aRange = 0);
 	uint8_t keypadEventValue(KeypadEvent aEvent);
-	char keypadEventChar(KeypadEvent aEvent);
-	bool buttonsDown();
+	//char keypadEventChar(KeypadEvent aEvent);
 	void clearEvents();
 
 	/* Public Variables */

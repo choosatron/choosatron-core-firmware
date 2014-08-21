@@ -99,6 +99,11 @@ bool Keypad::buttonsDown() {
     return false;
 }
 
+bool Keypad::buttonDown(uint8_t aBtnNum) {
+    DEBUG("Button %d: %d", aBtnNum, buttonData[aBtnNum - 1].value);
+    return buttonData[aBtnNum - 1].value ? true : false;
+}
+
 uint8_t Keypad::buttonEvent(ButtonEvent aEvent, uint8_t aRange) {
     uint8_t result = 0;
     for (int i = NUM_BUTTONS - 1; i >= 0; i--) {
@@ -116,11 +121,11 @@ uint8_t Keypad::buttonEvent(ButtonEvent aEvent, uint8_t aRange) {
 
 uint8_t Keypad::buttonEventValue(ButtonEvent aEvent, uint8_t aBtnNum) {
     uint8_t result = 0;
-    if (buttonData[aBtnNum].event == aEvent) {
-        //this->buttonData[aBtnNum].event = BTN_NO_EVENT;
-        result = buttonData[aBtnNum].num;
+    if (buttonData[aBtnNum - 1].event == aEvent) {
+        this->buttonData[aBtnNum - 1].event = BTN_NO_EVENT;
+        result = buttonData[aBtnNum - 1].num;
     }
-    clearEvents();
+    //clearEvents();
     return result;
 }
 
@@ -132,8 +137,11 @@ uint8_t Keypad::buttonEventValue(ButtonEvent aEvent, uint8_t aBtnNum) {
     return '\0';
 }*/
 
-uint8_t Keypad::buttonValue(uint8_t aBtnNum) {
-    uint8_t result = buttonData[aBtnNum].num;
+uint8_t Keypad::buttonValue(ButtonState aState, uint8_t aBtnNum) {
+    uint8_t result = 0;
+    if (buttonData[aBtnNum - 1].state == aState) {
+        result = buttonData[aBtnNum - 1].num;
+    }
     return result;
 }
 

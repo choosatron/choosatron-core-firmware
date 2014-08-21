@@ -36,7 +36,7 @@ const uint16_t kMetadataSize = (kMetadataStoryOrderOffset + kMetadataStoryOrderS
 
 //const uint16_t kStoryBaseAddress = (kMetadataStoryOffsetsOffset + kMetadataStoryOffsetsSize);
 
-#define FLG1_OFFLINE   0x80
+/*#define FLG1_OFFLINE   0x80
 #define FLG1_DEMO      0x40
 #define FLG1_SD        0x20
 #define FLG1_MULTI     0x10
@@ -45,7 +45,7 @@ const uint16_t kMetadataSize = (kMetadataStoryOrderOffset + kMetadataStoryOrderS
 #define FLG2_LOGGING   0x80
 #define FLG2_LOG_LOCAL 0x40
 #define FLG2_LOG_LIVE  0x20
-#define FLG2_LOG_PRINT 0x10
+#define FLG2_LOG_PRINT 0x10*/
 
 /* Generic Structures */
 
@@ -61,7 +61,7 @@ typedef struct MetaFlags_t {
 	union {
 	    uint8_t flag1;
 	    struct {
-	    	uint8_t rsvd1 			:1; // Bit 0
+	    	uint8_t auth 			:1; // Bit 0
 	    	uint8_t random          :1;
 	    	uint8_t continues       :1;
 	    	uint8_t arcade			:1;
