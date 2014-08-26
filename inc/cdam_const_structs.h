@@ -219,10 +219,10 @@ typedef struct StoryFlags_t
 } StoryFlags;
 
 typedef struct StoryVars_t {
-	uint8_t bits; // How many 1 bit flags
 	uint8_t small; // How many 8 bit variables
 	uint8_t big; // How many 16 bit variables
-	uint8_t rsvd;
+	uint8_t rsvd1;
+	uint8_t rsvd2;
 } StoryVars;
 
 typedef struct StoryHeader_t { // Total Size: 380 bytes

@@ -595,7 +595,6 @@ void DataManager::logStoryHeader(StoryHeader *aHeader) {
 	logBinary(aHeader->flags.flag3);
 	logBinary(aHeader->flags.flag4);
 
-	DEBUG("Story Bits: %d", aHeader->vars.bits);
 	DEBUG("Story 8-bit: %d", aHeader->vars.small);
 	DEBUG("Story 16-bit: %d", aHeader->vars.big);
 
