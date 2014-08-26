@@ -45,10 +45,10 @@ def parseByteRange(element, byteView, bitPos, bitLength, results):
 
     while (bytePos - startPos) &lt; byteLength:
         byteRead = byteView.readByte(bytePos)
-        print(&quot;Byte: &quot; + chr(byteRead))
+        #print(&quot;Byte: &quot; + chr(byteRead))
         bytePos += 1
         processedBytes += 1
-        print &quot;Position: &quot; + str(bytePos - startPos) + &quot;, Total Length: &quot; + str(byteLength)
+        #print &quot;Position: &quot; + str(bytePos - startPos) + &quot;, Total Length: &quot; + str(byteLength)
         if byteRead == 0x1A or byteRead == 0x05 or (bytePos - startPos) == byteLength:
             if len(textStr) &gt; 0:
                 if (bytePos - startPos) == byteLength:
@@ -135,7 +135,7 @@ def parseByteRange(element, byteView, bitPos, bitLength, results):
 
 	choiceResult = results.getResultByName(&quot;ChoiceCount&quot;)
 	countPos = choiceResult.getStartBytePos()
-	choiceCount = choiceResult.getByteView().readUnsignedInt(countPos, 1, ENDIAN_BIG)
+	choiceCount = choiceResult.getByteView().readUnsignedInt(countPos, 1, ENDIAN_LITTLE)
 
 	# how many bytes were processed?
 	processedBytes = 0
@@ -149,7 +149,7 @@ def parseByteRange(element, byteView, bitPos, bitLength, results):
 	if choiceCount == 0:
 		#print &quot;This is an ending.&quot;
 		#results.addStructureStartAtPosition(element.getEnclosingStructure(), bitPos / 8, 0, &quot;Ending&quot;)
-		attributes = byteView.readUnsignedInt(bitPos / 8, 1, ENDIAN_BIG)
+		attributes = byteView.readUnsignedInt(bitPos / 8, 1, ENDIAN_LITTLE)
 		endingQuality = attributes &amp; 0x07
 
 		# create and set new value
@@ -159,7 +159,7 @@ def parseByteRange(element, byteView, bitPos, bitLength, results):
 		processedBytes = 1
 		results.addElement(element, processedBytes, iteration, value)
 	else:
-		print &quot;Not an ending, there were &quot; + str(choiceCount) + &quot; choices.&quot;
+		print &quot;Not an ending, choice count: &quot; + str(choiceCount)
 
 	# return number of processed bytes
 	return processedBytes
@@ -169,7 +169,7 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
 	&quot;&quot;&quot;fillByteRange method&quot;&quot;&quot;
 
 	# write an integer back to file
-	# byteArray.writeUnsignedIntBits(highWord, bitPos, bitLength, ENDIAN_BIG)
+	# byteArray.writeUnsignedIntBits(highWord, bitPos, bitLength, ENDIAN_LITTLE)
 </source>
             </script>
         </scripts>
@@ -249,7 +249,7 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
                 <number name="PassageCount" id="54" type="integer" length="2"/>
                 <number name="PassageOffset" id="55" repeatmin="PassageCount" repeatmax="PassageCount" type="integer" length="4"/>
                 <number name="PassageLength" id="56" disabled="yes" type="integer" length="4"/>
-                <structure name="Passage" id="57" length="0" repeat="id:54">
+                <structure name="Passage" id="57" length="0" repeat="id:54" repeatmin="PassageCount" repeatmax="PassageCount">
                     <number name="UpdateCount" id="58" fillcolor="9BFB97" type="integer" length="1" minval="0" maxval="8"/>
                     <structref name="ValueUpdate" id="60" repeatmin="UpdateCount" repeatmax="UpdateCount" structure="id:59"/>
                     <number name="BodyLength" id="61" type="integer" length="4" minval="0"/>
@@ -319,8 +319,8 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
                 <string name="Word" id="86" repeatmax="-1" type="zero-terminated"/>
             </structure>
         </structure>
-        <structure name="ValueUpdate" id="59" length="5" repeat="id:58" repeatmin="UpdateCount" repeatmax="UpdateCount" encoding="ISO_8859-1:1987" endian="big" signed="no">
-            <number name="VariableTypes" id="89" type="integer" length="8" lengthunit="bit" display="binary" minval="00000000" maxval="0111111111111111111111111111111111111111111111111111111111111111">
+        <structure name="ValueUpdate" id="59" length="5" repeat="id:58" repeatmin="UpdateCount" repeatmax="UpdateCount" encoding="ISO_8859-1:1987" endian="little" signed="no">
+            <number name="VariableTypes" id="89" type="integer" length="8" lengthunit="bit" display="binary">
                 <mask name="ValueOneType" value="0xC0">
                     <fixedvalue name="hard value" value="0x0"/>
                     <fixedvalue name="bool" value="0x40"/>
@@ -342,8 +342,8 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
                     <fixedvalue name="Modulus" value="0x5"/>
                 </mask>
             </number>
-            <number name="Value/Index1" id="90" type="integer" length="2" minval="0" maxval="255"/>
-            <number name="Value/Index2" id="91" type="integer" length="2" minval="0" maxval="255"/>
+            <number name="Value/Index1" id="90" type="integer" length="2"/>
+            <number name="Value/Index2" id="91" type="integer" length="2"/>
         </structure>
     </grammar>
 </ufwb>
