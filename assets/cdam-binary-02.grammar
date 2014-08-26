@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ufwb version="1.9">
+    <grammar name="Choosatron Story Binary" start="id:18" author="Jerry Belich" email="jerry@choosatron.com" fileextension="cdam" uti="com.choosatron" complete="yes">
+        <description>Grammar for the Choosatron Deluxe Adventure Matrix binary story file.</description>
+        <scripts>
+            <script name="Passage" type="Grammar" id="66">
+                <source language="Python">def init():
+	print &quot;init&quot;
+
+def processGrammar(grammar):
+	print &quot;grammar&quot;
+
+def terminate():
+	print &quot;terminate&quot;
+</source>
+            </script>
+            <script name="TextBody" type="DataType" id="64">
+                <source language="Python"># Text Body - Used for passage body text and choice text.
+
+def parseByteRange(element, byteView, bitPos, bitLength, results):
+    # this method parses data starting at bitPos, bitLength bits are remaining
+    &quot;&quot;&quot;parseByteRange method&quot;&quot;&quot;
+
+    textStr = &quot;&quot;
+    # how many bytes were processed?
+    processedBytes = 0
+    iteration = 0
+    # we are only working with bytes
+    startPos = bytePos = bitPos / 8
+    
+    processedBytes = 0
+    byteLength = bitLength / 8
+
+    results.addStructureStartAtPosition(element.getEnclosingStructure(), startPos, 0, &quot;Body&quot;)
+
+    while (bytePos - startPos) &lt; byteLength:
+        byteRead = byteView.readByte(bytePos)
+        print(&quot;Byte: &quot; + chr(byteRead))
+        bytePos += 1
+        processedBytes += 1
+        print(str(bytePos - startPos))
+        if byteRead == 0x1A or byteRead == 0x05 or (bytePos - startPos) == byteLength:
+            print(&quot;End of Text&quot;)
+            if len(textStr) &gt; 0:
+                if (bytePos - startPos) == byteLength:
+                    textStr += chr(byteRead)
+                    processedBytes += 1
+                textValue = StringValue()
+                textValue.setString(textStr)
+                print(textStr)
+                textStr = &quot;&quot;
+                textElement = Element(1, &quot;Text&quot;, True)
+                results.addElement(textElement, processedBytes - 1, iteration, textValue)
+                # The currently read byte is part of a SUB or CMD
+                processedBytes = 1
+
+        # SUB or Substitute byte means a word lookup, 3 byte address
+        if byteRead == 0x1A:
+            print(&quot;Starting SUB&quot;)
+            subByteElement = Element(1, &quot;Start Substitute&quot;, True)
+            subValue = StringValue()
+            subValue.setString(&quot;SUB: 1A&quot;)
+            results.addElement(subByteElement, 1, iteration, subValue)
+            address = byteView.readUnsignedInt(bytePos, 3, ENDIAN_BIG)
+            addressVal = NumberValue()
+            addressVal.setName(&quot;Lookup Address&quot;)
+            addressVal.setUnsigned(address)
+            bytePos += 3
+            subElement = Element(2, &quot;Substitution&quot;, True)
+            results.addElement(subElement, 3, iteration, addressVal)
+            processedBytes = 0
+        elif byteRead == 0x05:
+            print(&quot;Starting CMD&quot;)
+            cmdStartElement = Element(1, &quot;Start Command&quot;, True)
+            cmdStartValue = StringValue()
+            cmdStartValue.setString(&quot;ENQ: 05&quot;)
+            results.addElement(cmdStartElement, 1, iteration, cmdStartValue)
+            commandType = byteView.readByte(bytePos)
+            bytePos += 1
+            cmdTypeElement = Element(2, &quot;Command Type&quot;, True)
+            cmdTypeValue = NumberValue()
+            cmdTypeValue.setUnsigned(commandType)
+            results.addElement(cmdTypeElement, 1, iteration, cmdTypeValue)
+            cmdBody = &quot;&quot;
+            processedBytes = 0
+            while byteRead != 0x06:
+                byteRead = byteView.readByte(bytePos)
+                if byteRead != 0x06:
+                    bytePos += 1
+                    processedBytes += 1
+                    cmdBody += chr(byteRead)
+            if len(cmdBody) &gt; 0:
+                commandVal = StringValue()
+                commandVal.setName(&quot;Command Body&quot;)
+                commandVal.setString(cmdBody)
+                cmdElement = Element(1, &quot;Command&quot;, True)
+                results.addElement(cmdElement, processedBytes, iteration, commandVal)
+            bytePos += 1
+            cmdEndElement = Element(1, &quot;End Command&quot;, True)
+            cmdEndValue = StringValue()
+            cmdEndValue.setString(&quot;ACK: 06&quot;)
+            results.addElement(cmdEndElement, 1, iteration, cmdEndValue)
+            processedBytes = 0
+        else:
+            textStr += chr(byteRead)
+            print(textStr)
+
+	results.addStructureEnd(bytePos)
+	print &quot;Processed Bytez: &quot; + str(bytePos - startPos)
+    return bytePos - startPos
+
+
+def fillByteRange(value, byteArray, bitPos, bitLength):
+    # this method translates edited values back to the file
+    &quot;&quot;&quot;fillByteRange method&quot;&quot;&quot;</source>
+            </script>
+            <script name="Ending" type="DataType" id="92">
+                <source language="Python"># custom data type script
+
+def parseByteRange(element, byteView, bitPos, bitLength, results):
+	# this method parses data starting at bitPos, bitLength bits are remaining
+	&quot;&quot;&quot;parseByteRange method&quot;&quot;&quot;
+	print &quot;MEOW!!!&quot;
+	choiceResult = results.getResultByName(&quot;ChoiceCount&quot;)
+	countPos = choiceResult.getStartBytePos()
+	choiceCount = choiceResult.getByteView().readUnsignedInt(countPos, 1, ENDIAN_BIG)
+	#print choiceResult.getName()
+	#print choiceCount
+
+	# how many bytes were processed?
+	processedBytes = 0
+	iteration = 0
+    #startPos = bitPos / 8
+
+	#testByte = 0xAD
+	#eq = testByte &amp; 0x07
+	#print &quot;Ending Quality Test: &quot; + str(eq)
+
+	if choiceCount == 0:
+		#print &quot;This is an ending.&quot;
+		#results.addStructureStartAtPosition(element.getEnclosingStructure(), bitPos / 8, 0, &quot;Ending&quot;)
+		attributes = byteView.readUnsignedInt(bitPos / 8, 1, ENDIAN_BIG)
+		endingQuality = attributes &amp; 0x07
+
+		# create and set new value
+		value = NumberValue()
+		value.setUnsigned(endingQuality)
+		value.setName(&quot;Ending Quality&quot;)
+		processedBytes = 1
+		results.addElement(element, processedBytes, iteration, value)
+	else:
+		print &quot;Not an ending, there were &quot; + str(choiceCount) + &quot; choices.&quot;
+
+	# return number of processed bytes
+	return processedBytes
+
+def fillByteRange(value, byteArray, bitPos, bitLength):
+	# this method translates edited values back to the file
+	&quot;&quot;&quot;fillByteRange method&quot;&quot;&quot;
+
+	# write an integer back to file
+	# byteArray.writeUnsignedIntBits(highWord, bitPos, bitLength, ENDIAN_BIG)
+</source>
+            </script>
+        </scripts>
+        <structure name="Story" id="18" encoding="ISO_8859-1:1987" endian="little" signed="no">
+            <structure name="StoryHeader" id="19">
+                <binary name="StartHeader" mustmatch="yes" id="20" fillcolor="BA1A00" length="1">
+                    <description>Start of Heading byte.</description>
+                    <fixedvalues>
+                        <fixedvalue name="SOH" value="01"/>
+                    </fixedvalues>
+                </binary>
+                <structure name="BinaryVersion" id="21" length="3">
+                    <number name="Major" id="22" fillcolor="E7D3FF" type="integer" length="1"/>
+                    <number name="Minor" id="23" fillcolor="E6D2FF" type="integer" length="1"/>
+                    <number name="Revision" id="24" type="integer" length="1"/>
+                </structure>
+                <structure name="Flags" id="26" length="4">
+                    <number name="Features Used" id="27" fillcolor="BEFBA9" type="integer" length="8" lengthunit="bit" display="binary">
+                        <mask name="Scripting" value="0x80">
+                            <fixedvalue name="Yes" value="0x80"/>
+                            <fixedvalue name="No" value="0x0"/>
+                        </mask>
+                        <mask name="Variables" value="0x40">
+                            <fixedvalue name="Yes" value="0x40"/>
+                            <fixedvalue name="No" value="0x0"/>
+                        </mask>
+                        <mask name="Images" value="0x20">
+                            <fixedvalue name="Yes" value="0x20"/>
+                            <fixedvalue name="No" value="0x0"/>
+                        </mask>
+                    </number>
+                    <number name="Toggles" id="28" fillcolor="BFFBA9" type="integer" length="8" lengthunit="bit" display="binary">
+                        <mask name="Continue" value="0x80">
+                            <fixedvalue name="Yes" value="0x80"/>
+                            <fixedvalue name="No" value="0x0"/>
+                        </mask>
+                        <mask name="Multiplayer" value="0x40">
+                            <fixedvalue name="Yes" value="0x40"/>
+                            <fixedvalue name="No" value="0x0"/>
+                        </mask>
+                        <mask name="Hide Used" value="0x20">
+                            <fixedvalue name="Yes" value="0x20"/>
+                            <fixedvalue name="No" value="0x0"/>
+                        </mask>
+                    </number>
+                    <number name="Flags3" id="29" fillcolor="BDFBA7" type="integer" length="8" lengthunit="bit" display="binary"/>
+                    <number name="Flags4" id="30" fillcolor="C1FBA9" type="integer" length="8" lengthunit="bit" display="binary"/>
+                </structure>
+                <structure name="Variables" id="32" length="4">
+                    <number name="Small" id="33" fillcolor="FFEFA6" type="integer" length="1" minval="0" maxval="255">
+                        <description>The number of small variables to allocate space for (8 bit).</description>
+                    </number>
+                    <number name="Big" id="34" fillcolor="FFF67D" type="integer" length="1" minval="0" maxval="255">
+                        <description>The number of big variables to allocate space for (16 bit).</description>
+                    </number>
+                    <number name="Rsvd1" id="35" fillcolor="FFF3A6" type="integer" length="1"/>
+                    <number name="Rsvd2" id="36" type="integer" length="1"/>
+                </structure>
+                <number name="StorySize" id="38" fillcolor="B764FF" type="integer" length="4" endian="little">
+                    <description>The story size in bytes.</description>
+                </number>
+                <structure name="StoryVersion" id="39" length="3" fillcolor="F9DCFF">
+                    <number name="Major" id="40" fillcolor="E0C6FF" type="integer" length="1"/>
+                    <number name="Minor" id="41" fillcolor="E4D1FF" type="integer" length="1"/>
+                    <number name="Revision" id="42" fillcolor="DCCFFF" type="integer" length="1"/>
+                </structure>
+                <number name="Rsvd" id="44" type="integer" length="1"/>
+                <string name="LanguageCode" id="45" fillcolor="FFB85D" type="fixed-length" length="4"/>
+                <string name="Title" id="46" fillcolor="FFBA68" type="fixed-length" length="64"/>
+                <string name="Subtitle" id="47" fillcolor="FFB24F" type="fixed-length" length="32"/>
+                <string name="Author" id="48" fillcolor="FFBA64" type="fixed-length" length="48"/>
+                <string name="Credits" id="49" fillcolor="FFB961" type="fixed-length" length="80"/>
+                <string name="Contact" id="50" fillcolor="FFB962" type="fixed-length" length="128"/>
+                <number name="PublishDate" id="51" type="integer" length="4" endian="little"/>
+            </structure>
+            <structure name="StoryBody" id="53">
+                <number name="PassageCount" id="54" type="integer" length="2"/>
+                <number name="PassageOffset" id="55" repeatmin="PassageCount" repeatmax="PassageCount" type="integer" length="4"/>
+                <number name="PassageLength" id="56" disabled="yes" type="integer" length="4"/>
+                <structure name="Passage" id="57" length="0" repeat="id:54">
+                    <number name="UpdateCount" id="58" fillcolor="9BFB97" type="integer" length="1" minval="0" maxval="8"/>
+                    <structref name="ValueUpdate" id="60" repeatmin="UpdateCount" repeatmax="UpdateCount" structure="id:59"/>
+                    <number name="BodyLength" id="61" type="integer" length="4" minval="0"/>
+                    <custom name="Body" id="62" length="BodyLength" script="id:64"/>
+                    <number name="ChoiceCount" id="63" fillcolor="FFEC90" type="integer" length="1" minval="0" maxval="10"/>
+                    <structure name="Choice" id="64" repeatmin="ChoiceCount" repeatmax="ChoiceCount">
+                        <number name="Attributes" id="65" type="integer" length="8" lengthunit="bit" display="binary">
+                            <mask name="Append" value="0x80">
+                                <fixedvalue name="Yes" value="0x80"/>
+                                <fixedvalue name="No" value="0x0"/>
+                            </mask>
+                        </number>
+                        <number name="ConditionCount" id="66" type="integer" length="1" minval="0" maxval="8"/>
+                        <structure name="DisplayCondition" id="67" length="5" repeatmin="ConditionCount" repeatmax="ConditionCount">
+                            <number name="ValueTypes" id="68" type="integer" length="8" lengthunit="bit" display="binary" minval="00000000" maxval="0111111111111111111111111111111111111111111111111111111111111111">
+                                <mask name="ValueOneType" value="0xC0">
+                                    <fixedvalue name="hard value" value="0x0"/>
+                                    <fixedvalue name="bool" value="0x40"/>
+                                    <fixedvalue name="uint 8" value="0x80"/>
+                                    <fixedvalue name="uint 16" value="0xC0"/>
+                                </mask>
+                                <mask name="ValueTwoType" value="0x30">
+                                    <fixedvalue name="hard value" value="0x0"/>
+                                    <fixedvalue name="bool" value="0x10"/>
+                                    <fixedvalue name="uint 8" value="0x20"/>
+                                    <fixedvalue name="uint 16" value="0x30"/>
+                                </mask>
+                                <mask name="Operator" value="0xF">
+                                    <fixedvalue name="Equal To" value="0x0"/>
+                                    <fixedvalue name="Greater Than" value="0x1"/>
+                                    <fixedvalue name="Less Than" value="0x2"/>
+                                    <fixedvalue name="Equal or Greater" value="0x3"/>
+                                    <fixedvalue name="Equal or Less" value="0x4"/>
+                                    <fixedvalue name="Mod" value="0x5"/>
+                                </mask>
+                            </number>
+                            <number name="Value/Index1" id="69" type="integer" length="2"/>
+                            <number name="Value/Index2" id="70" type="integer" length="2"/>
+                        </structure>
+                        <number name="ChoiceLength" id="72" type="integer" length="2"/>
+                        <custom name="ChoiceBody" id="73" length="ChoiceLength" script="id:64"/>
+                        <number name="PassageIndex" id="74" type="integer" length="2" minval="0"/>
+                        <number name="UpdateCount" id="75" type="integer" length="1" minval="0" maxval="8"/>
+                        <structref name="ValueUpdate" id="76" repeatmin="UpdateCount" repeatmax="UpdateCount" structure="id:59"/>
+                    </structure>
+                    <custom name="Ending" id="78" script="id:92"/>
+                    <structure name="Endingz" id="79" length="0" disabled="yes" repeatmin="0">
+                        <number name="Attributes" id="80" repeatmin="0" repeatmax="0" type="integer" length="8" lengthunit="bit" display="binary">
+                            <mask name="Quality" value="0x7">
+                                <fixedvalue name="Terrible" value="0x1"/>
+                                <fixedvalue name="Bad" value="0x2"/>
+                                <fixedvalue name="Neutral" value="0x3"/>
+                                <fixedvalue name="Good" value="0x4"/>
+                                <fixedvalue name="Great" value="0x5"/>
+                                <fixedvalue name="Undefined" value="0x0"/>
+                            </mask>
+                        </number>
+                    </structure>
+                    <binary name="EndBody" mustmatch="yes" id="82" length="1">
+                        <fixedvalues>
+                            <fixedvalue name="ETX" value="03"/>
+                        </fixedvalues>
+                    </binary>
+                </structure>
+            </structure>
+            <structure name="Dictionary" id="85" disabled="yes">
+                <string name="Word" id="86" repeatmax="-1" type="zero-terminated"/>
+            </structure>
+        </structure>
+        <structure name="ValueUpdate" id="59" length="5" repeat="id:58" repeatmin="UpdateCount" repeatmax="UpdateCount" encoding="ISO_8859-1:1987" endian="big" signed="no">
+            <number name="VariableTypes" id="89" type="integer" length="8" lengthunit="bit" display="binary" minval="00000000" maxval="0111111111111111111111111111111111111111111111111111111111111111">
+                <mask name="ValueOneType" value="0xC0">
+                    <fixedvalue name="hard value" value="0x0"/>
+                    <fixedvalue name="bool" value="0x40"/>
+                    <fixedvalue name="uint 8" value="0x80"/>
+                    <fixedvalue name="uint 16" value="0xC0"/>
+                </mask>
+                <mask name="ValueTwoType" value="0x30">
+                    <fixedvalue name="hard value" value="0x0"/>
+                    <fixedvalue name="bool" value="0x10"/>
+                    <fixedvalue name="uint 8" value="0x20"/>
+                    <fixedvalue name="uint 16" value="0x30"/>
+                </mask>
+                <mask name="Operator" value="0xF">
+                    <fixedvalue name="Equals" value="0x0"/>
+                    <fixedvalue name="Plus" value="0x1"/>
+                    <fixedvalue name="Minus" value="0x2"/>
+                    <fixedvalue name="Multiple" value="0x3"/>
+                    <fixedvalue name="Divide" value="0x4"/>
+                    <fixedvalue name="Modulus" value="0x5"/>
+                </mask>
+            </number>
+            <number name="Value/Index1" id="90" type="integer" length="2" minval="0" maxval="255"/>
+            <number name="Value/Index2" id="91" type="integer" length="2" minval="0" maxval="255"/>
+        </structure>
+    </grammar>
+</ufwb>
