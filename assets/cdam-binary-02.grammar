@@ -21,6 +21,16 @@ def parseByteRange(element, byteView, bitPos, bitLength, results):
     # this method parses data starting at bitPos, bitLength bits are remaining
     &quot;&quot;&quot;parseByteRange method&quot;&quot;&quot;
 
+    #lengthResult = results.getPrevResult()
+    #print lengthResult.getName()
+    #lengthBytes = 4
+    #if lengthResult == NULL:
+    #   lengthResult = results.getResultByName(&quot;ChoiceLength&quot;)
+    #   lengthBytes = 2
+    #lengthPos = lengthResult.getStartBytePos()
+    #length = lengthResult.getByteView().readUnsignedInt(lengthPos, lengthBytes, ENDIAN_LITTLE)
+    #print &quot;Length: &quot; + str(length)
+
     textStr = &quot;&quot;
     # how many bytes were processed?
     processedBytes = 0
@@ -31,16 +41,15 @@ def parseByteRange(element, byteView, bitPos, bitLength, results):
     processedBytes = 0
     byteLength = bitLength / 8
 
-    results.addStructureStartAtPosition(element.getEnclosingStructure(), startPos, 0, &quot;Body&quot;)
+    bodyResult = results.addStructureStart(element.getEnclosingStructure(), startPos, 0, &quot;Body&quot;, True)
 
     while (bytePos - startPos) &lt; byteLength:
         byteRead = byteView.readByte(bytePos)
         print(&quot;Byte: &quot; + chr(byteRead))
         bytePos += 1
         processedBytes += 1
-        print(str(bytePos - startPos))
+        print &quot;Position: &quot; + str(bytePos - startPos) + &quot;, Total Length: &quot; + str(byteLength)
         if byteRead == 0x1A or byteRead == 0x05 or (bytePos - startPos) == byteLength:
-            print(&quot;End of Text&quot;)
             if len(textStr) &gt; 0:
                 if (bytePos - startPos) == byteLength:
                     textStr += chr(byteRead)
@@ -53,6 +62,9 @@ def parseByteRange(element, byteView, bitPos, bitLength, results):
                 results.addElement(textElement, processedBytes - 1, iteration, textValue)
                 # The currently read byte is part of a SUB or CMD
                 processedBytes = 1
+                if (bytePos - startPos) == byteLength:
+                    print(&quot;End of Text&quot;)
+                    bodyResult = results.addStructureEnd(bytePos)
 
         # SUB or Substitute byte means a word lookup, 3 byte address
         if byteRead == 0x1A:
@@ -61,7 +73,7 @@ def parseByteRange(element, byteView, bitPos, bitLength, results):
             subValue = StringValue()
             subValue.setString(&quot;SUB: 1A&quot;)
             results.addElement(subByteElement, 1, iteration, subValue)
-            address = byteView.readUnsignedInt(bytePos, 3, ENDIAN_BIG)
+            address = byteView.readUnsignedInt(bytePos, 3, ENDIAN_LITTLE)
             addressVal = NumberValue()
             addressVal.setName(&quot;Lookup Address&quot;)
             addressVal.setUnsigned(address)
@@ -103,10 +115,10 @@ def parseByteRange(element, byteView, bitPos, bitLength, results):
             processedBytes = 0
         else:
             textStr += chr(byteRead)
-            print(textStr)
 
-	results.addStructureEnd(bytePos)
-	print &quot;Processed Bytez: &quot; + str(bytePos - startPos)
+    #if (bytePos - startPos) == length:
+    #   results.addStructureEnd(bytePos)
+    #   print &quot;Processed Bytez: &quot; + str(bytePos - startPos)
     return bytePos - startPos
 
 
@@ -120,12 +132,10 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
 def parseByteRange(element, byteView, bitPos, bitLength, results):
 	# this method parses data starting at bitPos, bitLength bits are remaining
 	&quot;&quot;&quot;parseByteRange method&quot;&quot;&quot;
-	print &quot;MEOW!!!&quot;
+
 	choiceResult = results.getResultByName(&quot;ChoiceCount&quot;)
 	countPos = choiceResult.getStartBytePos()
 	choiceCount = choiceResult.getByteView().readUnsignedInt(countPos, 1, ENDIAN_BIG)
-	#print choiceResult.getName()
-	#print choiceCount
 
 	# how many bytes were processed?
 	processedBytes = 0
