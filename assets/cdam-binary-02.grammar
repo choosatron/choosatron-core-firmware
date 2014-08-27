@@ -21,16 +21,6 @@ def parseByteRange(element, byteView, bitPos, bitLength, results):
     # this method parses data starting at bitPos, bitLength bits are remaining
     &quot;&quot;&quot;parseByteRange method&quot;&quot;&quot;
 
-    #lengthResult = results.getPrevResult()
-    #print lengthResult.getName()
-    #lengthBytes = 4
-    #if lengthResult == NULL:
-    #   lengthResult = results.getResultByName(&quot;ChoiceLength&quot;)
-    #   lengthBytes = 2
-    #lengthPos = lengthResult.getStartBytePos()
-    #length = lengthResult.getByteView().readUnsignedInt(lengthPos, lengthBytes, ENDIAN_LITTLE)
-    #print &quot;Length: &quot; + str(length)
-
     textStr = &quot;&quot;
     # how many bytes were processed?
     processedBytes = 0
@@ -40,6 +30,13 @@ def parseByteRange(element, byteView, bitPos, bitLength, results):
     
     processedBytes = 0
     byteLength = bitLength / 8
+    
+    textResult = results.getLastResult()
+    if textResult is not None:
+        countPos = textResult.getStartBytePos()
+        textCount = textResult.getByteView().readUnsignedInt(countPos, 2, ENDIAN_LITTLE)
+        if textCount == 0:
+            return 0
 
     bodyResult = results.addStructureStart(element.getEnclosingStructure(), startPos, 0, &quot;Body&quot;, True)
 
@@ -266,7 +263,7 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
                         <structure name="DisplayCondition" id="67" length="5" repeatmin="ConditionCount" repeatmax="ConditionCount">
                             <number name="ValueTypes" id="68" type="integer" length="8" lengthunit="bit" display="binary">
                                 <mask name="ValueOneType" value="0xC0">
-                                    <fixedvalue name="hard value" value="0x0"/>
+                                    <fixedvalue name="raw" value="0x0"/>
                                     <fixedvalue name="bool" value="0x40"/>
                                     <fixedvalue name="uint 8" value="0x80"/>
                                     <fixedvalue name="uint 16" value="0xC0"/>
@@ -290,9 +287,9 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
                             <number name="Value/Index2" id="70" type="integer" length="2"/>
                         </structure>
                         <number name="ChoiceLength" id="72" type="integer" length="2"/>
-                        <custom name="ChoiceBody" id="73" length="ChoiceLength" script="id:64"/>
+                        <custom name="ChoiceBody" id="73" repeatmin="0" length="ChoiceLength" script="id:64"/>
                         <number name="PassageIndex" id="74" type="integer" length="2" minval="0"/>
-                        <number name="UpdateCount" id="75" type="integer" length="1" minval="0" maxval="8"/>
+                        <number name="UpdateCount" id="75" type="integer" length="1"/>
                         <structref name="ValueUpdate" id="76" repeatmin="UpdateCount" repeatmax="UpdateCount" structure="id:59"/>
                     </structure>
                     <custom name="Ending" id="78" script="id:92"/>
@@ -319,16 +316,16 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
                 <string name="Word" id="86" repeatmax="-1" type="zero-terminated"/>
             </structure>
         </structure>
-        <structure name="ValueUpdate" id="59" length="5" repeat="id:58" repeatmin="UpdateCount" repeatmax="UpdateCount" encoding="ISO_8859-1:1987" endian="little" signed="no">
+        <structure name="ValueUpdate" id="59" length="5" repeatmin="UpdateCount" repeatmax="UpdateCount" encoding="ISO_8859-1:1987" endian="little" signed="no">
             <number name="VariableTypes" id="89" type="integer" length="8" lengthunit="bit" display="binary">
                 <mask name="ValueOneType" value="0xC0">
-                    <fixedvalue name="hard value" value="0x0"/>
+                    <fixedvalue name="raw" value="0x0"/>
                     <fixedvalue name="bool" value="0x40"/>
                     <fixedvalue name="uint 8" value="0x80"/>
                     <fixedvalue name="uint 16" value="0xC0"/>
                 </mask>
                 <mask name="ValueTwoType" value="0x30">
-                    <fixedvalue name="hard value" value="0x0"/>
+                    <fixedvalue name="raw" value="0x0"/>
                     <fixedvalue name="bool" value="0x10"/>
                     <fixedvalue name="uint 8" value="0x20"/>
                     <fixedvalue name="uint 16" value="0x30"/>
