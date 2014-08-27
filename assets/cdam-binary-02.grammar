@@ -264,7 +264,7 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
                         </number>
                         <number name="ConditionCount" id="66" type="integer" length="1" minval="0" maxval="8"/>
                         <structure name="DisplayCondition" id="67" length="5" repeatmin="ConditionCount" repeatmax="ConditionCount">
-                            <number name="ValueTypes" id="68" type="integer" length="8" lengthunit="bit" display="binary" minval="00000000" maxval="0111111111111111111111111111111111111111111111111111111111111111">
+                            <number name="ValueTypes" id="68" type="integer" length="8" lengthunit="bit" display="binary">
                                 <mask name="ValueOneType" value="0xC0">
                                     <fixedvalue name="hard value" value="0x0"/>
                                     <fixedvalue name="bool" value="0x40"/>
