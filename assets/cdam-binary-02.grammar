@@ -248,7 +248,32 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
                 <number name="PassageLength" id="56" disabled="yes" type="integer" length="4"/>
                 <structure name="Passage" id="57" length="0" repeat="id:54" repeatmin="PassageCount" repeatmax="PassageCount">
                     <number name="UpdateCount" id="58" fillcolor="9BFB97" type="integer" length="1" minval="0" maxval="8"/>
-                    <structref name="ValueUpdate" id="60" repeatmin="UpdateCount" repeatmax="UpdateCount" structure="id:59"/>
+                    <structure name="ValueUpdate" id="60" length="5" repeatmin="UpdateCount" repeatmax="UpdateCount" encoding="ISO_8859-1:1987" endian="little" signed="no">
+                        <number name="VariableTypes" id="89" type="integer" length="8" lengthunit="bit" display="binary">
+                            <mask name="ValueOneType" value="0xC0">
+                                <fixedvalue name="raw" value="0x0"/>
+                                <fixedvalue name="bool" value="0x40"/>
+                                <fixedvalue name="uint 8" value="0x80"/>
+                                <fixedvalue name="uint 16" value="0xC0"/>
+                            </mask>
+                            <mask name="ValueTwoType" value="0x30">
+                                <fixedvalue name="raw" value="0x0"/>
+                                <fixedvalue name="bool" value="0x10"/>
+                                <fixedvalue name="uint 8" value="0x20"/>
+                                <fixedvalue name="uint 16" value="0x30"/>
+                            </mask>
+                            <mask name="Operator" value="0xF">
+                                <fixedvalue name="Equals" value="0x0"/>
+                                <fixedvalue name="Plus" value="0x1"/>
+                                <fixedvalue name="Minus" value="0x2"/>
+                                <fixedvalue name="Multiple" value="0x3"/>
+                                <fixedvalue name="Divide" value="0x4"/>
+                                <fixedvalue name="Modulus" value="0x5"/>
+                            </mask>
+                        </number>
+                        <number name="Value/Index1" id="90" type="integer" length="2"/>
+                        <number name="Value/Index2" id="91" type="integer" length="2"/>
+                    </structure>
                     <number name="BodyLength" id="61" type="integer" length="4" minval="0"/>
                     <custom name="Body" id="62" length="BodyLength" script="id:64"/>
                     <number name="ChoiceCount" id="63" fillcolor="FFEC90" type="integer" length="1" minval="0" maxval="10"/>
@@ -290,7 +315,32 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
                         <custom name="ChoiceBody" id="73" repeatmin="0" length="ChoiceLength" script="id:64"/>
                         <number name="PassageIndex" id="74" type="integer" length="2" minval="0"/>
                         <number name="UpdateCount" id="75" type="integer" length="1"/>
-                        <structref name="ValueUpdate" id="76" repeatmin="UpdateCount" repeatmax="UpdateCount" structure="id:59"/>
+                        <structure name="ValueUpdate" id="76" length="5" repeatmin="UpdateCount" repeatmax="UpdateCount" encoding="ISO_8859-1:1987" endian="little" signed="no">
+                            <number name="VariableTypes" id="92" type="integer" length="8" lengthunit="bit" display="binary">
+                                <mask name="ValueOneType" value="0xC0">
+                                    <fixedvalue name="raw" value="0x0"/>
+                                    <fixedvalue name="bool" value="0x40"/>
+                                    <fixedvalue name="uint 8" value="0x80"/>
+                                    <fixedvalue name="uint 16" value="0xC0"/>
+                                </mask>
+                                <mask name="ValueTwoType" value="0x30">
+                                    <fixedvalue name="raw" value="0x0"/>
+                                    <fixedvalue name="bool" value="0x10"/>
+                                    <fixedvalue name="uint 8" value="0x20"/>
+                                    <fixedvalue name="uint 16" value="0x30"/>
+                                </mask>
+                                <mask name="Operator" value="0xF">
+                                    <fixedvalue name="Equals" value="0x0"/>
+                                    <fixedvalue name="Plus" value="0x1"/>
+                                    <fixedvalue name="Minus" value="0x2"/>
+                                    <fixedvalue name="Multiple" value="0x3"/>
+                                    <fixedvalue name="Divide" value="0x4"/>
+                                    <fixedvalue name="Modulus" value="0x5"/>
+                                </mask>
+                            </number>
+                            <number name="Value/Index1" id="93" type="integer" length="2"/>
+                            <number name="Value/Index2" id="94" type="integer" length="2"/>
+                        </structure>
                     </structure>
                     <custom name="Ending" id="78" script="id:92"/>
                     <structure name="Endingz" id="79" length="0" disabled="yes" repeatmin="0">
@@ -315,32 +365,6 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
             <structure name="Dictionary" id="85" disabled="yes">
                 <string name="Word" id="86" repeatmax="-1" type="zero-terminated"/>
             </structure>
-        </structure>
-        <structure name="ValueUpdate" id="59" length="5" repeatmin="UpdateCount" repeatmax="UpdateCount" encoding="ISO_8859-1:1987" endian="little" signed="no">
-            <number name="VariableTypes" id="89" type="integer" length="8" lengthunit="bit" display="binary">
-                <mask name="ValueOneType" value="0xC0">
-                    <fixedvalue name="raw" value="0x0"/>
-                    <fixedvalue name="bool" value="0x40"/>
-                    <fixedvalue name="uint 8" value="0x80"/>
-                    <fixedvalue name="uint 16" value="0xC0"/>
-                </mask>
-                <mask name="ValueTwoType" value="0x30">
-                    <fixedvalue name="raw" value="0x0"/>
-                    <fixedvalue name="bool" value="0x10"/>
-                    <fixedvalue name="uint 8" value="0x20"/>
-                    <fixedvalue name="uint 16" value="0x30"/>
-                </mask>
-                <mask name="Operator" value="0xF">
-                    <fixedvalue name="Equals" value="0x0"/>
-                    <fixedvalue name="Plus" value="0x1"/>
-                    <fixedvalue name="Minus" value="0x2"/>
-                    <fixedvalue name="Multiple" value="0x3"/>
-                    <fixedvalue name="Divide" value="0x4"/>
-                    <fixedvalue name="Modulus" value="0x5"/>
-                </mask>
-            </number>
-            <number name="Value/Index1" id="90" type="integer" length="2"/>
-            <number name="Value/Index2" id="91" type="integer" length="2"/>
         </structure>
     </grammar>
 </ufwb>
