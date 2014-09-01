@@ -158,9 +158,7 @@ const uint16_t kStoryBinaryVersionOffset = 1; // adding SOH byte
 const uint16_t kStoryBinaryVersionSize = 3;
 const uint16_t kStoryFlagsOffset = (kStoryBinaryVersionOffset + kStoryBinaryVersionSize);
 const uint16_t kStoryFlagsSize = 4; // bytes
-const uint16_t kStoryVarsOffset = (kStoryFlagsOffset + kStoryFlagsSize);
-const uint16_t kStoryVarsSize = 4; // bytes
-const uint16_t kStorySizeOffset = (kStoryVarsOffset + kStoryVarsSize);
+const uint16_t kStorySizeOffset = (kStoryFlagsOffset + kStoryFlagsSize);
 const uint16_t kStorySizeSize = 4; // bytes
 const uint16_t kStoryVersionOffset = (kStorySizeOffset + kStorySizeSize);
 const uint16_t kStoryVersionSize = 3; // bytes
@@ -180,9 +178,8 @@ const uint16_t kStoryContactOffset = (kStoryCreditsOffset + kStoryCreditsSize);
 const uint16_t kStoryContactSize = 128; // bytes
 const uint16_t kStoryPublishedOffset = (kStoryContactOffset + kStoryContactSize);
 const uint16_t kStoryPublishedSize = 4; // bytes
-//const uint16_t kStoryHeaderSize = (kStoryPublishedOffset + kStoryPublishedSize);
-
-const uint16_t kStoryHeaderSize = 380;
+const uint16_t kStoryHeaderSize = (kStoryPublishedOffset + kStoryPublishedSize);
+//const uint16_t kStoryHeaderSize = 376;
 
 typedef struct StoryFlags_t
 {
@@ -218,18 +215,17 @@ typedef struct StoryFlags_t
     };
 } StoryFlags;
 
-typedef struct StoryVars_t {
+/*typedef struct StoryVars_t {
 	uint8_t small; // How many 8 bit variables
 	uint8_t big; // How many 16 bit variables
 	uint8_t rsvd1;
 	uint8_t rsvd2;
-} StoryVars;
+} StoryVars;*/
 
-typedef struct StoryHeader_t { // Total Size: 380 bytes
+typedef struct StoryHeader_t { // Total Size: 376 bytes
 	uint8_t soh;
 	Version binaryVer;
 	StoryFlags flags;
-	StoryVars vars;
     uint32_t storySize;
     Version storyVer;
     uint8_t rsvd;

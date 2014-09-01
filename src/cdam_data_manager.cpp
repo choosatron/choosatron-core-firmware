@@ -25,6 +25,7 @@ bool DataManager::initialize(StateController *aStateController) {
 		ERROR("Meta Flash is NULL!");
 		return false;
 	}
+
     //testMetadata();
 	//_metaFlash->eraseAll();
 	DEBUG("Sizeof: %d", sizeof(this->metadata));
@@ -84,7 +85,22 @@ bool DataManager::getNumberedTitle(char* aBuffer, uint8_t aIndex) {
 }
 
 bool DataManager::loadStoryHeader(uint8_t aIndex) {
-	return readStoryHeader(&this->storyHeader, aIndex);
+	if (!readStoryHeader(&this->storyHeader, aIndex)) {
+		return false;
+	}
+	if (!readVariables()) {
+		return false;
+	}
+
+	return true;
+}
+
+int8_t DataManager::smallVarAtIndex(uint8_t aIndex) {
+	return _smallVars[aIndex];
+}
+
+int16_t DataManager::bigVarAtIndex(uint8_t aIndex) {
+	return _bigVars[aIndex];
 }
 
 bool DataManager::addStoryMetadata(uint8_t aIndex, uint8_t aPages) {
@@ -306,6 +322,39 @@ bool DataManager::readStoryHeader(StoryHeader *aHeader, uint8_t aIndex) {
 		Errors::setError(E_HEADER_READ_FAIL);
 		ERROR(Errors::errorString());
 	}
+	return result;
+}
+
+bool DataManager::readVariables() {
+	bool result = true;
+	uint32_t varIndex = kStoryHeaderSize;
+	uint8_t smallVarCount = _storyFlash->readByte(varIndex);
+	varIndex++;
+	while (result) {
+		if (smallVarCount > 0) {
+			_smallVars = new int8_t[smallVarCount];
+			for (int i = 0; i < smallVarCount; ++i) {
+				if (!result) { break; }
+				result = _storyFlash->read(&_smallVars[i], varIndex, 1);
+				varIndex += 1; // Only 1 byte sized variables.
+			}
+		}
+		uint8_t bigVarCount = _storyFlash->readByte(varIndex);
+		varIndex++;
+		if (bigVarCount > 0) {
+			_bigVars = new int16_t[bigVarCount];
+			for (int i = 0; i < bigVarCount; ++i) {
+				if (!result) { break; }
+				result = _storyFlash->read(&_bigVars[i], varIndex, 2);
+				varIndex += 2; // 2 byte sized variables.
+			}
+		}
+	}
+	if (!result) {
+		Errors::setError(E_VARS_READ_FAIL);
+		ERROR(Errors::errorString());
+	}
+
 	return result;
 }
 
@@ -594,9 +643,6 @@ void DataManager::logStoryHeader(StoryHeader *aHeader) {
 
 	logBinary(aHeader->flags.flag3);
 	logBinary(aHeader->flags.flag4);
-
-	DEBUG("Story 8-bit: %d", aHeader->vars.small);
-	DEBUG("Story 16-bit: %d", aHeader->vars.big);
 
 	DEBUG("Story Size Bytes: %d", aHeader->storySize);
 

@@ -14,6 +14,7 @@ struct ErrorDesc_t {
 	{ E_ERROR, "Error" },
 	{ E_METADATA_READ_FAIL, "Failed to read from flash." },
 	{ E_HEADER_READ_FAIL, "Failed to read the header of a story." },
+	{ E_VARS_READ_FAIL, "Failed to read variables." },
 	{ E_METADATA_WRITE_FAIL, "Failed to write to flash." },
 	{ E_DATA_MODEL_UPGRADE_FAIL, "Failed to upgrade data model." },
 	{ E_SERVER_CONNECTION_FAIL, "Failed to connect to server." },

@@ -46,6 +46,10 @@ class DataManager
         bool getNumberedTitle(char* aBuffer, uint8_t aIndex);
         // Story selected, load the header for the story in play.
         bool loadStoryHeader(uint8_t aIndex);
+        // Get small variable value at index.
+        int8_t smallVarAtIndex(uint8_t aIndex);
+        // Get big variables value at index.
+        int16_t bigVarAtIndex(uint8_t aIndex);
         // Add the metadata for a new story.
         bool addStoryMetadata(uint8_t aPosition, uint8_t aPages);
         //bool removeStoryMetadata(uint8_t aPosition);
@@ -92,6 +96,8 @@ class DataManager
         bool readMetadata(Metadata *aMetadata);
         // Read story header from flash.
         bool readStoryHeader(StoryHeader *aHeader, uint8_t aIndex);
+        // Read variable counts and default values.
+        bool readVariables();
         // Write metadata to flash.
         bool writeMetadata(Metadata *aMetadata);
         // Write the storyCount and usedStoryBytes to flash.
@@ -117,7 +123,8 @@ class DataManager
         StateController* _stateControl;
         Flashee::FlashDevice* _metaFlash;
         Flashee::FlashDevice* _storyFlash;
-
+        int8_t* _smallVars;
+        int16_t* _bigVars;
 };
 
 }

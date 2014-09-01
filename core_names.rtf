@@ -31,9 +31,7 @@ dfu-util -d 1d50:607f -a 0 -s 0x08005000:leave -D cdam-core-firmware.bin\
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
 \cf0 \
 \pard\pardeftab720\sl420
-\cf0 curl https://api.spark.io/v1/devices/
-\f1\fs28 \cf2 48ff6f065067555019501287
-\f0\fs24 \cf0 /command \\\
+\cf0 curl https://api.spark.io/v1/devices/48ff6f065067555019501287/command \\\
      -d access_token=
 \f1\fs28 \cf2 2bf23aca0f37f6646b6dd20d51630c0907feb004
 \f0\fs24 \cf0  \\\
@@ -53,12 +51,10 @@ curl https://api.spark.io/v1/devices/\cf2 48ff6f065067555019501287\cf3 /dfu -d a
 \f0\fs24 \cf0 \
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
 \cf0 \
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
 
-\b \cf0 FOR DEBUG USAGE\
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+\b FOR DEBUG USAGE\
 
-\b0 \cf0 Add DEBUG_BUILD=y to make.
+\b0 Add DEBUG_BUILD=y to make.
 \b \
 
 \b0 	
@@ -80,18 +76,16 @@ D3-D7 JTAG PINS\
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
 
 \b \cf0 Backing up entire Flash Memory (User Space)\
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
 
-\b0 \cf0 dfu-util -d 1d50:607f -a 1 -s 0x80000:1572864 -U flash_backup.bin
+\b0 dfu-util -d 1d50:607f -a 1 -s 0x80000:1572864 -U flash_backup.bin
 \b \
 \
 Restoring entire Flash Memory (User Space)
 \b0 \
 dfu-util -d 1d50:607f -a 1 -s 0x80000 -v -D flash_backup.bin\
 \
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
 
-\b \cf0 WiFi Upload
+\b WiFi Upload
 \b0 \
 \
 Jerry Belich\
