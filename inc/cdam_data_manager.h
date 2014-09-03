@@ -42,14 +42,23 @@ class DataManager
 
         // Get the page offset the story begins at.
         uint32_t getStoryOffset(uint8_t aIndex);
+        // Get the byte offset for the given passage index (in current story).
+        uint32_t getPassageOffset(uint16_t aIndex);
         // Fill provided buffer with the title of the story and the provided position.
         bool getNumberedTitle(char* aBuffer, uint8_t aIndex);
         // Story selected, load the header for the story in play.
-        bool loadStoryHeader(uint8_t aIndex);
+        bool loadStory(uint8_t aIndex);
+        // Cleanup after the finished story.
+        void unloadStory();
         // Get small variable value at index.
         int8_t smallVarAtIndex(uint8_t aIndex);
+        // Set small variables value at index.
+        bool setSmallVarAtIndex(uint8_t aIndex, int8_t aValue);
         // Get big variables value at index.
         int16_t bigVarAtIndex(uint8_t aIndex);
+        // Set small variables value at index.
+        bool setBigVarAtIndex(uint8_t aIndex, int16_t aValue);
+
         // Add the metadata for a new story.
         bool addStoryMetadata(uint8_t aPosition, uint8_t aPages);
         //bool removeStoryMetadata(uint8_t aPosition);
@@ -61,14 +70,17 @@ class DataManager
         // Erase entire flash memory, includes metadata.
         bool eraseFlash();
 
-        bool readData(uint8_t* aBuffer, uint32_t aAddress, uint32_t aLength);
-        bool writeData(uint8_t* aBuffer, uint32_t aAddress, uint32_t aLength);
+        uint8_t readByte(uint32_t aAddress);
+        bool readData(void* aBuffer, uint32_t aAddress, uint32_t aLength);
+        bool writeData(void* aBuffer, uint32_t aAddress, uint32_t aLength);
 
         StateController* stateController();
-        Flashee::FlashDevice* storyFlash();
+        //Flashee::FlashDevice* storyFlash();
 
         /* Public Variables */
 
+        // Send all printer data to serial instead.
+        bool logPrint;
         // Whether or not the state machine should execute it's update loop.
         bool runState;
         // Live story order.
@@ -77,10 +89,21 @@ class DataManager
         Version firmwareVersion;
         Metadata metadata;
         StoryHeader storyHeader;
+        
         // The index of the story currently in play.
         int8_t currentStory;
         // The number of points accumulated in the current story.
         int16_t points;
+        // Passage count for current story.
+        uint16_t psgCount;
+        // Passage table of contents memory offset.
+        uint16_t tocOffset;
+        // Passage data memory offset.
+        uint16_t startOffset;
+        // Current passage index.
+        uint16_t psgIndex;
+        // Current passage byte size.
+        uint32_t psgSize;
 
     private:
         /* Private Methods */
@@ -95,9 +118,9 @@ class DataManager
         // Read metadata from flash.
         bool readMetadata(Metadata *aMetadata);
         // Read story header from flash.
-        bool readStoryHeader(StoryHeader *aHeader, uint8_t aIndex);
+        bool readStoryHeader(uint8_t aIndex, StoryHeader *aHeader);
         // Read variable counts and default values.
-        bool readVariables();
+        bool readVariables(uint8_t aIndex);
         // Write metadata to flash.
         bool writeMetadata(Metadata *aMetadata);
         // Write the storyCount and usedStoryBytes to flash.
@@ -124,7 +147,9 @@ class DataManager
         Flashee::FlashDevice* _metaFlash;
         Flashee::FlashDevice* _storyFlash;
         int8_t* _smallVars;
+        uint8_t _smallVarCount;
         int16_t* _bigVars;
+        uint8_t _bigVarCount;
 };
 
 }

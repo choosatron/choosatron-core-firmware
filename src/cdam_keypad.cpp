@@ -113,9 +113,9 @@ uint8_t Keypad::buttonEvent(ButtonEvent aEvent, uint8_t aRange) {
             } else if ((0 < buttonData[i].num) && (buttonData[i].num <= aRange)) {
                 result = this->buttonData[i].num;
             }
+            clearEvents();
         }
     }
-    clearEvents();
     return result;
 }
 
@@ -158,8 +158,8 @@ uint8_t Keypad::keypadEvent(KeypadEvent aEvent, uint8_t aRange) {
         } else if ((0 < this->lastValue) && (this->lastValue <= aRange)) {
             result = this->lastValue;
         }
+        clearEvents();
     }
-    clearEvents();
     return result;
 }
 
@@ -168,8 +168,8 @@ uint8_t Keypad::keypadEventValue(KeypadEvent aEvent) {
     if (this->event == aEvent) {
         //this->event = KEYPAD_NO_EVENT;
         result = this->lastValue;
+        clearEvents();
     }
-    clearEvents();
     return result;
 }
 
@@ -194,6 +194,15 @@ void Keypad::clearEvents() {
     this->heldEvents = 0;
     this->multiDownEvent = 0;
     this->multiUpEvent = 0;
+
+    this->state = KEYPAD_IDLE_STATE;
+    this->buttons = 0;
+    this->keypadValue = 0;
+    this->lastValue = 0;
+    this->lastButtons = 0;
+    this->multiCount = 0;
+    this->multiUp = 0;
+    this->multiUpValue = 0;
 }
 
 /* Private Methods */

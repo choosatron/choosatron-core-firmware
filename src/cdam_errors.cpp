@@ -20,7 +20,12 @@ struct ErrorDesc_t {
 	{ E_SERVER_CONNECTION_FAIL, "Failed to connect to server." },
 	{ E_SERVER_ADD_STORY_LEN_FAIL, "add_story command isn't correct length of bytes." },
 	{ E_SERVER_ADD_STORY_NO_SPACE, "Not enough free space for selected story." },
-	{ E_SERVER_SOCKET_DATA_FAIL, "Either too few or too many bytes received from server." }
+	{ E_SERVER_SOCKET_DATA_FAIL, "Either too few or too many bytes received from server." },
+	{ E_INVALID_SMALL_VARIABLE, "Invalid index provided for small variable." },
+	{ E_INVALID_BIG_VARIABLE, "Invalid index provided for big variable." },
+	{ E_STORY_READ_FAIL, "Failed to read from story data." },
+	{ E_STORY_PARSE_FAIL, "Failed to parser a story." },
+	{ E_DATA_TOO_LARGE_FAIL, "Data is too large for buffer." }
 };
 
 ErrorCode Errors::lastError = E_NO_ERROR;

@@ -274,11 +274,16 @@ size_t Printer::write(uint8_t c) {
 }
 
 /* default implementation: may be overridden */
-size_t Printer::write(const uint8_t *buffer, size_t size) {
+size_t Printer::write(const char *buffer, size_t size) {
 	this->printing = true;
 	size_t n = 0;
-	while (size--) {
-		n += write(*buffer++);
+	if (Manager::getInstance().dataManager->logPrint) {
+		LOG("OUTPUT: %s", buffer);
+		n = size;
+	} else {
+		while (size--) {
+			n += write(*buffer++);
+		}
 	}
 	this->printing = false;
 	return n;
@@ -286,6 +291,12 @@ size_t Printer::write(const uint8_t *buffer, size_t size) {
 
 bool Printer::available() {
 	return Serial1.available();
+}
+
+void Printer::feed(uint8_t x) {
+	if (!Manager::getInstance().dataManager->logPrint) {
+		CSN_Thermal::feed(x);
+	}
 }
 
 uint8_t Printer::read() {

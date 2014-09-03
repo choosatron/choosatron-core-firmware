@@ -13,9 +13,17 @@ DataManager::DataManager() {}
 
 bool DataManager::initialize(StateController *aStateController) {
 	_stateControl = aStateController;
-	this->currentStory = -1;
+	this->logPrint = false;
 	this->runState = true;
 	this->metadata = {};
+
+	// Initialize story specific variables.
+	this->currentStory = -1;
+	this->psgCount = 0;
+	this->psgSize = 0;
+	this->tocOffset = 0;
+	this->startOffset = 0;
+
 	DEBUG("Page Size: %d", Flashee::Devices::userFlash().pageSize());
 	DEBUG("Page Count: %d", Flashee::Devices::userFlash().pageCount());
 	_metaFlash = Flashee::Devices::createAddressErase(0,
@@ -71,12 +79,24 @@ uint32_t DataManager::getStoryOffset(uint8_t aIndex) {
 	return this->metadata.storyOffsets[this->liveStoryOrder[aIndex]];
 }
 
+uint32_t DataManager::getPassageOffset(uint16_t aIndex) {
+	uint32_t offset = 0;
+	if (this->currentStory != -1) {
+		bool result = readData(&offset, this->tocOffset + (kPassageOffsetSize * aIndex), kPassageOffsetSize);
+		if (!result) {
+			Errors::setError(E_HEADER_READ_FAIL);
+			ERROR(Errors::errorString());
+		}
+	}
+	return offset;
+}
+
 bool DataManager::getNumberedTitle(char* aBuffer, uint8_t aIndex) {
 	memset(&aBuffer[0], 0, sizeof(aBuffer));
 	sprintf(aBuffer, "%d. ", aIndex + 1);
 
 	uint32_t offset = getStoryOffset(aIndex) * Flashee::Devices::userFlash().pageSize() + kStoryTitleOffset;
-	bool result = _storyFlash->read(aBuffer + strlen(aBuffer), offset, kStoryTitleSize);
+	bool result = readData(aBuffer + strlen(aBuffer), offset, kStoryTitleSize);
 	if (!result) {
 		Errors::setError(E_HEADER_READ_FAIL);
 		ERROR(Errors::errorString());
@@ -84,23 +104,62 @@ bool DataManager::getNumberedTitle(char* aBuffer, uint8_t aIndex) {
 	return result;
 }
 
-bool DataManager::loadStoryHeader(uint8_t aIndex) {
-	if (!readStoryHeader(&this->storyHeader, aIndex)) {
+bool DataManager::loadStory(uint8_t aIndex) {
+	this->currentStory = aIndex;
+
+	if (!readStoryHeader(this->currentStory, &this->storyHeader)) {
 		return false;
 	}
-	if (!readVariables()) {
+	if (!readVariables(this->currentStory)) {
 		return false;
 	}
 
 	return true;
 }
 
+void DataManager::unloadStory() {
+	this->currentStory = -1;
+	this->points = 0;
+	this->psgCount = 0;
+	this->tocOffset = 0;
+	this->startOffset = 0;
+	this->psgIndex = 0;
+	this->psgSize = 0;
+
+	_smallVarCount = 0;
+	_bigVarCount = 0;
+	delete[] _smallVars;
+	_smallVars = NULL;
+	delete[] _bigVars;
+	_bigVars = NULL;
+}
+
 int8_t DataManager::smallVarAtIndex(uint8_t aIndex) {
 	return _smallVars[aIndex];
 }
 
+bool DataManager::setSmallVarAtIndex(uint8_t aIndex, int8_t aValue) {
+	if (aIndex < _smallVarCount) {
+		_smallVars[aIndex] = aValue;
+		return true;
+	}
+	Errors::setError(E_INVALID_SMALL_VARIABLE);
+	ERROR(Errors::errorString());
+	return false;
+}
+
 int16_t DataManager::bigVarAtIndex(uint8_t aIndex) {
 	return _bigVars[aIndex];
+}
+
+bool DataManager::setBigVarAtIndex(uint8_t aIndex, int16_t aValue) {
+	if (aIndex < _bigVarCount) {
+		_bigVars[aIndex] = aValue;
+		return true;
+	}
+	Errors::setError(E_INVALID_BIG_VARIABLE);
+	ERROR(Errors::errorString());
+	return false;
 }
 
 bool DataManager::addStoryMetadata(uint8_t aIndex, uint8_t aPages) {
@@ -194,7 +253,17 @@ bool DataManager::eraseFlash() {
 	return Flashee::Devices::userFlash().eraseAll();
 }
 
-bool DataManager::readData(uint8_t* aBuffer, uint32_t aAddress, uint32_t aLength) {
+uint8_t DataManager::readByte(uint32_t aAddress) {
+	uint8_t byte;
+	if (this->metadata.flags.sdCard) {
+
+	} else {
+		byte = _storyFlash->readByte(aAddress);
+	}
+	return byte;
+}
+
+bool DataManager::readData(void* aBuffer, uint32_t aAddress, uint32_t aLength) {
 	if (this->metadata.flags.sdCard) {
 
 	} else {
@@ -202,7 +271,7 @@ bool DataManager::readData(uint8_t* aBuffer, uint32_t aAddress, uint32_t aLength
 	}
 }
 
-bool DataManager::writeData(uint8_t* aBuffer, uint32_t aAddress, uint32_t aLength) {
+bool DataManager::writeData(void* aBuffer, uint32_t aAddress, uint32_t aLength) {
 	if (this->metadata.flags.sdCard) {
 
 	} else {
@@ -216,9 +285,9 @@ StateController* DataManager::stateController() {
 	return _stateControl;
 }
 
-Flashee::FlashDevice* DataManager::storyFlash() {
+/*Flashee::FlashDevice* DataManager::storyFlash() {
 	return _storyFlash;
-}
+}*/
 
 /* Private Methods */
 
@@ -235,7 +304,7 @@ bool DataManager::loadMetadata() {
 		this->firmwareVersion.minor, this->firmwareVersion.revision);
 
 	// Check for SOH
-	if (_metaFlash->readByte(kMetadataBaseAddress) != ASCII_SOH) {
+	if (_metaFlash->readByte(kMetadataBaseAddress) != kAsciiHeaderByte) {
 		DEBUG("No SOH, write fresh metadata.");
 		if (!initializeMetadata(&this->metadata)) {
 			ERROR(Errors::errorString());
@@ -265,7 +334,7 @@ bool DataManager::initializeMetadata(Metadata *aMetadata) {
 	// Set the default values for a fresh Choosatron.
 	*aMetadata = {};
 
-	aMetadata->soh = ASCII_SOH;
+	aMetadata->soh = kAsciiHeaderByte;
 	aMetadata->firmwareVer.major = this->firmwareVersion.major;
 	aMetadata->firmwareVer.minor = this->firmwareVersion.minor;
 	aMetadata->firmwareVer.revision = this->firmwareVersion.revision;
@@ -302,7 +371,7 @@ bool DataManager::initializeMetadata(Metadata *aMetadata) {
 
 bool DataManager::readMetadata(Metadata *aMetadata) {
 	DEBUG("Size of Metadata: %d", sizeof(*aMetadata));
-	if (_metaFlash->readByte(kMetadataBaseAddress) == ASCII_SOH) {
+	if (_metaFlash->readByte(kMetadataBaseAddress) == kAsciiHeaderByte) {
 		bool result = _metaFlash->read(aMetadata, kMetadataBaseAddress, kMetadataSize);
 		if (!result) {
 			Errors::setError(E_METADATA_READ_FAIL);
@@ -313,7 +382,7 @@ bool DataManager::readMetadata(Metadata *aMetadata) {
 	return true;
 }
 
-bool DataManager::readStoryHeader(StoryHeader *aHeader, uint8_t aIndex) {
+bool DataManager::readStoryHeader(uint8_t aIndex, StoryHeader *aHeader) {
 	uint32_t offset = getStoryOffset(aIndex) * Flashee::Devices::userFlash().pageSize();
 
 	DEBUG("StoryHeader offset: %d, size: %d", offset, kStoryHeaderSize);
@@ -325,37 +394,62 @@ bool DataManager::readStoryHeader(StoryHeader *aHeader, uint8_t aIndex) {
 	return result;
 }
 
-bool DataManager::readVariables() {
-	bool result = true;
-	uint32_t varIndex = kStoryHeaderSize;
-	uint8_t smallVarCount = _storyFlash->readByte(varIndex);
-	varIndex++;
-	while (result) {
-		if (smallVarCount > 0) {
-			_smallVars = new int8_t[smallVarCount];
-			for (int i = 0; i < smallVarCount; ++i) {
-				if (!result) { break; }
-				result = _storyFlash->read(&_smallVars[i], varIndex, 1);
-				varIndex += 1; // Only 1 byte sized variables.
+bool DataManager::readVariables(uint8_t aIndex) {
+	bool result;
+	uint32_t offset = getStoryOffset(aIndex) * Flashee::Devices::userFlash().pageSize() + kStoryHeaderSize;
+	_smallVarCount = readByte(offset);
+	DEBUG("Small Var Count: %d", _smallVarCount);
+	offset++;
+	if (_smallVarCount > 0) {
+		_smallVars = new int8_t[_smallVarCount];
+		for (int i = 0; i < _smallVarCount; ++i) {
+			result = readData(&_smallVars[i], offset, kSmallVarSize);
+			if (!result) {
+				Errors::setError(E_VARS_READ_FAIL);
+				ERROR(Errors::errorString());
+				return false;
 			}
-		}
-		uint8_t bigVarCount = _storyFlash->readByte(varIndex);
-		varIndex++;
-		if (bigVarCount > 0) {
-			_bigVars = new int16_t[bigVarCount];
-			for (int i = 0; i < bigVarCount; ++i) {
-				if (!result) { break; }
-				result = _storyFlash->read(&_bigVars[i], varIndex, 2);
-				varIndex += 2; // 2 byte sized variables.
-			}
+			DEBUG("Var #%d: %d", i, _smallVars[i]);
+			offset += kSmallVarSize; // Only 1 byte sized variables.
 		}
 	}
+	_bigVarCount = readByte(offset);
+	DEBUG("Big Var Count: %d", _bigVarCount);
+	offset++;
+	if (_bigVarCount > 0) {
+		_bigVars = new int16_t[_bigVarCount];
+		for (int i = 0; i < _bigVarCount; ++i) {
+			result = readData(&_bigVars[i], offset, kBigVarSize);
+			if (!result) {
+				Errors::setError(E_VARS_READ_FAIL);
+				ERROR(Errors::errorString());
+				return false;
+			}
+			DEBUG("Var #%d: %d", i, _bigVars[i]);
+			offset += kBigVarSize; // 2 byte sized variables.
+		}
+	}
+
+	// Read the passage count.
+	result = readData(&this->psgCount, offset, kPassageCountSize);
 	if (!result) {
 		Errors::setError(E_VARS_READ_FAIL);
 		ERROR(Errors::errorString());
+		return false;
 	}
+	offset += kPassageCountSize;
+	// Memory offset for where the passage memory offsets begin.
+	this->tocOffset = offset;
+	// Grab the offset of the second passage, which gives us the size of the first.
+	result = readData(&this->psgSize, offset + kPassageOffsetSize, kPassageOffsetSize);
+	DEBUG("Passage Size: %lu", this->psgSize);
+	DEBUG("TOC Offset: %d", this->tocOffset);
+	offset += this->psgCount * kPassageOffsetSize;
+	this->startOffset = offset;
+	DEBUG("Start Offset: %d", this->startOffset);
+	this->psgIndex = 0;
 
-	return result;
+	return true;
 }
 
 bool DataManager::writeMetadata(Metadata *aMetadata) {
@@ -462,7 +556,7 @@ void DataManager::setTestMetadata(Metadata *aMetadata) {
 #ifdef DEBUG_BUILD
 	*aMetadata = {};
 
-	aMetadata->soh = ASCII_SOH;
+	aMetadata->soh = kAsciiHeaderByte;
 
 	aMetadata->firmwareVer.major = 9;
 	aMetadata->firmwareVer.minor = 8;
@@ -548,12 +642,12 @@ void DataManager::logStoryBytes(Metadata *aMetadata) {
 #ifdef DEBUG_BUILD
 	for (int i = 0; i < aMetadata->storyCount; ++i) {
 		DEBUG("Story #: %d, Offset: %d", i, aMetadata->storyOffsets[i]);
-		if (loadStoryHeader(i)) {
+		if (loadStory(i)) {
 			logStoryHeader(&this->storyHeader);
 		}
 		char data[kStoryHeaderSize] = "";
 		uint32_t offset = getStoryOffset(i) * Flashee::Devices::userFlash().pageSize();
-		_storyFlash->read(data, offset, kStoryHeaderSize);
+		readData(data, offset, kStoryHeaderSize);
 		DEBUG("HEADER DEBUG BEGIN");
 		DEBUG("HEX");
 		for (int i = 0; i < kStoryHeaderSize; ++i) {

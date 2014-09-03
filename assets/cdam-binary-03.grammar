@@ -355,7 +355,7 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
                                 <fixedvalue name="Equals" value="0x0"/>
                                 <fixedvalue name="Plus" value="0x1"/>
                                 <fixedvalue name="Minus" value="0x2"/>
-                                <fixedvalue name="Multiple" value="0x3"/>
+                                <fixedvalue name="Multiply" value="0x3"/>
                                 <fixedvalue name="Divide" value="0x4"/>
                                 <fixedvalue name="Modulus" value="0x5"/>
                             </mask>
@@ -394,7 +394,7 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
                                     <fixedvalue name="Less Than" value="0x2"/>
                                     <fixedvalue name="Equal or Greater" value="0x3"/>
                                     <fixedvalue name="Equal or Less" value="0x4"/>
-                                    <fixedvalue name="Mod" value="0x5"/>
+                                    <fixedvalue name="Modulus" value="0x5"/>
                                 </mask>
                             </number>
                             <number name="Value/Index1" id="70" type="integer" length="2"/>
@@ -422,7 +422,7 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
                                     <fixedvalue name="Equals" value="0x0"/>
                                     <fixedvalue name="Plus" value="0x1"/>
                                     <fixedvalue name="Minus" value="0x2"/>
-                                    <fixedvalue name="Multiple" value="0x3"/>
+                                    <fixedvalue name="Multiply" value="0x3"/>
                                     <fixedvalue name="Divide" value="0x4"/>
                                     <fixedvalue name="Modulus" value="0x5"/>
                                 </mask>

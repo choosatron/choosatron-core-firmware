@@ -8,7 +8,7 @@
 #include "cdam_errors.h"
 #include "cdam_const_config.h"
 #include "cdam_const_structs.h"
-#include "cdam_const_ascii.h"
+#include "cdam_const_values.h"
 #include "cdam_const_strings.h"
 #include "cdam_utils.h"
 

@@ -57,6 +57,7 @@ void StateController::initState(GameState aState) {
 		_hardwareManager = Manager::getInstance().hardwareManager;
 		_serverManager = Manager::getInstance().serverManager;
 		_parser = new Parser();
+		_parser->initialize();
 		_hardwareManager->keypad()->active = true;
 	} else if (aState == STATE_INIT) {
 		if (_dataManager->metadata.flags.random) {
@@ -75,7 +76,9 @@ void StateController::initState(GameState aState) {
 	} else if (aState == STATE_SELECT) {
 
 	} else if (aState == STATE_PLAY) {
-
+		if (!_parser->parsePassage()) {
+			changeState(STATE_ERROR);
+		}
 	} else if (aState == STATE_AUTH) {
 
 	} else if (aState == STATE_ADMIN) {
@@ -89,8 +92,14 @@ void StateController::loopState(GameState aState) {
 	if (aState == STATE_BOOTING) {
 		// If button 1 held (or hardset to Offline), disable WiFi.
 		if (_hardwareManager->keypad()->buttonDown(1) ||
-		    _dataManager->metadata.flags.offline) {
+			_dataManager->metadata.flags.offline) {
 			LOG("* DISABLE WIFI *");
+		}
+		// If button 3 held, don't print, just serial output.
+		if (_hardwareManager->keypad()->buttonDown(3) ||
+			_dataManager->metadata.flags.logPrint) {
+			LOG("* PRINT TO SERIAL *");
+			_dataManager->logPrint = true;
 		}
 		// Admin mode, if pass required change to STATE_AUTH
 		if (_hardwareManager->keypad()->buttonDown(2)) {
@@ -150,9 +159,8 @@ void StateController::loopState(GameState aState) {
 		// Wait for multi button up event for story selection.
 		uint8_t total = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, _dataManager->metadata.storyCount);
 		if (total) {
-			// Story has been selected.
-			_dataManager->currentStory = total;
-			_dataManager->loadStoryHeader(_dataManager->currentStory);
+			// Story has been selected, initialize the parser.
+			_parser->initStory(total);
 			changeState(STATE_PLAY);
 		}
 	} else if (aState == STATE_PLAY) {

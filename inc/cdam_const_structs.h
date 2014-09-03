@@ -1,7 +1,7 @@
 #ifndef CDAM_CONST_STRUCTS_H
 #define CDAM_CONST_STRUCTS_H
 
-#include <vector>
+//#include <vector>
 
 namespace cdam
 {
@@ -236,7 +236,54 @@ typedef struct StoryHeader_t { // Total Size: 376 bytes
     char credits[kStoryCreditsSize];
     char contact[kStoryContactSize];
     time_t publishDate;
-} StoryHeader ;
+} StoryHeader;
+
+
+const uint8_t kValueTypeRaw = 0;
+const uint8_t kValueTypeBool = 1;
+const uint8_t kValueTypeSmall = 2;
+const uint8_t kValueTypeBig = 3;
+
+const uint8_t kOperatorEquals = 0;
+const uint8_t kOperatorPlus = 1;
+const uint8_t kOperatorMinus = 2;
+const uint8_t kOperatorMultiply = 3;
+const uint8_t kOperatorDivide = 4;
+const uint8_t kOperatorModulus = 5;
+
+const uint8_t kCompareEqual = 0;
+const uint8_t kCompareGreater = 1;
+const uint8_t kCompareLess = 2;
+const uint8_t kCompareEqualGreater = 3;
+const uint8_t kCompareEqualLess = 4;
+const uint8_t kCompareModulus = 5;
+
+typedef struct ValueSet_t {
+	union {
+		uint8_t varTypes;
+		struct {
+			//uint8_t logicGate    :1; Should add logic gates? AND, OR, XOR?
+			uint8_t operatorType :4;
+			uint8_t varTwoType   :2;
+			uint8_t varOneType   :2;
+		};
+	};
+	uint16_t varOne;
+	uint16_t varTwo;
+} ValueSet;
+
+typedef struct Choice_t {
+	union {
+		uint8_t attribute;
+		struct {
+			uint8_t rsvd   :7;
+			uint8_t append :1;
+		};
+	};
+	bool visible;
+	uint32_t updatesOffset;
+	uint16_t passageIndex;
+} Choice;
 
 }
 

@@ -55,6 +55,7 @@ public:
     void printerWait();
 
     bool available();
+    void feed(uint8_t x=1);
     uint8_t read();
     uint8_t peek();
     void setABS(bool aTurnOn);
@@ -68,7 +69,7 @@ public:
     bool active;
 
     virtual size_t write(uint8_t);
-    virtual size_t write(const uint8_t *buffer, size_t size);
+    virtual size_t write(const char *buffer, size_t size);
 protected:
     bool ready;
     bool printing;
