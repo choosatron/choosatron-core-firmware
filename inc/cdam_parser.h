@@ -46,7 +46,7 @@ private:
 	uint32_t parseData(uint32_t aOffset, char* aBuffer, uint16_t aLength);
 	uint32_t parseCommand(uint32_t aOffset, char* aBuffer, uint16_t aLength);
 	uint32_t parseValueUpdates(uint32_t aOffset);
-    uint32_t parseConditions(uint32_t aOffset, bool aResult);
+    uint32_t parseConditions(uint32_t aOffset, bool &aResult);
 
 	/* Private Variables */
     DataManager* _dataManager;

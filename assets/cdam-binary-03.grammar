@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ufwb version="1.9">
-    <grammar name="Choosatron Story Binary" start="id:18" author="Jerry Belich" email="jerry@choosatron.com" fileextension="cdam" uti="com.choosatron" complete="yes">
+    <grammar name="Choosatron Story Binary" start="id:17" author="Jerry Belich" email="jerry@choosatron.com" fileextension="cdam" uti="com.choosatron" complete="yes">
         <description>Grammar for the Choosatron Deluxe Adventure Matrix binary story file.</description>
         <scripts>
             <script name="Passage" type="Grammar" id="66">
@@ -260,21 +260,21 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
 	# byteArray.writeUnsignedIntBits(highWord, bitPos, bitLength, ENDIAN_LITTLE)</source>
             </script>
         </scripts>
-        <structure name="Story" id="18" encoding="ISO_8859-1:1987" endian="little" signed="no">
-            <structure name="StoryHeader" id="19">
-                <binary name="StartHeader" mustmatch="yes" id="20" fillcolor="BA1A00" length="1">
+        <structure name="Story" id="17" encoding="ISO_8859-1:1987" endian="little" signed="no">
+            <structure name="StoryHeader" id="18">
+                <binary name="StartHeader" mustmatch="yes" id="19" fillcolor="BA1A00" length="1">
                     <description>Start of Heading byte.</description>
                     <fixedvalues>
                         <fixedvalue name="SOH" value="01"/>
                     </fixedvalues>
                 </binary>
-                <structure name="BinaryVersion" id="21" length="3">
-                    <number name="Major" id="22" fillcolor="E7D3FF" type="integer" length="1"/>
-                    <number name="Minor" id="23" fillcolor="E6D2FF" type="integer" length="1"/>
-                    <number name="Revision" id="24" type="integer" length="1"/>
+                <structure name="BinaryVersion" id="20" length="3">
+                    <number name="Major" id="21" fillcolor="E7D3FF" type="integer" length="1"/>
+                    <number name="Minor" id="22" fillcolor="E6D2FF" type="integer" length="1"/>
+                    <number name="Revision" id="23" type="integer" length="1"/>
                 </structure>
-                <structure name="Flags" id="26" length="4">
-                    <number name="Features Used" id="27" fillcolor="BEFBA9" type="integer" length="8" lengthunit="bit" display="binary">
+                <structure name="Flags" id="25" length="4">
+                    <number name="Features Used" id="26" fillcolor="BEFBA9" type="integer" length="8" lengthunit="bit" display="binary">
                         <mask name="Scripting" value="0x80">
                             <fixedvalue name="Yes" value="0x80"/>
                             <fixedvalue name="No" value="0x0"/>
@@ -288,7 +288,7 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
                             <fixedvalue name="No" value="0x0"/>
                         </mask>
                     </number>
-                    <number name="Toggles" id="28" fillcolor="BFFBA9" type="integer" length="8" lengthunit="bit" display="binary">
+                    <number name="Toggles" id="27" fillcolor="BFFBA9" type="integer" length="8" lengthunit="bit" display="binary">
                         <mask name="Continue" value="0x80">
                             <fixedvalue name="Yes" value="0x80"/>
                             <fixedvalue name="No" value="0x0"/>
@@ -302,35 +302,35 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
                             <fixedvalue name="No" value="0x0"/>
                         </mask>
                     </number>
-                    <number name="Flags3" id="29" fillcolor="BDFBA7" type="integer" length="8" lengthunit="bit" display="binary"/>
-                    <number name="Flags4" id="30" fillcolor="C1FBA9" type="integer" length="8" lengthunit="bit" display="binary"/>
+                    <number name="Flags3" id="28" fillcolor="BDFBA7" type="integer" length="8" lengthunit="bit" display="binary"/>
+                    <number name="Flags4" id="29" fillcolor="C1FBA9" type="integer" length="8" lengthunit="bit" display="binary"/>
                 </structure>
-                <number name="StorySize" id="32" fillcolor="B764FF" type="integer" length="4">
+                <number name="StorySize" id="31" fillcolor="B764FF" type="integer" length="4">
                     <description>The story size in bytes.</description>
                 </number>
-                <structure name="StoryVersion" id="33" length="3" fillcolor="F9DCFF">
-                    <number name="Major" id="34" fillcolor="E0C6FF" type="integer" length="1"/>
-                    <number name="Minor" id="35" fillcolor="E4D1FF" type="integer" length="1"/>
-                    <number name="Revision" id="36" fillcolor="DCCFFF" type="integer" length="1"/>
+                <structure name="StoryVersion" id="32" length="3" fillcolor="F9DCFF">
+                    <number name="Major" id="33" fillcolor="E0C6FF" type="integer" length="1"/>
+                    <number name="Minor" id="34" fillcolor="E4D1FF" type="integer" length="1"/>
+                    <number name="Revision" id="35" fillcolor="DCCFFF" type="integer" length="1"/>
                 </structure>
-                <number name="Rsvd" id="38" type="integer" length="1"/>
-                <string name="LanguageCode" id="39" fillcolor="FFB85D" type="fixed-length" length="4"/>
-                <string name="Title" id="40" fillcolor="FFBA68" type="fixed-length" length="64"/>
-                <string name="Subtitle" id="41" fillcolor="FFB24F" type="fixed-length" length="32"/>
-                <string name="Author" id="42" fillcolor="FFBA64" type="fixed-length" length="48"/>
-                <string name="Credits" id="43" fillcolor="FFB961" type="fixed-length" length="80"/>
-                <string name="Contact" id="44" fillcolor="FFB962" type="fixed-length" length="128"/>
-                <number name="PublishDate" id="45" type="integer" length="4" endian="little"/>
+                <number name="Rsvd" id="37" type="integer" length="1"/>
+                <string name="LanguageCode" id="38" fillcolor="FFB85D" type="fixed-length" length="4"/>
+                <string name="Title" id="39" fillcolor="FFBA68" type="fixed-length" length="64"/>
+                <string name="Subtitle" id="40" fillcolor="FFB24F" type="fixed-length" length="32"/>
+                <string name="Author" id="41" fillcolor="FFBA64" type="fixed-length" length="48"/>
+                <string name="Credits" id="42" fillcolor="FFB961" type="fixed-length" length="80"/>
+                <string name="Contact" id="43" fillcolor="FFB962" type="fixed-length" length="128"/>
+                <number name="PublishDate" id="44" type="integer" length="4" endian="little"/>
             </structure>
-            <structure name="StoryVariables" id="47">
-                <number name="SmallVarCount" id="48" fillcolor="FFEFA6" type="integer" length="1" minval="0" maxval="255">
+            <structure name="StoryVariables" id="46">
+                <number name="SmallVarCount" id="47" fillcolor="FFEFA6" type="integer" length="1" minval="0" maxval="255">
                     <description>The number of small variables to allocate space for (8 bit).</description>
                 </number>
-                <number name="SmallDefaults" id="91" repeatmin="SmallVarCount" repeatmax="SmallVarCount" type="integer" length="1" minval="0" maxval="0"/>
-                <number name="BigVarCount" id="50" fillcolor="FFF67D" type="integer" length="1" minval="0" maxval="255">
+                <number name="SmallDefaults" id="48" repeatmin="SmallVarCount" repeatmax="SmallVarCount" type="integer" length="1" minval="0" maxval="0"/>
+                <number name="BigVarCount" id="49" fillcolor="FFF67D" type="integer" length="1" minval="0" maxval="255">
                     <description>The number of big variables to allocate space for (16 bit).</description>
                 </number>
-                <number name="BigDefaults" id="92" repeatmin="BigVarCount" repeatmax="BigVarCount" type="integer" length="2" minval="0" maxval="32000"/>
+                <number name="BigDefaults" id="50" repeatmin="BigVarCount" repeatmax="BigVarCount" type="integer" length="2" minval="0" maxval="32000"/>
             </structure>
             <structure name="StoryBody" id="52">
                 <number name="PassageCount" id="53" type="integer" length="2"/>
