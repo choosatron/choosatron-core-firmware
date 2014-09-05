@@ -70,7 +70,7 @@ bool Parser::parsePassage() {
 			DEBUG("Offset: %lu, Length: %d", _offset, _dataLength);
 		}
 		// Allocate a buffer of data length, up to a maximum.
-		uint16_t bufferSize = (_dataLength < kPassageBufferReadSize) ? _dataLength : kPassageBufferReadSize;
+		uint16_t bufferSize = (_dataLength < (kPassageBufferReadSize + _lastIndent) ? _dataLength : (kPassageBufferReadSize + _lastIndent);
 
 		_buffer = new char[bufferSize + bufferPadding + 1](); // + 1 to null terminate if it is all text.
 		// Insert the numbering.

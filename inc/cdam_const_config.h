@@ -21,7 +21,7 @@ const uint8_t kCoinAcceptorSenseMax = 60;
 // Maximum bytes available for stories. (1MB)
 const uint32_t kFlashMaxStoryBytes = 1048576;
 // Passage buffer read size.
-const uint16_t kPassageBufferReadSize = 512;
+const uint16_t kPassageBufferReadSize = 496;
 
 
 // These are from the OLD way - maybe not needed.
