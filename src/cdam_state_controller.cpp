@@ -76,9 +76,7 @@ void StateController::initState(GameState aState) {
 	} else if (aState == STATE_SELECT) {
 
 	} else if (aState == STATE_PLAY) {
-		if (!_parser->parsePassage()) {
-			changeState(STATE_ERROR);
-		}
+
 	} else if (aState == STATE_AUTH) {
 
 	} else if (aState == STATE_ADMIN) {
@@ -164,7 +162,9 @@ void StateController::loopState(GameState aState) {
 			changeState(STATE_PLAY);
 		}
 	} else if (aState == STATE_PLAY) {
-
+		if (!_parser->parsePassage()) {
+			changeState(STATE_ERROR);
+		}
 	} else if (aState == STATE_AUTH) {
 
 	} else if (aState == STATE_ADMIN) {

@@ -363,7 +363,7 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
                         <number name="Value/Index1" id="59" type="integer" length="2"/>
                         <number name="Value/Index2" id="60" type="integer" length="2"/>
                     </structure>
-                    <number name="BodyLength" id="62" type="integer" length="4" minval="0"/>
+                    <number name="BodyLength" id="62" type="integer" length="2" minval="0"/>
                     <custom name="Body" id="63" length="BodyLength" script="id:64"/>
                     <number name="ChoiceCount" id="64" fillcolor="FFEC90" type="integer" length="1" minval="0" maxval="10"/>
                     <structure name="Choice" id="65" repeatmin="ChoiceCount" repeatmax="ChoiceCount">

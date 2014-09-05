@@ -26,8 +26,8 @@ const uint8_t kPassageCountSize = 2;
 const uint8_t kPassageOffsetSize = 4;
 const uint8_t kValueSetCountSize = 1;
 const uint8_t kValueSetSize = 5;
-const uint8_t kBodyLengthSize = 4;
-const uint8_t kChoiceLengthSize = 2;
+const uint8_t kDataLengthSize = 2;
+const uint8_t kPassageIndexSize = 2;
 
 }
 
