@@ -30,6 +30,8 @@ struct ErrorDesc_t {
 
 ErrorCode Errors::lastError = E_NO_ERROR;
 
+Errors::Errors() {}
+
 void Errors::setError(ErrorCode aCode) {
 	Errors::lastError = aCode;
 }

@@ -27,6 +27,7 @@ typedef enum ErrorCode_t {
 class Errors {
 
 public:
+	Errors();
 	~Errors();
 
 	static void setError(ErrorCode aCode);

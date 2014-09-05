@@ -2,6 +2,9 @@
 #ifndef CDAM_STATE_CONTROLLER_H
 #define CDAM_STATE_CONTROLLER_H
 
+#include "cdam_constants.h"
+#include "elapsed_time.h"
+
 namespace cdam
 {
 
@@ -54,6 +57,7 @@ private:
 	ServerManager* _serverManager;
 	Parser* _parser;
 	GameState _state;
+	ElapsedMillis _resetElapsed;
 };
 
 }

@@ -14,6 +14,8 @@ const unsigned int kIntervalKeypadMillis = 5;
 const unsigned int kIntervalCoinAcceptorMillis = 5;
 // How often to allow printing Insert Coin message.
 const unsigned int kIntervalCoinInsertMessage = 10000;
+// Delay until printing out 'press any button' message.
+const unsigned int kIntervalPressAnyButton = 10000;
 // Min value for coin sensing.
 const uint8_t kCoinAcceptorSenseMin = 15;
 // Max value for coin sensing.

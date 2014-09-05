@@ -9,7 +9,7 @@ namespace cdam
 void Parser::initialize() {
 	_dataManager = Manager::getInstance().dataManager;
 	_hardwareManager = Manager::getInstance().hardwareManager;
-	_state = PARSE_NONE;
+	_state = PARSE_IDLE;
 }
 
 void Parser::initStory(uint8_t aStoryIndex) {
@@ -21,28 +21,33 @@ void Parser::initStory(uint8_t aStoryIndex) {
 	_choiceSelected = _dataManager->currentStory;
 	_parsingChoices = false;
 	_dataLength = 0;
+
+	_hardwareManager->printer()->printStoryIntro(_dataManager->storyHeader.title, _dataManager->storyHeader.author);
+	/*uint8_t authorLen = strlen(_dataManager->storyHeader.author);
+	char *author = new char[authorLen + 1]();
+	memcpy(author, _dataManager->storyHeader.author, authorLen);
+	_hardwareManager->printer()->wrapText(author, kPrinterColumns);
+	_hardwareManager->printer()->printAuthor(author);
+	delete[] author;*/
 }
 
-bool Parser::parsePassage() {
+ParseState Parser::parsePassage() {
 	if (_state == PARSE_UPDATES) {
 		uint32_t processedBytes = 0;
 		if ((processedBytes = parseValueUpdates(_offset))) {
-			DEBUG("Processed: %d", processedBytes);
 			_offset += processedBytes;
 			// Only occurs if a choice has been selected.
 			if (_parsingChoices) {
 				// Choice - 1 for index, get actual index from _choiceLinks which
 				// compensates for potentially invisible choices.
-				DEBUG("Choice selected: %d, link index: %d", _choiceSelected, _choiceLinks[_choiceSelected - 1]);
+				//DEBUG("Choice selected: %d, link index: %d", _choiceSelected, _choiceLinks[_choiceSelected - 1]);
 				Choice choice = _choices[_choiceLinks[_choiceSelected - 1]];
-				DEBUG("Finished choice updates.");
 				_offset = _dataManager->startOffset + _dataManager->getPassageOffset(choice.passageIndex);
-				DEBUG("Jumping to passage %d at offset: %lu", choice.passageIndex, _offset);
+				//DEBUG("Jumping to passage %d at offset: %lu", choice.passageIndex, _offset);
 				cleanupAfterPassage();
 			} else {
 				// Finished value updates, move on to passage body data.
 				_state = PARSE_DATA;
-				DEBUG("PARSE_DATA");
 			}
 		}
 	} else if (_state == PARSE_DATA) {
@@ -52,7 +57,8 @@ bool Parser::parsePassage() {
 		uint8_t choiceData = 0;
 		if (_dataLength == 0) {
 			dataStart = true;
-			if ((!_appended && !_parsingChoices) || (_parsingChoices && !_choices[_choiceIndex].append)) {
+			if ((!_appended && !_parsingChoices && (_visibleCount > 1)) ||
+			    (_parsingChoices && !_choices[_choiceIndex].append)) {
 				_lastIndent = 0;
 				// Setup padding for printing a number in front of the text.
 				choiceData = _parsingChoices ? _visibleCount : _choiceSelected;
@@ -67,10 +73,9 @@ bool Parser::parsePassage() {
 				_state = PARSE_ERROR;
 			}
 			_offset += kDataLengthSize;
-			DEBUG("Offset: %lu, Length: %d", _offset, _dataLength);
 		}
 		// Allocate a buffer of data length, up to a maximum.
-		uint16_t bufferSize = (_dataLength < (kPassageBufferReadSize + _lastIndent) ? _dataLength : (kPassageBufferReadSize + _lastIndent);
+		uint16_t bufferSize = (_dataLength < (kPassageBufferReadSize + _lastIndent)) ? _dataLength : (kPassageBufferReadSize + _lastIndent);
 
 		_buffer = new char[bufferSize + bufferPadding + 1](); // + 1 to null terminate if it is all text.
 		// Insert the numbering.
@@ -84,36 +89,30 @@ bool Parser::parsePassage() {
 
 		if (processedBytes > 0) {
 			// Word wrap the text.
-			DEBUG("Last Indent wrap: %d", _lastIndent);
-			_lastIndent = wrapText(_buffer, kPrinterColumns, _lastIndent);
+			_lastIndent = _hardwareManager->printer()->wrapText(_buffer, kPrinterColumns, _lastIndent);
 			// Print the text up to the command.
-			DEBUG("PRINT: %s", _buffer);
-
 			_hardwareManager->printer()->print(_buffer);
 			_offset += processedBytes;
 			_dataLength -= processedBytes;
 		}
 
 		if (_dataLength == 0) {
-			DEBUG("Done with data body.");
 			delete[] _buffer;
 			_buffer = NULL;
 			if (_parsingChoices) { // Passage Index is next.
 				if (_dataManager->readData(&_choices[_choiceIndex].passageIndex, _offset, kPassageIndexSize)) {
-					DEBUG("Passage Index: %d", _choices[_choiceIndex].passageIndex);
+					//DEBUG("Passage Index: %d", _choices[_choiceIndex].passageIndex);
 					_offset += kPassageIndexSize;
 					_choices[_choiceIndex].updatesOffset = _offset;
-					DEBUG("Updates Offset for choice #%d: %lu", _choiceIndex, _choices[_choiceIndex].updatesOffset);
+					//DEBUG("Updates Offset for choice #%d: %lu", _choiceIndex, _choices[_choiceIndex].updatesOffset);
 					// Jump past the value updates for the choice.
 					uint8_t updateCount = _dataManager->readByte(_offset);
 					_offset += (updateCount * kValueSetSize) + kValueSetCountSize;
 					_state = PARSE_CHOICE;
-					DEBUG("PARSE_CHOICE");
 					// Don't parse updates yet, we need user input first.
 					//_state = PARSE_UPDATES;
 					_choiceIndex++;
 					if (!_choices[_choiceIndex - 1].append) {
-						DEBUG("ChoiceIndex: %d, ChoiceCount: %d", _choiceIndex, _choiceCount);
 						if (_choiceIndex < _choiceCount) {
 							_hardwareManager->printer()->feed(1);
 						} else {
@@ -125,7 +124,6 @@ bool Parser::parsePassage() {
 				}
 			} else { // Choice Count is next.
 				_choiceCount = _dataManager->readByte(_offset);
-				DEBUG("Choices: %d", _choiceCount);
 				_offset++;
 				if (_choiceCount > 0) {
 					_choices = new Choice[_choiceCount];
@@ -133,7 +131,6 @@ bool Parser::parsePassage() {
 					_choiceIndex = 0;
 					_visibleCount = 0;
 					_state = PARSE_CHOICE;
-					DEBUG("PARSE_CHOICE2");
 				} else {
 					_hardwareManager->printer()->feed(1);
 					_state = PARSE_ENDING;
@@ -144,45 +141,37 @@ bool Parser::parsePassage() {
 		_parsingChoices = true;
 		if (_choiceIndex < _choiceCount) {
 			// Get choice attribute.
-			DEBUG("Offset: %lu", _offset);
 			_choices[_choiceIndex].attribute = _dataManager->readByte(_offset);
 			_offset++;
-			DEBUG("Offset after attribute: %lu", _offset);
-			DEBUG("Psg #: %d, Append: %s", _dataManager->psgIndex, (_choices[_choiceIndex].append ? "on" : "off"));
 			_state = PARSE_CONDITIONALS;
-			DEBUG("PARSE_CONDITIONALS");
 			// Print spacing for the body passage, only makes sense if this is the first choice.
 			if (!_choices[_choiceIndex].append && (_choiceIndex == 0)) {
 				_hardwareManager->printer()->feed(2);
 			}
 		} else {
 			if ((_choiceCount == 1) && _choices[0].append) {
-				DEBUG("Append to next passage!");
+				//DEBUG("Append to next passage!");
 				_appended = true;
 				_offset = _dataManager->startOffset + _dataManager->getPassageOffset(_choices[0].passageIndex);
-				DEBUG("Jumping to passage %d at offset: %lu", _choices[0].passageIndex, _offset);
+				//DEBUG("Jumping to passage %d at offset: %lu", _choices[0].passageIndex, _offset);
 				cleanupAfterPassage();
 				_hardwareManager->printer()->print(" ");
 				_lastIndent++;
-				DEBUG("Indent: %d", _lastIndent);
 				_state = PARSE_UPDATES;
 			} else {
 				_state = PARSE_USER_INPUT;
-				DEBUG("PARSE_USER_INPUT: %d", _visibleCount);
 			}
 		}
 	} else if (_state == PARSE_CONDITIONALS) {
 		uint32_t processedBytes = 0;
 		if ((processedBytes = parseConditions(_offset, _choices[_choiceIndex].visible))) {
 			_offset += processedBytes;
-			DEBUG("Conditions done, offset: %lu", _offset);
-			DEBUG("Choice #%d %s visible.", (_choiceIndex + 1), (_choices[_choiceIndex].visible ? "is" : "not"));
+			//DEBUG("Choice #%d %s visible.", (_choiceIndex + 1), (_choices[_choiceIndex].visible ? "is" : "not"));
 			if (_choices[_choiceIndex].visible) {
 				_choiceLinks[_visibleCount] = _choiceIndex;
 				_visibleCount++;
 				_state = PARSE_DATA;
 			} else {
-				DEBUG("Not visible - calculate offset");
 				_dataManager->readData(&_dataLength, _offset, kDataLengthSize);
 				_offset += (kDataLengthSize + _dataLength + kPassageCountSize);
 				_dataLength = 0;
@@ -201,9 +190,7 @@ bool Parser::parsePassage() {
 		_choiceSelected = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, _visibleCount);
 		if (_choiceSelected) {
 			// Choice has been selected.
-			DEBUG("Selected: %d", _choiceSelected);
 			_offset = _choices[_choiceLinks[_choiceSelected - 1]].updatesOffset;
-			DEBUG("Selected Offset: %lu", _offset);
 			_state = PARSE_UPDATES;
 		}
 	} else if (_state == PARSE_ENDING) {
@@ -211,62 +198,14 @@ bool Parser::parsePassage() {
 		_offset++;
 		uint8_t endingQual = endingAttr & 0x07;
 		DEBUG("Ending Quality: %d", endingQual);
-		_state = PARSE_NONE;
-		DEBUG("PARSE_NONE");
+		_hardwareManager->printer()->feed(1);
+		_hardwareManager->printer()->printEnding(_dataManager->storyHeader.credits, _dataManager->storyHeader.contact);
+		_state = PARSE_IDLE;
 	} else if (_state == PARSE_ERROR) {
 		Errors::setError(E_STORY_PARSE_FAIL);
 		ERROR(Errors::errorString());
-		return false;
 	}
-	return true;
-}
-
-uint8_t Parser::wrapText(char* aBuffer, uint8_t aColumns, uint8_t aStartOffset) {
-	//DEBUG("Text: %s, Columns: %d", aBuffer, aColumns);
-	uint16_t length = strlen(aBuffer);
-	//DEBUG("Length: %d", length);
-
-	// Should always represent the first char index of a line.
-	uint16_t startIndex = 0;
-	// Wrap until we have less than one full line.
-	while ((length - startIndex) > aColumns) {
-		bool foundBreak = false;
-		uint8_t i;
-		// Search for a newline to break on.
-		for (i = 0; i < (aColumns - aStartOffset); ++i) {
-			if (aBuffer[startIndex + i] == '\t') {
-				aBuffer[startIndex + i] = ' ';
-				WARN("Found tab.");
-			} else if (aBuffer[startIndex + i] == '\r') {
-				WARN("Found carriage return.");
-			} else if (aBuffer[startIndex + i] == '\n') {
-				// Found Newline
-				foundBreak = true;
-				startIndex += i + 1;
-				break;
-			}
-		}
-
-		// Search for a space to break on.
-		if (foundBreak == false) {
-			for (i = (aColumns - aStartOffset); i > 0; --i) {
-				if (aBuffer[startIndex + i] == ' ') {
-					// Found Space
-					foundBreak = true;
-					aBuffer[startIndex + i] = '\n';
-					startIndex += i + 1;
-					break;
-				}
-			}
-			if (foundBreak == false) {
-				startIndex += aColumns;
-			}
-		}
-		aStartOffset = 0;
-	}
-	DEBUG("Last line: %s", aBuffer[startIndex]);
-	DEBUG("Last bit length: %d", length - startIndex);
-	return (length - startIndex) % aColumns;
+	return _state;
 }
 
 /* Accessors */

@@ -8,7 +8,7 @@ namespace cdam
 {
 
 typedef enum ParseState_t {
-	PARSE_NONE,
+	PARSE_IDLE,
 	PARSE_ERROR,
 	PARSE_UPDATES,
 	PARSE_DATA,
@@ -28,8 +28,7 @@ public:
     void initialize();
 
     void initStory(uint8_t aStoryIndex);
-    bool parsePassage();
-    uint8_t wrapText(char* aBuffer, uint8_t aColumns, uint8_t aStartOffset = 0);
+    ParseState parsePassage();
     //uint32_t parseBody(uint32_t aOffset);
     //void parseData(char* aBuffer);
     //uint32_t parseChoice(uint32_t aOffset, Choice* aChoice, uint8_t aVisibleChoices);

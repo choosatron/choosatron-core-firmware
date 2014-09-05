@@ -39,9 +39,14 @@ public:
     void printTitle();
     void printEmpty();
     void printStart();
-    void printAuthors(char* aAuthor, char* aCredits);
-    void printPoints(int16_t aPoints, int16_t aPerfectScore);
+    void printStoryIntro(char* aTitle, char* aAuthor);
+    //void printAuthor(char* aAuthor);
+    //void printAuthors(char* aAuthor, char* aCredits);
+    //void printPoints(int16_t aPoints, int16_t aPerfectScore);
     void printContinue(uint8_t aCoinsToContinue);
+    void printEnding(char* aCredits, char* aContact);
+
+    uint8_t wrapText(char* aBuffer, uint8_t aColumns, uint8_t aStartOffset = 0);
 
     void begin(int heatTime=200);
 

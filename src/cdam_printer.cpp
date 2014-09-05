@@ -193,12 +193,37 @@ void Printer::printStart() {
 	CSN_Thermal::justify('L');
 }
 
+void Printer::printStoryIntro(char* aTitle, char* aAuthor) {
+	CSN_Thermal::boldOn();
+	CSN_Thermal::justify('C');
+
+	wrapText(aTitle, kPrinterColumns);
+	wrapText(aAuthor, kPrinterColumns);
+	println(aTitle);
+
+	CSN_Thermal::boldOff();
+	println(CDAM_STORY_BY);
+	println(aAuthor);
+	CSN_Thermal::justify('L');
+}
+
+/*void Printer::printAuthor(char* aAuthor) {
+	CSN_Thermal::boldOn();
+	CSN_Thermal::justify('C');
+
+	println(CDAM_STORY_BY);
+	println(aAuthor);
+
+	CSN_Thermal::justify('L');
+	CSN_Thermal::boldOff();
+}
+
 void Printer::printAuthors(char* aAuthor, char* aCredits) {
 	CSN_Thermal::boldOn();
 	CSN_Thermal::justify('C');
 
 	char buffer[31];
-	snprintf(buffer, sizeof(buffer), CDAM_AUTHOR, aAuthor);
+	snprintf(buffer, sizeof(buffer), CDAM_STORY_BY, aAuthor);
 
 	println(buffer);
 
@@ -209,9 +234,9 @@ void Printer::printAuthors(char* aAuthor, char* aCredits) {
 
 	CSN_Thermal::justify('L');
 	CSN_Thermal::boldOff();
-}
+}*/
 
-void Printer::printPoints(int16_t aPoints, int16_t aPerfectScore) {
+/*void Printer::printPoints(int16_t aPoints, int16_t aPerfectScore) {
 	CSN_Thermal::boldOn();
 	CSN_Thermal::justify('C');
 
@@ -230,7 +255,7 @@ void Printer::printPoints(int16_t aPoints, int16_t aPerfectScore) {
 
 	CSN_Thermal::justify('L');
 	CSN_Thermal::boldOff();
-}
+}*/
 
 void Printer::printContinue(uint8_t aCoinsToContinue) {
 	CSN_Thermal::boldOn();
@@ -243,6 +268,76 @@ void Printer::printContinue(uint8_t aCoinsToContinue) {
 	CSN_Thermal::boldOff();
   	CSN_Thermal::justify('L');
 	feed(2);
+}
+
+void Printer::printEnding(char* aCredits, char* aContact) {
+	CSN_Thermal::boldOn();
+	CSN_Thermal::justify('C');
+
+	bool printedExtra = false;
+	if (strlen(aCredits)) {
+		println(aCredits);
+		printedExtra = true;
+	}
+	if (strlen(aContact)) {
+		println(aContact);
+		printedExtra = true;
+	}
+	if (printedExtra) {
+		feed(1);
+	}
+	CSN_Thermal::boldOff();
+	println(CDAM_TEAR_GENTLY);
+	CSN_Thermal::justify('L');
+	feed(2);
+}
+
+uint8_t Printer::wrapText(char* aBuffer, uint8_t aColumns, uint8_t aStartOffset) {
+	//DEBUG("Text: %s, Columns: %d", aBuffer, aColumns);
+	uint16_t length = strlen(aBuffer);
+	//DEBUG("Length: %d", length);
+
+	// Should always represent the first char index of a line.
+	uint16_t startIndex = 0;
+	// Wrap until we have less than one full line.
+	while ((length - startIndex) > aColumns) {
+		bool foundBreak = false;
+		uint8_t i;
+		// Search for a newline to break on.
+		for (i = 0; i < (aColumns - aStartOffset); ++i) {
+			if (aBuffer[startIndex + i] == '\t') {
+				aBuffer[startIndex + i] = ' ';
+				WARN("Found tab.");
+			} else if (aBuffer[startIndex + i] == '\r') {
+				WARN("Found carriage return.");
+			} else if (aBuffer[startIndex + i] == '\n') {
+				// Found Newline
+				foundBreak = true;
+				startIndex += i + 1;
+				break;
+			}
+		}
+
+		// Search for a space to break on.
+		if (foundBreak == false) {
+			for (i = (aColumns - aStartOffset); i > 0; --i) {
+				if (aBuffer[startIndex + i] == ' ') {
+					// Found Space
+					foundBreak = true;
+					aBuffer[startIndex + i] = '\n';
+					startIndex += i + 1;
+					break;
+				}
+			}
+			if (foundBreak == false) {
+				startIndex += aColumns;
+			}
+		}
+		aStartOffset = 0;
+	}
+	DEBUG("Last line: %s", aBuffer[startIndex]);
+	DEBUG("Last bit length: %d", length - startIndex);
+	return (length - startIndex) % aColumns;
 }
 
 // This method sets the estimated completion time for a just-issued task.

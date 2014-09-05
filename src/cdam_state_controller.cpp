@@ -59,6 +59,7 @@ void StateController::initState(GameState aState) {
 		_parser = new Parser();
 		_parser->initialize();
 		_hardwareManager->keypad()->active = true;
+		_resetElapsed = kIntervalPressAnyButton;
 	} else if (aState == STATE_INIT) {
 		if (_dataManager->metadata.flags.random) {
 			Utils::shuffle(_dataManager->liveStoryOrder, kMaxStoryCount);
@@ -141,7 +142,7 @@ void StateController::loopState(GameState aState) {
 			// Print story titles up to storyCount.
 			for (int i = 0; i < storyCount; ++i) {
 				if (_dataManager->getNumberedTitle(titleBuffer, i)) {
-					_parser->wrapText(titleBuffer, kPrinterColumns);
+					_hardwareManager->printer()->wrapText(titleBuffer, kPrinterColumns);
 					_hardwareManager->printer()->println(titleBuffer);
 				}
 			}
@@ -162,7 +163,15 @@ void StateController::loopState(GameState aState) {
 			changeState(STATE_PLAY);
 		}
 	} else if (aState == STATE_PLAY) {
-		if (!_parser->parsePassage()) {
+		ParseState state = _parser->parsePassage();
+		if (state == PARSE_ENDING) {
+			_resetElapsed = 0;
+		} else if (state == PARSE_IDLE) {
+			if ((_resetElapsed > kIntervalPressAnyButton) ||
+			    _hardwareManager->keypad()->buttonEvent(BTN_UP_EVENT)) {
+				changeState(STATE_INIT);
+			}
+		} else if (state == PARSE_ERROR) {
 			changeState(STATE_ERROR);
 		}
 	} else if (aState == STATE_AUTH) {
