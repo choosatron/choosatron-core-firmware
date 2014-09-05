@@ -52,22 +52,22 @@ bool Parser::parsePassage() {
 		uint8_t choiceData = 0;
 		if (_dataLength == 0) {
 			dataStart = true;
-			if (!_appended) {
+			if ((!_appended && !_parsingChoices) || (_parsingChoices && !_choices[_choiceIndex].append)) {
 				_lastIndent = 0;
+				// Setup padding for printing a number in front of the text.
+				choiceData = _parsingChoices ? _visibleCount : _choiceSelected;
+				if (choiceData > 0) {
+					bufferPadding = (_choiceSelected == 10) ? 4 : 3;
+				}
+			} else {
+				_appended = false;
 			}
 			// Get the length of the data bytes.
 			if (!_dataManager->readData(&_dataLength, _offset, kDataLengthSize)) {
 				_state = PARSE_ERROR;
 			}
 			_offset += kDataLengthSize;
-			// Setup padding for printing a number in front of the text.
-			if (!_parsingChoices || !_choices[_choiceIndex].append) {
-				choiceData = _parsingChoices ? _visibleCount : _choiceSelected;
-				if (choiceData > 0) {
-					bufferPadding = (_choiceSelected == 10) ? 4 : 3;
-				}
-				DEBUG("Offset: %lu, Length: %d", _offset, _dataLength);
-			}
+			DEBUG("Offset: %lu, Length: %d", _offset, _dataLength);
 		}
 		// Allocate a buffer of data length, up to a maximum.
 		uint16_t bufferSize = (_dataLength < kPassageBufferReadSize) ? _dataLength : kPassageBufferReadSize;
@@ -84,6 +84,7 @@ bool Parser::parsePassage() {
 
 		if (processedBytes > 0) {
 			// Word wrap the text.
+			DEBUG("Last Indent wrap: %d", _lastIndent);
 			_lastIndent = wrapText(_buffer, kPrinterColumns, _lastIndent);
 			// Print the text up to the command.
 			DEBUG("PRINT: %s", _buffer);
@@ -111,11 +112,13 @@ bool Parser::parsePassage() {
 					// Don't parse updates yet, we need user input first.
 					//_state = PARSE_UPDATES;
 					_choiceIndex++;
-					DEBUG("ChoiceIndex: %d, ChoiceCount: %d", _choiceIndex, _choiceCount);
-					if (!_appended && (_choiceIndex < _choiceCount)) {
-						_hardwareManager->printer()->feed(1);
-					} else {
-						_hardwareManager->printer()->feed(3);
+					if (!_choices[_choiceIndex - 1].append) {
+						DEBUG("ChoiceIndex: %d, ChoiceCount: %d", _choiceIndex, _choiceCount);
+						if (_choiceIndex < _choiceCount) {
+							_hardwareManager->printer()->feed(1);
+						} else {
+							_hardwareManager->printer()->feed(3);
+						}
 					}
 				} else {
 					_state = PARSE_ERROR;
@@ -149,7 +152,7 @@ bool Parser::parsePassage() {
 			_state = PARSE_CONDITIONALS;
 			DEBUG("PARSE_CONDITIONALS");
 			// Print spacing for the body passage, only makes sense if this is the first choice.
-			if (_choiceIndex == 0) {
+			if (!_choices[_choiceIndex].append && (_choiceIndex == 0)) {
 				_hardwareManager->printer()->feed(2);
 			}
 		} else {
@@ -159,6 +162,9 @@ bool Parser::parsePassage() {
 				_offset = _dataManager->startOffset + _dataManager->getPassageOffset(_choices[0].passageIndex);
 				DEBUG("Jumping to passage %d at offset: %lu", _choices[0].passageIndex, _offset);
 				cleanupAfterPassage();
+				_hardwareManager->printer()->print(" ");
+				_lastIndent++;
+				DEBUG("Indent: %d", _lastIndent);
 				_state = PARSE_UPDATES;
 			} else {
 				_state = PARSE_USER_INPUT;
@@ -215,19 +221,19 @@ bool Parser::parsePassage() {
 	return true;
 }
 
-uint8_t Parser::wrapText(char* aBuffer, uint8_t aColumns, uint8_t aIndent) {
+uint8_t Parser::wrapText(char* aBuffer, uint8_t aColumns, uint8_t aStartOffset) {
 	//DEBUG("Text: %s, Columns: %d", aBuffer, aColumns);
 	uint16_t length = strlen(aBuffer);
 	//DEBUG("Length: %d", length);
 
 	// Should always represent the first char index of a line.
-	uint16_t startIndex = aIndent;
+	uint16_t startIndex = 0;
 	// Wrap until we have less than one full line.
 	while ((length - startIndex) > aColumns) {
 		bool foundBreak = false;
 		uint8_t i;
 		// Search for a newline to break on.
-		for (i = 0; i < aColumns; ++i) {
+		for (i = 0; i < (aColumns - aStartOffset); ++i) {
 			if (aBuffer[startIndex + i] == '\t') {
 				aBuffer[startIndex + i] = ' ';
 				WARN("Found tab.");
@@ -243,7 +249,7 @@ uint8_t Parser::wrapText(char* aBuffer, uint8_t aColumns, uint8_t aIndent) {
 
 		// Search for a space to break on.
 		if (foundBreak == false) {
-			for (i = aColumns; i > 0; --i) {
+			for (i = (aColumns - aStartOffset); i > 0; --i) {
 				if (aBuffer[startIndex + i] == ' ') {
 					// Found Space
 					foundBreak = true;
@@ -256,9 +262,11 @@ uint8_t Parser::wrapText(char* aBuffer, uint8_t aColumns, uint8_t aIndent) {
 				startIndex += aColumns;
 			}
 		}
+		aStartOffset = 0;
 	}
-	//DEBUG("Last bit length: %d", length - startIndex);
-	return length - startIndex;
+	DEBUG("Last line: %s", aBuffer[startIndex]);
+	DEBUG("Last bit length: %d", length - startIndex);
+	return (length - startIndex) % aColumns;
 }
 
 /* Accessors */
