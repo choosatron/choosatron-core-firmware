@@ -289,7 +289,7 @@ void Printer::printEnding(char* aCredits, char* aContact) {
 	CSN_Thermal::boldOff();
 	println(CDAM_TEAR_GENTLY);
 	CSN_Thermal::justify('L');
-	feed(2);
+	//feed(2);
 }
 
 uint8_t Printer::wrapText(char* aBuffer, uint8_t aColumns, uint8_t aStartOffset) {
