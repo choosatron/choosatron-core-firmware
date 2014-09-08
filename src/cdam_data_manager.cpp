@@ -374,6 +374,7 @@ bool DataManager::readMetadata(Metadata *aMetadata) {
 
 bool DataManager::readStoryHeader(uint8_t aIndex, StoryHeader *aHeader) {
 	uint32_t offset = getStoryOffset(aIndex) * Flashee::Devices::userFlash().pageSize();
+	DEBUG("Pages Offset: %d", getStoryOffset(aIndex));
 
 	DEBUG("StoryHeader offset: %d, size: %d", offset, kStoryHeaderSize);
 	bool result = readData((uint8_t*)aHeader, offset, kStoryHeaderSize);
@@ -385,7 +386,7 @@ bool DataManager::readStoryHeader(uint8_t aIndex, StoryHeader *aHeader) {
 }
 
 bool DataManager::readVariables(uint8_t aIndex) {
-	bool result;
+	bool result = true;
 	uint32_t offset = getStoryOffset(aIndex) * Flashee::Devices::userFlash().pageSize() + kStoryHeaderSize;
 	_smallVarCount = readByte(offset);
 	//DEBUG("Small Var Count: %d", _smallVarCount);
@@ -411,7 +412,9 @@ bool DataManager::readVariables(uint8_t aIndex) {
 	}
 
 	// Read the passage count.
+	DEBUG("Offset: %d", offset);
 	result = readData(&this->psgCount, offset, kPassageCountSize) && result ? true : false;
+	DEBUG("Passage Count: %d", this->psgCount);
 
 	offset += kPassageCountSize;
 	// Memory offset for where the passage memory offsets begin.

@@ -96,10 +96,10 @@ class DataManager
         int16_t points;
         // Passage count for current story.
         uint16_t psgCount;
-        // Passage table of contents memory offset.
-        uint16_t tocOffset;
-        // Passage data memory offset.
-        uint16_t startOffset;
+        // Story passage table of contents memory offset.
+        uint32_t tocOffset;
+        // Story data memory offset.
+        uint32_t startOffset;
         // Current passage index.
         uint16_t psgIndex;
         // Current passage byte size.

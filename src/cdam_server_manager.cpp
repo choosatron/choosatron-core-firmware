@@ -388,7 +388,7 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 					bytesToRead = aStorySize - totalBytesRead;
 				}
 				int16_t bytes = aClient->read(buffer + pageBytesRead, bytesToRead);
-				DEBUG("Bytes read: %d", bytes);
+				//DEBUG("Bytes read: %d", bytes);
 
 				if (bytes > 0) {
 					pageBytesRead += bytes;

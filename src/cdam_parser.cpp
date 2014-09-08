@@ -92,7 +92,7 @@ ParseState Parser::parsePassage() {
 			_lastIndent = _hardwareManager->printer()->wrapText(_buffer, kPrinterColumns, _lastIndent);
 			// Print the text up to the command.
 			_hardwareManager->printer()->print(_buffer);
-			DEBUG("%s", _buffer);
+			//DEBUG("%s", _buffer);
 			_offset += processedBytes;
 			_dataLength -= processedBytes;
 		}
@@ -348,11 +348,11 @@ uint32_t Parser::parseValueUpdates(uint32_t aOffset) {
 }
 
 uint32_t Parser::parseConditions(uint32_t aOffset, bool &aResult) {
-	DEBUG("Updates Offset: %lu", aOffset);
+	//DEBUG("Updates Offset: %lu", aOffset);
 	uint32_t offset = aOffset;
 	uint8_t count = _dataManager->readByte(offset);
 	offset += kValueSetCountSize;
-	DEBUG("Condition Count: %d, Offset: %lu", count, offset);
+	//DEBUG("Condition Count: %d, Offset: %lu", count, offset);
 	aResult = true;
 	bool result = true;
 	for (int i = 0; i < count; ++i) {

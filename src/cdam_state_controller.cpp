@@ -69,20 +69,17 @@ void StateController::initState(GameState aState) {
 	} else if (aState == STATE_WAITING) {
 		_hardwareManager->printer()->printPressButton();
 	} else if (aState == STATE_READY) {
+		_seed = millis();
+		DEBUG("Current seed: %lu", _seed);
+  		srand(_seed);
 		_hardwareManager->printer()->printTitle();
-		for (int i = 0; i < _dataManager->metadata.storyCount; ++i) {
-			DEBUG("Index: %d, Value: %d", i, _dataManager->liveStoryOrder[i]);
-		}
 		if (_dataManager->metadata.storyCount > 4) {
 			if (_dataManager->metadata.flags.random) {
-				Utils::shuffle(_dataManager->liveStoryOrder, kMaxStoryCount);
+				DEBUG("Shuffle!");
+				Utils::shuffle(_dataManager->liveStoryOrder, _dataManager->metadata.storyCount);
 			} else {
 				_hardwareManager->printer()->printBigNumbers();
 			}
-		}
-
-		for (int i = 0; i < _dataManager->metadata.storyCount; ++i) {
-			DEBUG("Index: %d, Value: %d", i, _dataManager->liveStoryOrder[i]);
 		}
 	} else if (aState == STATE_IDLE) {
 		_resetElapsed = 0;

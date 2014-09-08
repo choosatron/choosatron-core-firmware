@@ -58,6 +58,7 @@ private:
 	Parser* _parser;
 	GameState _state;
 	ElapsedMillis _resetElapsed;
+	uint32_t _seed;
 };
 
 }
