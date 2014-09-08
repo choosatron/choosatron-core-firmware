@@ -145,6 +145,7 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
     int delimiterPos = aCommandAndArgs.indexOf(kServerArgumentDelimiter);
 
 	char commandAndArgs[cmdLen + 1];
+	memset(&commandAndArgs[0], 0, sizeof(commandAndArgs));
 	aCommandAndArgs.toCharArray(commandAndArgs, sizeof(commandAndArgs));
 	DEBUG("Command and Args: %s", commandAndArgs);
 
@@ -156,12 +157,12 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
     		serverMan->parseServerAddress(serverAddress);
     		cmdLen = serverDelimPos;
     	}
-		serverMan->pendingArguments = new char[cmdLen - delimiterPos];
+		serverMan->pendingArguments = new char[cmdLen - delimiterPos]();
 		memcpy(serverMan->pendingArguments, commandAndArgs + delimiterPos + 1, cmdLen - delimiterPos - 1);
 		cmdLen = delimiterPos;
 	}
 
-    serverMan->pendingCommand = new char[cmdLen + 1];
+    serverMan->pendingCommand = new char[cmdLen + 1]();
     memcpy(serverMan->pendingCommand, commandAndArgs, cmdLen);
 
 	if (strcmp(serverMan->pendingCommand, kServerCmdPing) == 0) {
@@ -187,6 +188,7 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		return kServerReturnInvalidIndex;*/
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdRemoveAllStories) == 0) {
 		dataMan->removeAllStoryData();
+		return kServerReturnSuccess;
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdSwapStoryPositions) == 0) {
 		/* TODO */
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdSetFlag) == 0) {
@@ -371,7 +373,8 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 
 		if (aClient->available()) {
 			//uint16_t index = 0;
-			uint32_t bytesRead = 0;
+			uint16_t pageBytesRead = 0;
+			uint32_t totalBytesRead = 0;
 			uint32_t bytesToRead = kServerDataBufferSize;
 			uint8_t pagesWritten = 0;
 			uint8_t buffer[Flashee::Devices::userFlash().pageSize()];
@@ -381,17 +384,18 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 			while (aClient->available()) {
 				// While data available, read data into buffer, then flash space based on page size
 				//memset(&buffer[0], 0, sizeof(buffer));
-				if ((aStorySize - bytesRead) < kServerDataBufferSize) {
-					bytesToRead = aStorySize - bytesRead;
+				if ((aStorySize - totalBytesRead) < kServerDataBufferSize) {
+					bytesToRead = aStorySize - totalBytesRead;
 				}
-				int16_t bytes = aClient->read(buffer + bytesRead, bytesToRead);
+				int16_t bytes = aClient->read(buffer + pageBytesRead, bytesToRead);
 				DEBUG("Bytes read: %d", bytes);
 
 				if (bytes > 0) {
-					bytesRead += bytes;
+					pageBytesRead += bytes;
+					totalBytesRead += bytes;
 
-					if ((bytesRead % Flashee::Devices::userFlash().pageSize() == 0) ||
-						(bytesRead == aStorySize)) {
+					if ((pageBytesRead % Flashee::Devices::userFlash().pageSize() == 0) ||
+						(totalBytesRead == aStorySize)) {
 						// Write data
 						DEBUG("Writing page #: %d", (pagesWritten + 1));
 						DEBUG("Used Pages: %d", Manager::getInstance().dataManager->metadata.usedStoryPages);
@@ -406,10 +410,11 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 							break;
 						}
 						memset(&buffer[0], 0, sizeof(buffer));
+						pageBytesRead = 0;
 						pagesWritten += 1;
 					}
-
-					if (bytesRead == aStorySize) {
+					DEBUG("Pages: %d, Total bytes: %lu", pagesWritten, totalBytesRead);
+					if (totalBytesRead == aStorySize) {
 						DEBUG("Data Received");
 						aClient->write("COMPLETE");
 						if (aClient->available()) {

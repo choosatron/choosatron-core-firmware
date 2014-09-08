@@ -89,7 +89,7 @@ class DataManager
         Version firmwareVersion;
         Metadata metadata;
         StoryHeader storyHeader;
-        
+
         // The index of the story currently in play.
         int8_t currentStory;
         // The number of points accumulated in the current story.
@@ -132,14 +132,13 @@ class DataManager
         bool upgradeDataModels();
 
         // Test Methods
-        void testMetadata();
-        void setTestMetadata(Metadata *aMetadata);
-        void logBinary(uint8_t aValue);
-        void logStoryOffsets(Metadata *aMetadata);
-        void logStoryBytes(Metadata *aMetadata);
+        //void setTestMetadata(Metadata *aMetadata);
+        //void logBinary(uint8_t aValue);
+        //void logStoryOffsets(Metadata *aMetadata);
+        //void logStoryBytes(Metadata *aMetadata);
         // For debugging: print out all the metadata values.
-        void logMetadata(Metadata *aMetadata);
-        void logStoryHeader(StoryHeader *aHeader);
+        //void logMetadata(Metadata *aMetadata);
+        //void logStoryHeader(StoryHeader *aHeader);
 
 
         /* Private Variables */

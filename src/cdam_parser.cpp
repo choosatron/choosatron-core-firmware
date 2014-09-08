@@ -92,6 +92,7 @@ ParseState Parser::parsePassage() {
 			_lastIndent = _hardwareManager->printer()->wrapText(_buffer, kPrinterColumns, _lastIndent);
 			// Print the text up to the command.
 			_hardwareManager->printer()->print(_buffer);
+			DEBUG("%s", _buffer);
 			_offset += processedBytes;
 			_dataLength -= processedBytes;
 		}
@@ -147,6 +148,9 @@ ParseState Parser::parsePassage() {
 			// Print spacing for the body passage, only makes sense if this is the first choice.
 			if (!_choices[_choiceIndex].append && (_choiceIndex == 0)) {
 				_hardwareManager->printer()->feed(2);
+				if (_choiceCount > 4) {
+					_hardwareManager->printer()->printBigNumbers();
+				}
 			}
 		} else {
 			if ((_choiceCount == 1) && _choices[0].append) {
@@ -269,10 +273,10 @@ uint32_t Parser::parseCommand(uint32_t aOffset, char* aBuffer, uint16_t aLength)
 // aOffset: The byte offset to begin processing at.
 // Returns: The number of bytes processed beyond the provided offset.
 uint32_t Parser::parseValueUpdates(uint32_t aOffset) {
-	DEBUG("Updates Offset: %lu", aOffset);
+	//DEBUG("Updates Offset: %lu", aOffset);
 	uint32_t offset = aOffset;
 	uint8_t count = _dataManager->readByte(offset);
-	DEBUG("Update Count: %d", count);
+	//DEBUG("Update Count: %d", count);
 	offset += kValueSetCountSize;
 	for (int i = 0; i < count; ++i) {
 		ValueSet valueSet;

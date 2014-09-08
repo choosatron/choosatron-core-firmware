@@ -61,9 +61,7 @@ void StateController::initState(GameState aState) {
 		_hardwareManager->keypad()->active = true;
 		_resetElapsed = kIntervalPressAnyButton;
 	} else if (aState == STATE_INIT) {
-		if (_dataManager->metadata.flags.random) {
-			Utils::shuffle(_dataManager->liveStoryOrder, kMaxStoryCount);
-		}
+
 	} else if (aState == STATE_CREDITS) {
 		_hardwareManager->coinAcceptor()->active = true;
 		_hardwareManager->printer()->printInsertCoin(_hardwareManager->coinAcceptor()->coins,
@@ -72,8 +70,22 @@ void StateController::initState(GameState aState) {
 		_hardwareManager->printer()->printPressButton();
 	} else if (aState == STATE_READY) {
 		_hardwareManager->printer()->printTitle();
-	} else if (aState == STATE_IDLE) {
+		for (int i = 0; i < _dataManager->metadata.storyCount; ++i) {
+			DEBUG("Index: %d, Value: %d", i, _dataManager->liveStoryOrder[i]);
+		}
+		if (_dataManager->metadata.storyCount > 4) {
+			if (_dataManager->metadata.flags.random) {
+				Utils::shuffle(_dataManager->liveStoryOrder, kMaxStoryCount);
+			} else {
+				_hardwareManager->printer()->printBigNumbers();
+			}
+		}
 
+		for (int i = 0; i < _dataManager->metadata.storyCount; ++i) {
+			DEBUG("Index: %d, Value: %d", i, _dataManager->liveStoryOrder[i]);
+		}
+	} else if (aState == STATE_IDLE) {
+		_resetElapsed = 0;
 	} else if (aState == STATE_SELECT) {
 
 	} else if (aState == STATE_PLAY) {
@@ -118,7 +130,6 @@ void StateController::loopState(GameState aState) {
 		}
 	} else if (aState == STATE_CREDITS) {
 		if (_hardwareManager->keypad()->buttonEvent(BTN_UP_EVENT)) {
-			DEBUG("Button Pressed!");
 			if (_hardwareManager->coinAcceptor()->consumeCredit()) {
 				changeState(STATE_READY);
 			} else {
@@ -127,23 +138,26 @@ void StateController::loopState(GameState aState) {
 		}
 	} else if (aState == STATE_WAITING) {
 		if (_hardwareManager->keypad()->buttonEvent(BTN_UP_EVENT)) {
-			DEBUG("Button Pressed!");
 			changeState(STATE_READY);
 		}
 	} else if (aState == STATE_READY) {
 		if (_dataManager->metadata.storyCount > 0) {
-			_hardwareManager->printer()->printStart();
 			uint8_t storyCount = _dataManager->metadata.storyCount;
 			if (_dataManager->metadata.flags.random) {
 				storyCount = 4;
+			}
+			if (storyCount <= 4) {
+				_hardwareManager->printer()->printStart();
 			}
 			// Buffer for title, max title size + 4 for numbering (ex: "10. Story Title")
 			char titleBuffer[kStoryTitleSize + 4] = "";
 			// Print story titles up to storyCount.
 			for (int i = 0; i < storyCount; ++i) {
+				DEBUG("Title index: %d", i);
 				if (_dataManager->getNumberedTitle(titleBuffer, i)) {
 					_hardwareManager->printer()->wrapText(titleBuffer, kPrinterColumns);
 					_hardwareManager->printer()->println(titleBuffer);
+					DEBUG("%s", titleBuffer);
 				}
 			}
 			_hardwareManager->printer()->feed(2);
@@ -153,13 +167,18 @@ void StateController::loopState(GameState aState) {
 			changeState(STATE_IDLE);
 		}
 	} else if (aState == STATE_IDLE) {
-
+		if ((_resetElapsed > kIntervalPressAnyButton) ||
+		    _hardwareManager->keypad()->buttonEvent(BTN_UP_EVENT)) {
+			if (_dataManager->metadata.storyCount > 0) {
+				changeState(STATE_INIT);
+			}
+		}
 	} else if (aState == STATE_SELECT) {
 		// Wait for multi button up event for story selection.
 		uint8_t total = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, _dataManager->metadata.storyCount);
 		if (total) {
-			// Story has been selected, initialize the parser.
-			_parser->initStory(total);
+			// Story has been selected, initialize the parser with story index (not number).
+			_parser->initStory(total - 1);
 			changeState(STATE_PLAY);
 		}
 	} else if (aState == STATE_PLAY) {
@@ -167,9 +186,18 @@ void StateController::loopState(GameState aState) {
 		if (state == PARSE_ENDING) {
 			_resetElapsed = 0;
 		} else if (state == PARSE_IDLE) {
-			if ((_resetElapsed > kIntervalPressAnyButton) ||
-			    _hardwareManager->keypad()->buttonEvent(BTN_UP_EVENT)) {
-				changeState(STATE_INIT);
+			if (_resetElapsed > kIntervalPressAnyButton) {
+				if (_dataManager->metadata.flags.arcade) {
+					changeState(STATE_CREDITS);
+				} else {
+					changeState(STATE_WAITING);
+				}
+			} else if (_hardwareManager->keypad()->buttonEvent(BTN_UP_EVENT)) {
+				if (_dataManager->metadata.flags.arcade) {
+					changeState(STATE_CREDITS);
+				} else {
+					changeState(STATE_READY);
+				}
 			}
 		} else if (state == PARSE_ERROR) {
 			changeState(STATE_ERROR);

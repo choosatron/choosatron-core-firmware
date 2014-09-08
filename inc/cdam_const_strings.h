@@ -17,6 +17,7 @@ const char CDAM_POINTS_PERFECT[] = "A perfect score!!!";
 const char CDAM_ARCADE_CREDITS[] = "CREDITS %d/%d - INSERT COIN(S)";
 const char CDAM_ARCADE_CONTINUE[] = "*INSERT %d COIN(S) TO CONTINUE*";
 const char CDAM_TEAR_GENTLY[] = "<- TEAR GENTLY TO THE SIDE ->\n- - - - - - - - - - - - - - - - ";
+const char CDAM_BIG_NUMBERS[] = "+Add Buttons for Higher Choices+\n [1]+[4] = 5 or [2]+[3]+[4] = 9";
 
 const char CDAM_SERVER_RECEIVE_STORY[] = "Receiving story data...";
 const char CDAM_SERVER_COMPLETE[] = "Complete!\nPress any button for menu.";

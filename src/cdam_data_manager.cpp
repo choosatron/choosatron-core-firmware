@@ -24,8 +24,8 @@ bool DataManager::initialize(StateController *aStateController) {
 	this->tocOffset = 0;
 	this->startOffset = 0;
 
-	DEBUG("Page Size: %d", Flashee::Devices::userFlash().pageSize());
-	DEBUG("Page Count: %d", Flashee::Devices::userFlash().pageCount());
+	//DEBUG("Page Size: %d", Flashee::Devices::userFlash().pageSize());
+	//DEBUG("Page Count: %d", Flashee::Devices::userFlash().pageCount());
 	_metaFlash = Flashee::Devices::createAddressErase(0,
 	                               4 * Flashee::Devices::userFlash().pageSize());
 
@@ -36,19 +36,14 @@ bool DataManager::initialize(StateController *aStateController) {
 
     //testMetadata();
 	//_metaFlash->eraseAll();
-	DEBUG("Sizeof: %d", sizeof(this->metadata));
-	DEBUG("Metadata Size: %d", kMetadataSize);
 	char data[kMetadataSize] = "";
 	_metaFlash->read(data, 0, kMetadataSize);
-	DEBUG("META DEBUG BEGIN");
-	DEBUG("HEX");
 	for (int i = 0; i < kMetadataSize; ++i) {
 		if (data[i]<0x10) {Serial.print("0");}
           Serial.print(data[i],HEX);
           Serial.print(" ");
 	}
 	Serial.println("END");
-	DEBUG("META DEBUG END");
 
 	loadFirmwareVersion();
 
@@ -70,7 +65,6 @@ bool DataManager::initialize(StateController *aStateController) {
 	//_storyFlash->eraseAll();
 	//logStoryOffsets(&this->metadata);
 	//logStoryBytes(&this->metadata);
-	DEBUG("Ready!");
 
 	return true;
 }
@@ -254,7 +248,7 @@ bool DataManager::eraseFlash() {
 }
 
 uint8_t DataManager::readByte(uint32_t aAddress) {
-	uint8_t byte;
+	uint8_t byte = 0;
 	if (this->metadata.flags.sdCard) {
 
 	} else {
@@ -284,10 +278,6 @@ bool DataManager::writeData(void* aBuffer, uint32_t aAddress, uint32_t aLength) 
 StateController* DataManager::stateController() {
 	return _stateControl;
 }
-
-/*Flashee::FlashDevice* DataManager::storyFlash() {
-	return _storyFlash;
-}*/
 
 /* Private Methods */
 
@@ -346,7 +336,7 @@ bool DataManager::initializeMetadata(Metadata *aMetadata) {
 	aMetadata->flags.multiplayer = 0;
 	aMetadata->flags.arcade = 0;
 	aMetadata->flags.continues = 0;
-	aMetadata->flags.random = 0;
+	aMetadata->flags.random = 1;
 
 	aMetadata->flags.rsvd2 = 0;
 	aMetadata->flags.logging = 1;
@@ -398,50 +388,43 @@ bool DataManager::readVariables(uint8_t aIndex) {
 	bool result;
 	uint32_t offset = getStoryOffset(aIndex) * Flashee::Devices::userFlash().pageSize() + kStoryHeaderSize;
 	_smallVarCount = readByte(offset);
-	DEBUG("Small Var Count: %d", _smallVarCount);
+	//DEBUG("Small Var Count: %d", _smallVarCount);
 	offset++;
 	if (_smallVarCount > 0) {
 		_smallVars = new int8_t[_smallVarCount];
 		for (int i = 0; i < _smallVarCount; ++i) {
-			result = readData(&_smallVars[i], offset, kSmallVarSize);
-			if (!result) {
-				Errors::setError(E_VARS_READ_FAIL);
-				ERROR(Errors::errorString());
-				return false;
-			}
-			DEBUG("Var #%d: %d", i, _smallVars[i]);
+			result = readData(&_smallVars[i], offset, kSmallVarSize) && result ? true : false;
+			//DEBUG("Var #%d: %d", i, _smallVars[i]);
 			offset += kSmallVarSize; // Only 1 byte sized variables.
 		}
 	}
 	_bigVarCount = readByte(offset);
-	DEBUG("Big Var Count: %d", _bigVarCount);
+	//DEBUG("Big Var Count: %d", _bigVarCount);
 	offset++;
 	if (_bigVarCount > 0) {
 		_bigVars = new int16_t[_bigVarCount];
 		for (int i = 0; i < _bigVarCount; ++i) {
-			result = readData(&_bigVars[i], offset, kBigVarSize);
-			if (!result) {
-				Errors::setError(E_VARS_READ_FAIL);
-				ERROR(Errors::errorString());
-				return false;
-			}
-			DEBUG("Var #%d: %d", i, _bigVars[i]);
+			result = readData(&_bigVars[i], offset, kBigVarSize) && result ? true : false;
+			//DEBUG("Var #%d: %d", i, _bigVars[i]);
 			offset += kBigVarSize; // 2 byte sized variables.
 		}
 	}
 
 	// Read the passage count.
-	result = readData(&this->psgCount, offset, kPassageCountSize);
+	result = readData(&this->psgCount, offset, kPassageCountSize) && result ? true : false;
+
+	offset += kPassageCountSize;
+	// Memory offset for where the passage memory offsets begin.
+	this->tocOffset = offset;
+	// Grab the offset of the second passage, which gives us the size of the first.
+	result = readData(&this->psgSize, offset + kPassageOffsetSize, kPassageOffsetSize) && result ? true : false;
+
 	if (!result) {
 		Errors::setError(E_VARS_READ_FAIL);
 		ERROR(Errors::errorString());
 		return false;
 	}
-	offset += kPassageCountSize;
-	// Memory offset for where the passage memory offsets begin.
-	this->tocOffset = offset;
-	// Grab the offset of the second passage, which gives us the size of the first.
-	result = readData(&this->psgSize, offset + kPassageOffsetSize, kPassageOffsetSize);
+
 	DEBUG("Passage Size: %lu", this->psgSize);
 	DEBUG("TOC Offset: %d", this->tocOffset);
 	offset += this->psgCount * kPassageOffsetSize;
@@ -460,17 +443,6 @@ bool DataManager::writeMetadata(Metadata *aMetadata) {
 		Errors::setError(E_METADATA_WRITE_FAIL);
 		ERROR(Errors::errorString());
 	}
-	char data[kMetadataSize] = "";
-	_metaFlash->read(data, 0, kMetadataSize);
-	DEBUG("META DEBUG BEGIN");
-	DEBUG("HEX");
-	for (int i = 0; i < kMetadataSize; ++i) {
-		if (data[i]<0x10) {Serial.print("0");}
-          Serial.print(data[i],HEX);
-          Serial.print(" ");
-	}
-	Serial.println("END");
-	DEBUG("META DEBUG END");
 	return result;
 }
 
@@ -480,25 +452,14 @@ bool DataManager::writeStoryCountData(Metadata *aMetadata) {
 		                 kMetadataStoryCountSize + kMetadataStoryUsedPagesSize +
 		                 kMetadataStoryOffsetsSize + kMetadataStoryOrderSize);*/
 	bool result = true;
-	result = _metaFlash->write(&aMetadata->storyCount, kMetadataStoryCountOffset, kMetadataStoryCountSize);
-	result = _metaFlash->write(&aMetadata->usedStoryPages, kMetadataStoryUsedPagesOffset, kMetadataStoryUsedPagesSize);
-	result = _metaFlash->write(&aMetadata->storyOffsets, kMetadataStoryOffsetsOffset, kMetadataStoryOffsetsSize);
-	result = _metaFlash->write(&aMetadata->storyOrder, kMetadataStoryOrderOffset, kMetadataStoryOrderSize);
+	result = _metaFlash->write(&aMetadata->storyCount, kMetadataStoryCountOffset, kMetadataStoryCountSize) && result ? true : false;
+	result = _metaFlash->write(&aMetadata->usedStoryPages, kMetadataStoryUsedPagesOffset, kMetadataStoryUsedPagesSize) && result ? true : false;
+	result = _metaFlash->write(&aMetadata->storyOffsets, kMetadataStoryOffsetsOffset, kMetadataStoryOffsetsSize) && result ? true : false;
+	result = _metaFlash->write(&aMetadata->storyOrder, kMetadataStoryOrderOffset, kMetadataStoryOrderSize) && result ? true : false;
 	if (!result) {
 		Errors::setError(E_METADATA_WRITE_FAIL);
 		ERROR(Errors::errorString());
 	}
-	char data[kMetadataSize] = "";
-	_metaFlash->read(data, 0, kMetadataSize);
-	DEBUG("META DEBUG BEGIN");
-	DEBUG("HEX");
-	for (int i = 0; i < kMetadataSize; ++i) {
-		if (data[i]<0x10) {Serial.print("0");}
-          Serial.print(data[i],HEX);
-          Serial.print(" ");
-	}
-	Serial.println("END");
-	DEBUG("META DEBUG END");
 	return result;
 }
 
@@ -532,8 +493,7 @@ bool DataManager::upgradeDataModels() {
 	return true;
 }
 
-void DataManager::testMetadata() {
-#ifdef DEBUG_BUILD
+/*void DataManager::testMetadata() {
 	Metadata metadata = {};
 	_metaFlash->eraseAll();
 	readMetadata(&metadata);
@@ -549,11 +509,9 @@ void DataManager::testMetadata() {
 	readMetadata(&metadata);
 	DEBUG("*** Should be AWESOME ***");
 	logMetadata(&metadata);
-#endif
-}
+}*/
 
-void DataManager::setTestMetadata(Metadata *aMetadata) {
-#ifdef DEBUG_BUILD
+/*void DataManager::setTestMetadata(Metadata *aMetadata) {
 	*aMetadata = {};
 
 	aMetadata->soh = kAsciiHeaderByte;
@@ -609,15 +567,9 @@ void DataManager::setTestMetadata(Metadata *aMetadata) {
 	aMetadata->storyOffsets[1] = 10;
 	aMetadata->storyOffsets[2] = 100;
 	aMetadata->storyOffsets[3] = 255;
-	/*aMetadata->storyOffsets.push_back(1);
-	aMetadata->storyOffsets.push_back(255);
-	aMetadata->storyOffsets.push_back(65535);
-	aMetadata->storyOffsets.push_back(2147483647);*/
-#endif
-}
+}*/
 
-void DataManager::logBinary(uint8_t aValue) {
-#ifdef DEBUG_BUILD
+/*void DataManager::logBinary(uint8_t aValue) {
 	DEBUG("0x%c%c%c%c%c%c%c%c",
 	    (IsBitSet(aValue, 7) ? '1' : '0'),
 	    (IsBitSet(aValue, 6) ? '1' : '0'),
@@ -627,19 +579,15 @@ void DataManager::logBinary(uint8_t aValue) {
 	    (IsBitSet(aValue, 2) ? '1' : '0'),
 	    (IsBitSet(aValue, 1) ? '1' : '0'),
 	    (IsBitSet(aValue, 0) ? '1' : '0'));
-#endif
-}
+}*/
 
-void DataManager::logStoryOffsets(Metadata *aMetadata) {
-#ifdef DEBUG_BUILD
+/*void DataManager::logStoryOffsets(Metadata *aMetadata) {
 	for (int i = 0; i < aMetadata->storyCount; ++i) {
 		DEBUG("Story #: %d, Offset: %lu", i, aMetadata->storyOffsets[i]);
 	}
-#endif
-}
+}*/
 
-void DataManager::logStoryBytes(Metadata *aMetadata) {
-#ifdef DEBUG_BUILD
+/*void DataManager::logStoryBytes(Metadata *aMetadata) {
 	for (int i = 0; i < aMetadata->storyCount; ++i) {
 		DEBUG("Story #: %d, Offset: %d", i, aMetadata->storyOffsets[i]);
 		if (loadStory(i)) {
@@ -657,11 +605,9 @@ void DataManager::logStoryBytes(Metadata *aMetadata) {
 		}
 		Serial.println("END");
 	}
-#endif
-}
+}*/
 
-void DataManager::logMetadata(Metadata *aMetadata) {
-#ifdef DEBUG_BUILD
+/*void DataManager::logMetadata(Metadata *aMetadata) {
 	DEBUG("METADATA");
 	DEBUG("Firmware v%d.%d.%d", aMetadata->firmwareVer.major,
 		aMetadata->firmwareVer.minor, aMetadata->firmwareVer.revision);
@@ -706,14 +652,9 @@ void DataManager::logMetadata(Metadata *aMetadata) {
 	DEBUG("Story Count: %d", aMetadata->storyCount);
 	DEBUG("Used Story Bytes: %d", aMetadata->usedStoryPages);
 	logStoryOffsets(aMetadata);
-	/*for (int i = 0; i < aMetadata->storyCount; ++i) {
-		LOG("Story Size %d: %d", (i + 1), aMetadata->storyOffsets[i]);
-	}*/
-#endif
-}
+}*/
 
-void DataManager::logStoryHeader(StoryHeader *aHeader) {
-#ifdef DEBUG_BUILD
+/*void DataManager::logStoryHeader(StoryHeader *aHeader) {
 	DEBUG("STORY HEADER");
 	DEBUG("Binary v%d.%d.%d", aHeader->binaryVer.major,
 		aHeader->binaryVer.minor, aHeader->binaryVer.revision);
@@ -753,7 +694,6 @@ void DataManager::logStoryHeader(StoryHeader *aHeader) {
 	char timeBuffer[26];
 	Time.timeStr(aHeader->publishDate).toCharArray(timeBuffer, 26);
 	DEBUG("Publish Datetime: %s", timeBuffer);
-#endif
-}
+}*/
 
 }

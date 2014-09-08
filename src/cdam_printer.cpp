@@ -158,10 +158,12 @@ void Printer::printInsertCoin(uint8_t aCoins, uint8_t aCoinsPerCredit) {
 }
 
 void Printer::printPressButton() {
+	CSN_Thermal::boldOn();
 	CSN_Thermal::justify('C');
 
 	println(CDAM_PRESS_BUTTON);
 
+	CSN_Thermal::boldOff();
 	CSN_Thermal::justify('L');
 	feed(2);
 }
@@ -182,7 +184,11 @@ void Printer::printTitle() {
 }
 
 void Printer::printEmpty() {
+	CSN_Thermal::boldOn();
+	feed(1);
 	println(CDAM_EMPTY);
+	feed(1);
+	CSN_Thermal::boldOff();
 }
 
 void Printer::printStart() {
@@ -257,6 +263,13 @@ void Printer::printAuthors(char* aAuthor, char* aCredits) {
 	CSN_Thermal::boldOff();
 }*/
 
+void Printer::printBigNumbers() {
+	CSN_Thermal::boldOn();
+	println(CDAM_BIG_NUMBERS);
+	CSN_Thermal::boldOff();
+	feed(1);
+}
+
 void Printer::printContinue(uint8_t aCoinsToContinue) {
 	CSN_Thermal::boldOn();
 	CSN_Thermal::justify('C');
@@ -295,12 +308,14 @@ void Printer::printEnding(char* aCredits, char* aContact) {
 uint8_t Printer::wrapText(char* aBuffer, uint8_t aColumns, uint8_t aStartOffset) {
 	//DEBUG("Text: %s, Columns: %d", aBuffer, aColumns);
 	uint16_t length = strlen(aBuffer);
-	//DEBUG("Length: %d", length);
+	//DEBUG("Length: %d, startOffset: %d", length, aStartOffset);
 
 	// Should always represent the first char index of a line.
 	uint16_t startIndex = 0;
+	uint8_t columns = aColumns - aStartOffset;
 	// Wrap until we have less than one full line.
-	while ((length - startIndex) > aColumns) {
+	while ((length - startIndex) > columns) {
+		columns = aColumns;
 		bool foundBreak = false;
 		uint8_t i;
 		// Search for a newline to break on.
@@ -335,8 +350,6 @@ uint8_t Printer::wrapText(char* aBuffer, uint8_t aColumns, uint8_t aStartOffset)
 		}
 		aStartOffset = 0;
 	}
-	DEBUG("Last line: %s", aBuffer[startIndex]);
-	DEBUG("Last bit length: %d", length - startIndex);
 	return (length - startIndex) % aColumns;
 }
 

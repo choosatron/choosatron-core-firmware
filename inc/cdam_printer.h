@@ -43,6 +43,7 @@ public:
     //void printAuthor(char* aAuthor);
     //void printAuthors(char* aAuthor, char* aCredits);
     //void printPoints(int16_t aPoints, int16_t aPerfectScore);
+    void printBigNumbers();
     void printContinue(uint8_t aCoinsToContinue);
     void printEnding(char* aCredits, char* aContact);
 
