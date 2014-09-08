@@ -202,6 +202,10 @@ ParseState Parser::parsePassage() {
 		_offset++;
 		uint8_t endingQual = endingAttr & 0x07;
 		DEBUG("Ending Quality: %d", endingQual);
+		_appended = false;
+		_visibleCount = 0;
+		_lastIndent = 0;
+		cleanupAfterPassage();
 		_hardwareManager->printer()->feed(1);
 		_hardwareManager->printer()->printEnding(_dataManager->storyHeader.credits, _dataManager->storyHeader.contact);
 		_state = PARSE_IDLE;

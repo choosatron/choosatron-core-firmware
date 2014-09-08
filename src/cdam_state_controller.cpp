@@ -182,6 +182,7 @@ void StateController::loopState(GameState aState) {
 		ParseState state = _parser->parsePassage();
 		if (state == PARSE_ENDING) {
 			_resetElapsed = 0;
+			_dataManager->unloadStory();
 		} else if (state == PARSE_IDLE) {
 			if (_resetElapsed > kIntervalPressAnyButton) {
 				if (_dataManager->metadata.flags.arcade) {
