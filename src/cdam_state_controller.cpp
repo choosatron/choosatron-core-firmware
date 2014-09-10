@@ -102,6 +102,10 @@ void StateController::loopState(GameState aState) {
 		if (_hardwareManager->keypad()->buttonDown(1) ||
 			_dataManager->metadata.flags.offline) {
 			LOG("* DISABLE WIFI *");
+		} else {
+			if (Spark.connected() == false) {
+				Spark.connect();
+			}
 		}
 		// If button 3 held, don't print, just serial output.
 		if (_hardwareManager->keypad()->buttonDown(3) ||
@@ -140,7 +144,7 @@ void StateController::loopState(GameState aState) {
 	} else if (aState == STATE_READY) {
 		if (_dataManager->metadata.storyCount > 0) {
 			uint8_t storyCount = _dataManager->metadata.storyCount;
-			if (_dataManager->metadata.flags.random) {
+			if (_dataManager->metadata.flags.random && (_dataManager->metadata.storyCount >= 4)) {
 				storyCount = 4;
 			}
 			if (storyCount <= 4) {
