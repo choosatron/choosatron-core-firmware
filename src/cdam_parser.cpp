@@ -208,6 +208,7 @@ ParseState Parser::parsePassage() {
 		cleanupAfterPassage();
 		_hardwareManager->printer()->feed(1);
 		_hardwareManager->printer()->printEnding(_dataManager->storyHeader.credits, _dataManager->storyHeader.contact);
+		_dataManager->unloadStory();
 		_state = PARSE_IDLE;
 	} else if (_state == PARSE_ERROR) {
 		Errors::setError(E_STORY_PARSE_FAIL);

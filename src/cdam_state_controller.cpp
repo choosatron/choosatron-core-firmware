@@ -51,7 +51,9 @@ void StateController::updateState() {
 void StateController::initState(GameState aState) {
 	LOG("Init State: %s", stateString());
 
-	if (aState == STATE_BOOTING) {
+	if (aState == STATE_ERROR) {
+		ERROR("*** ERROR STATE ***");
+	} else if (aState == STATE_BOOTING) {
 		Manager::getInstance().initialize(this);
 		_dataManager = Manager::getInstance().dataManager;
 		_hardwareManager = Manager::getInstance().hardwareManager;
@@ -83,7 +85,7 @@ void StateController::initState(GameState aState) {
 		}
 	} else if (aState == STATE_IDLE) {
 		_resetElapsed = 0;
-	} else if (aState == STATE_SELECT) {
+	}/* else if (aState == STATE_SELECT) {
 
 	} else if (aState == STATE_PLAY) {
 
@@ -91,9 +93,7 @@ void StateController::initState(GameState aState) {
 
 	} else if (aState == STATE_ADMIN) {
 		DEBUG("Hello from admin!");
-	} else if (aState == STATE_ERROR) {
-		ERROR("*** ERROR STATE ***");
-	}
+	}*/
 }
 
 void StateController::loopState(GameState aState) {
@@ -182,7 +182,6 @@ void StateController::loopState(GameState aState) {
 		ParseState state = _parser->parsePassage();
 		if (state == PARSE_ENDING) {
 			_resetElapsed = 0;
-			_dataManager->unloadStory();
 		} else if (state == PARSE_IDLE) {
 			if (_resetElapsed > kIntervalPressAnyButton) {
 				if (_dataManager->metadata.flags.arcade) {
@@ -200,13 +199,13 @@ void StateController::loopState(GameState aState) {
 		} else if (state == PARSE_ERROR) {
 			changeState(STATE_ERROR);
 		}
-	} else if (aState == STATE_AUTH) {
+	}/* else if (aState == STATE_AUTH) {
 
 	} else if (aState == STATE_ADMIN) {
 
 	} else if (aState == STATE_ERROR) {
 
-	}
+	}*/
 }
 
 
@@ -217,7 +216,7 @@ void StateController::endState(GameState aState) {
 
 	} else if (aState == STATE_INIT) {
 		_hardwareManager->printer()->active = true;
-	} else if (aState == STATE_CREDITS) {
+	}/* else if (aState == STATE_CREDITS) {
 
 	} else if (aState == STATE_WAITING) {
 
@@ -235,7 +234,7 @@ void StateController::endState(GameState aState) {
 
 	} else if (aState == STATE_ERROR) {
 
-	}
+	}*/
 }
 
 }
