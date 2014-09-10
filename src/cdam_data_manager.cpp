@@ -120,12 +120,16 @@ void DataManager::unloadStory() {
 	this->psgIndex = 0;
 	this->psgSize = 0;
 
+	if (_smallVarCount > 0) {
+		delete[] _smallVars;
+		_smallVars = NULL;
+	}
+	if (_bigVarCount > 0) {
+		delete[] _bigVars;
+		_bigVars = NULL;
+	}
 	_smallVarCount = 0;
 	_bigVarCount = 0;
-	delete[] _smallVars;
-	_smallVars = NULL;
-	delete[] _bigVars;
-	_bigVars = NULL;
 }
 
 int8_t DataManager::smallVarAtIndex(uint8_t aIndex) {
