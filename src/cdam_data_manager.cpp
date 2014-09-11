@@ -36,14 +36,14 @@ bool DataManager::initialize(StateController *aStateController) {
 
     //testMetadata();
 	//_metaFlash->eraseAll();
-	char data[kMetadataSize] = "";
+	/*char data[kMetadataSize] = "";
 	_metaFlash->read(data, 0, kMetadataSize);
 	for (int i = 0; i < kMetadataSize; ++i) {
 		if (data[i]<0x10) {Serial.print("0");}
           Serial.print(data[i],HEX);
           Serial.print(" ");
 	}
-	Serial.println("END");
+	Serial.println("END");*/
 
 	loadFirmwareVersion();
 
