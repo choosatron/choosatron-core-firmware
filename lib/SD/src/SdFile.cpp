@@ -17,14 +17,12 @@
  * along with the Arduino SdFat Library.  If not, see
  * <http://www.gnu.org/licenses/>.
  */
+
+#include <Application.h>
 #include "SdFat.h"
 #include "SdFatUtil.h"
-//#include <avr/pgmspace.h>
-#include <WProgram.h>
-//#include "HardwareSPI.h"
-#include <string.h>
 
-#include "spark_wiring_usbserial.h"
+//#include "spark_wiring_usbserial.h"
 
 //------------------------------------------------------------------------------
 // callback function for date/time
@@ -205,7 +203,7 @@ void SdFile::dirName(const dir_t& dir, char* name) {
  * list to indicate subdirectory level.
  */
 void SdFile::ls(uint8_t flags, uint8_t indent) {
-  dir_t* p;
+  /*dir_t* p;
 
   rewind();
   while ((p = readDirCache())) {
@@ -244,7 +242,7 @@ void SdFile::ls(uint8_t flags, uint8_t indent) {
       if (s.open(this, index, O_READ)) s.ls(flags, indent + 2);
       seekSet(32 * (index + 1));
     }
-  }
+  }*/
 }
 //------------------------------------------------------------------------------
 // format directory name field from a 8.3 name string
@@ -290,7 +288,7 @@ uint8_t SdFile::make83Name(const char* str, uint8_t* name) {
  * directory, \a dirName is invalid or already exists in \a dir.
  */
 uint8_t SdFile::makeDir(SdFile* dir, const char* dirName) {
-  dir_t d;
+  /*dir_t d;
 
   // create a normal file
   if (!open(dir, dirName, O_CREAT | O_EXCL | O_RDWR)) return false;
@@ -340,7 +338,7 @@ uint8_t SdFile::makeDir(SdFile* dir, const char* dirName) {
   curPosition_ = 2 * sizeof(d);
 
   // write first block
-  return SdVolume::cacheFlush();
+  return SdVolume::cacheFlush();*/
 }
 //------------------------------------------------------------------------------
 /**
@@ -591,7 +589,7 @@ uint8_t SdFile::openRoot(SdVolume* vol) {
  * \param[in] width Blank fill name if length is less than \a width.
  */
 void SdFile::printDirName(const dir_t& dir, uint8_t width) {
-  uint8_t w = 0;
+  /*uint8_t w = 0;
   for (uint8_t i = 0; i < 11; i++) {
     if (dir.name[i] == ' ')continue;
     if (i == 8) {
@@ -608,7 +606,7 @@ void SdFile::printDirName(const dir_t& dir, uint8_t width) {
   while (w < width) {
     Serial.print(' ');
     w++;
-  }
+  }*/
 }
 //------------------------------------------------------------------------------
 /** %Print a directory date field to Serial.
@@ -618,11 +616,11 @@ void SdFile::printDirName(const dir_t& dir, uint8_t width) {
  * \param[in] fatDate The date field from a directory entry.
  */
 void SdFile::printFatDate(uint16_t fatDate) {
-  Serial.print(FAT_YEAR(fatDate));
+  /*Serial.print(FAT_YEAR(fatDate));
   Serial.print('-');
   printTwoDigits(FAT_MONTH(fatDate));
   Serial.print('-');
-  printTwoDigits(FAT_DAY(fatDate));
+  printTwoDigits(FAT_DAY(fatDate));*/
 }
 //------------------------------------------------------------------------------
 /** %Print a directory time field to Serial.
@@ -632,11 +630,11 @@ void SdFile::printFatDate(uint16_t fatDate) {
  * \param[in] fatTime The time field from a directory entry.
  */
 void SdFile::printFatTime(uint16_t fatTime) {
-  printTwoDigits(FAT_HOUR(fatTime));
+  /*printTwoDigits(FAT_HOUR(fatTime));
   Serial.print(':');
   printTwoDigits(FAT_MINUTE(fatTime));
   Serial.print(':');
-  printTwoDigits(FAT_SECOND(fatTime));
+  printTwoDigits(FAT_SECOND(fatTime));*/
 }
 //------------------------------------------------------------------------------
 /** %Print a value as two digits to Serial.
@@ -644,11 +642,11 @@ void SdFile::printFatTime(uint16_t fatTime) {
  * \param[in] v Value to be printed, 0 <= \a v <= 99
  */
 void SdFile::printTwoDigits(uint8_t v) {
-  char str[3];
+  /*char str[3];
   str[0] = '0' + v/10;
   str[1] = '0' + v % 10;
   str[2] = 0;
-  Serial.print(str);
+  Serial.print(str);*/
 }
 //------------------------------------------------------------------------------
 /**
@@ -780,7 +778,7 @@ dir_t* SdFile::readDirCache(void) {
  * or an I/O error occurred.
  */
 uint8_t SdFile::remove(void) {
-  // free any clusters - will fail if read-only or directory
+  /*// free any clusters - will fail if read-only or directory
   if (!truncate(0)) return false;
 
   // cache directory entry
@@ -794,7 +792,7 @@ uint8_t SdFile::remove(void) {
   type_ = FAT_FILE_TYPE_CLOSED;
 
   // write entry to SD
-  return SdVolume::cacheFlush();
+  return SdVolume::cacheFlush();*/
 }
 //------------------------------------------------------------------------------
 /**
@@ -816,9 +814,9 @@ uint8_t SdFile::remove(void) {
  * or an I/O error occurred.
  */
 uint8_t SdFile::remove(SdFile* dirFile, const char* fileName) {
-  SdFile file;
+  /*SdFile file;
   if (!file.open(dirFile, fileName, O_WRITE)) return false;
-  return file.remove();
+  return file.remove();*/
 }
 //------------------------------------------------------------------------------
 /** Remove a directory file.
@@ -837,7 +835,7 @@ uint8_t SdFile::remove(SdFile* dirFile, const char* fileName) {
  * directory, is not empty, or an I/O error occurred.
  */
 uint8_t SdFile::rmDir(void) {
-  // must be open subdirectory
+  /*// must be open subdirectory
   if (!isSubDir()) return false;
 
   rewind();
@@ -856,7 +854,7 @@ uint8_t SdFile::rmDir(void) {
   // convert empty directory to normal file for remove
   type_ = FAT_FILE_TYPE_NORMAL;
   flags_ |= O_WRITE;
-  return remove();
+  return remove();*/
 }
 //------------------------------------------------------------------------------
 /** Recursively delete a directory and all contained files.
@@ -875,7 +873,7 @@ uint8_t SdFile::rmDir(void) {
  * the value zero, false, is returned for failure.
  */
 uint8_t SdFile::rmRfStar(void) {
-  rewind();
+  /*rewind();
   while (curPosition_ < fileSize_) {
     SdFile f;
 
@@ -910,7 +908,7 @@ uint8_t SdFile::rmRfStar(void) {
   }
   // don't try to delete root
   if (isRoot()) return true;
-  return rmDir();
+  return rmDir();*/
 }
 //------------------------------------------------------------------------------
 /**
@@ -963,7 +961,7 @@ uint8_t SdFile::seekSet(uint32_t pos) {
  * opened or an I/O error.
  */
 uint8_t SdFile::sync(void) {
-  // only allow open files and directories
+  /*// only allow open files and directories
   if (!isOpen()) return false;
 
   if (flags_ & F_FILE_DIR_DIRTY) {
@@ -985,7 +983,8 @@ uint8_t SdFile::sync(void) {
     // clear directory dirty
     flags_ &= ~F_FILE_DIR_DIRTY;
   }
-  return SdVolume::cacheFlush();
+  return SdVolume::cacheFlush();*/
+  return 1;
 }
 //------------------------------------------------------------------------------
 /**
@@ -1024,7 +1023,7 @@ uint8_t SdFile::sync(void) {
  */
 uint8_t SdFile::timestamp(uint8_t flags, uint16_t year, uint8_t month,
          uint8_t day, uint8_t hour, uint8_t minute, uint8_t second) {
-  if (!isOpen()
+  /*if (!isOpen()
     || year < 1980
     || year > 2107
     || month < 1
@@ -1055,7 +1054,7 @@ uint8_t SdFile::timestamp(uint8_t flags, uint16_t year, uint8_t month,
     d->lastWriteTime = dirTime;
   }
   SdVolume::cacheSetDirty();
-  return sync();
+  return sync();*/
 }
 //------------------------------------------------------------------------------
 /**
@@ -1072,7 +1071,7 @@ uint8_t SdFile::timestamp(uint8_t flags, uint16_t year, uint8_t month,
  */
 uint8_t SdFile::truncate(uint32_t length) {
 // error if not a normal file or read-only
-  if (!isFile() || !(flags_ & O_WRITE)) return false;
+  /*if (!isFile() || !(flags_ & O_WRITE)) return false;
 
   // error if length is greater than current size
   if (length > fileSize_) return false;
@@ -1110,7 +1109,7 @@ uint8_t SdFile::truncate(uint32_t length) {
   if (!sync()) return false;
 
   // set file to correct position
-  return seekSet(newPos);
+  return seekSet(newPos);*/
 }
 //------------------------------------------------------------------------------
 /**
@@ -1130,7 +1129,7 @@ uint8_t SdFile::truncate(uint32_t length) {
  *
  */
 size_t SdFile::write(const void* buf, uint16_t nbyte) {
-  // convert void* to uint8_t*  -  must be before goto statements
+  /*// convert void* to uint8_t*  -  must be before goto statements
   const uint8_t* src = reinterpret_cast<const uint8_t*>(buf);
 
   // number of bytes left to write  -  must be before goto statements
@@ -1221,7 +1220,7 @@ size_t SdFile::write(const void* buf, uint16_t nbyte) {
   //writeError = true;
   setWriteError();
   //return 0;
-  return -1;
+  return -1;*/
 }
 //------------------------------------------------------------------------------
 /**
@@ -1230,7 +1229,7 @@ size_t SdFile::write(const void* buf, uint16_t nbyte) {
  * Use SdFile::writeError to check for errors.
  */
 size_t SdFile::write(uint8_t b) {
-  return write(&b, 1);
+  //return write(&b, 1);
 }
 //------------------------------------------------------------------------------
 /**
@@ -1239,7 +1238,7 @@ size_t SdFile::write(uint8_t b) {
  * Use SdFile::writeError to check for errors.
  */
 size_t SdFile::write(const char* str) {
-  return write(str, strlen(str));
+  //return write(str, strlen(str));
 }
 //------------------------------------------------------------------------------
 /**
@@ -1248,7 +1247,7 @@ size_t SdFile::write(const char* str) {
  * Use SdFile::writeError to check for errors.
  */
 void SdFile::write_P(PGM_P str) {
-  for (uint8_t c; (c = pgm_read_byte(str)); str++) write(c);
+  //for (uint8_t c; (c = pgm_read_byte(str)); str++) write(c);
 }
 //------------------------------------------------------------------------------
 /**
@@ -1257,7 +1256,7 @@ void SdFile::write_P(PGM_P str) {
  * Use SdFile::writeError to check for errors.
  */
 void SdFile::writeln_P(PGM_P str) {
-  write_P(str);
-  println();
+  //write_P(str);
+  //println();
 }
 

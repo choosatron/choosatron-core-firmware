@@ -108,6 +108,9 @@ void Printer::logChangedStatus() {
 			if (statusOf(PS_UNKNOWN_ONE)) {
 				DEBUG("Status: Unknown One ON");
 			} else {
+				// Occurred once when I was printing stories
+				// like crazy, and it ran out and appears to
+				// start to jam.
 				DEBUG("Status: Unknown One OFF");
 			}
 		}

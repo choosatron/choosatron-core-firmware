@@ -23,15 +23,17 @@
  * \file
  * Useful utility functions.
  */
-#include <WProgram.h>
+#include <Application.h>
 #include <Sd2Card.h>
-#include <string.h>
+//#include <string.h>
+/*
 #ifndef PSTR
 #define PSTR(x) (x)
 #endif
 #ifndef PROGMEM
 #define PROGMEM         // N/A
 #endif
+*/
 #ifndef PGM_P
 #define PGM_P const char*
 #endif
@@ -59,13 +61,17 @@ typedef const unsigned short prog_short;
 
 //#include <avr/pgmspace.h>
 /** Store and print a string in flash memory.*/
+/*
 #ifndef PgmPrint
 #define PgmPrint(x) Serial.print(PSTR(x))
 #endif
+*/
 /** Store and print a string in flash memory followed by a CR/LF.*/
+/*
 #ifndef PgmPrintln
 #define PgmPrintln(x) Serial.println(PSTR(x))
 #endif
+*/
 /** Defined so doxygen works for function definitions. */
 #define NOINLINE __attribute__((noinline))
 //------------------------------------------------------------------------------
@@ -93,23 +99,26 @@ static int FreeRam(void) {
  *
  * \param[in] str Pointer to string stored in flash memory.
 */ 
+/*
 #ifndef SerialPrint_P
 #define SerialPrint_P(str) { \
 	const char *p=str; \
   for (uint8_t c; (c = pgm_read_byte(p)); p++) Serial.print((char)c); \
 }
 #endif
-//------------------------------------------------------------------------------
+------------------------------------------------------------------------------
+*/
 /**
  * %Print a string in flash memory followed by a CR/LF.
  *
  * \param[in] str Pointer to string stored in flash memory.
-*/ 
+*/
+/* 
 #ifndef SerialPrintln_P
 #define SerialPrintln_P(str) { \
   SerialPrint_P(str); \
   Serial.println();   \
 }
 #endif
-
+*/
 #endif  // #define SdFatUtil_h

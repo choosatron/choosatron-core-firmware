@@ -13,8 +13,8 @@
  */
 
 #include <SD.h>
-#include <malloc.h>
-#include <string.h>
+//#include <malloc.h>
+//#include <string.h>
 
 /* for debugging file open/close leaks
    uint8_t nfilecount=0;
@@ -149,4 +149,3 @@ File::operator bool() {
     return  _file->isOpen();
   return false;
 }
-

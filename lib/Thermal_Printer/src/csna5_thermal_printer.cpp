@@ -204,29 +204,29 @@ void CSN_Thermal::setDefault(){
   setLineHeight(32);
   boldOff();
   underlineOff();
-  setBarcodeHeight(50);
+  //setBarcodeHeight(50);
   setSize('s');
 }
 
-void CSN_Thermal::test(){
+/*void CSN_Thermal::test(){
   println("Hello World!");
   feed(2);
-}
+}*/
 
-void CSN_Thermal::testPage() {
+/*void CSN_Thermal::testPage() {
   writeBytes(18, 84);
   timeoutSet(
     dotPrintTime * 24 * 26 +      // 26 lines w/text (ea. 24 dots high)
     dotFeedTime * (8 * 26 + 32)); // 26 text lines (feed 8 dots) + blank line
-}
+}*/
 
-void CSN_Thermal::setBarcodeHeight(int val) { // Default is 50
+/*void CSN_Thermal::setBarcodeHeight(int val) { // Default is 50
   if(val < 1) val = 1;
   barcodeHeight = val;
   writeBytes(29, 104, val);
-}
+}*/
 
-void CSN_Thermal::printBarcode(char * text, uint8_t type) {
+/*void CSN_Thermal::printBarcode(char * text, uint8_t type) {
   int  i = 0;
   byte c;
 
@@ -239,7 +239,7 @@ void CSN_Thermal::printBarcode(char * text, uint8_t type) {
   timeoutSet((barcodeHeight + 40) * dotPrintTime);
   prevByte = '\n';
   feed(2);
-}
+}*/
 
 // === Character commands ===
 
@@ -386,8 +386,7 @@ void CSN_Thermal::underlineOff() {
   underlineOn(0);
 }
 
-void CSN_Thermal::printBitmap(
- int w, int h, const uint8_t *bitmap, bool fromProgMem) {
+/*void CSN_Thermal::printBitmap(int w, int h, const uint8_t *bitmap, bool fromProgMem) {
   int rowBytes, rowBytesClipped, rowStart, chunkHeight, x, y, i;
 
   rowBytes        = (w + 7) / 8; // Round up to next byte boundary
@@ -449,7 +448,7 @@ void CSN_Thermal::printBitmap(Stream *stream) {
   height = (stream->read() << 8) + tmp;
 
   printBitmap(width, height, stream);
-}
+}*/
 
 // Take the printer offline. Print commands sent after this will be
 // ignored until 'online' is called.
@@ -493,7 +492,7 @@ void CSN_Thermal::wake() {
 // Check the status of the paper using the printers self reporting
 // ability. Doesn't match the datasheet...
 // Returns true for paper, false for no paper.
-bool CSN_Thermal::hasPaper() {
+/*bool CSN_Thermal::hasPaper() {
   writeBytes(27, 118, 0);
 
   char stat;
@@ -517,7 +516,7 @@ bool CSN_Thermal::hasPaper() {
 
   }
   return false;
-}
+}*/
 
 void CSN_Thermal::setLineHeight(int val) {
   if(val < 24) val = 24;

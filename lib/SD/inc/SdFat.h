@@ -23,18 +23,18 @@
  * \file
  * SdFile and SdVolume classes
  */
-//#include <avr/pgmspace.h>
+#include <Application.h>
 #include "SdFatUtil.h"
 #include "Sd2Card.h"
 #include "FatStructs.h"
 
-#include "spark_wiring_print.h"
+//#include "spark_wiring_print.h"
 
 //------------------------------------------------------------------------------
 /**
  * Allow use of deprecated functions if non-zero
  */
-#define ALLOW_DEPRECATED_FUNCTIONS 1
+#define ALLOW_DEPRECATED_FUNCTIONS 0
 //------------------------------------------------------------------------------
 // forward declaration since SdVolume is used in SdFile
 class SdVolume;
@@ -292,81 +292,6 @@ class SdFile : public Print {
   void write_P(PGM_P str);
   void writeln_P(PGM_P str);
 //------------------------------------------------------------------------------
-#if ALLOW_DEPRECATED_FUNCTIONS
-// Deprecated functions  - suppress cpplint warnings with NOLINT comment
-  /** \deprecated Use:
-   * uint8_t SdFile::contiguousRange(uint32_t* bgnBlock, uint32_t* endBlock);
-   */
-  uint8_t contiguousRange(uint32_t& bgnBlock, uint32_t& endBlock) {  // NOLINT
-    return contiguousRange(&bgnBlock, &endBlock);
-  }
- /** \deprecated Use:
-   * uint8_t SdFile::createContiguous(SdFile* dirFile,
-   *   const char* fileName, uint32_t size)
-   */
-  uint8_t createContiguous(SdFile& dirFile,  // NOLINT
-    const char* fileName, uint32_t size) {
-    return createContiguous(&dirFile, fileName, size);
-  }
-
-  /**
-   * \deprecated Use:
-   * static void SdFile::dateTimeCallback(
-   *   void (*dateTime)(uint16_t* date, uint16_t* time));
-   */
-  static void dateTimeCallback(
-    void (*dateTime)(uint16_t& date, uint16_t& time)) {  // NOLINT
-    oldDateTime_ = dateTime;
-    dateTime_ = dateTime ? oldToNew : 0;
-  }
-  /** \deprecated Use: uint8_t SdFile::dirEntry(dir_t* dir); */
-  uint8_t dirEntry(dir_t& dir) {return dirEntry(&dir);}  // NOLINT
-  /** \deprecated Use:
-   * uint8_t SdFile::makeDir(SdFile* dir, const char* dirName);
-   */
-  uint8_t makeDir(SdFile& dir, const char* dirName) {  // NOLINT
-    return makeDir(&dir, dirName);
-  }
-  /** \deprecated Use:
-   * uint8_t SdFile::open(SdFile* dirFile, const char* fileName, uint8_t oflag);
-   */
-  uint8_t open(SdFile& dirFile, // NOLINT
-    const char* fileName, uint8_t oflag) {
-    return open(&dirFile, fileName, oflag);
-  }
-  /** \deprecated  Do not use in new apps */
-  uint8_t open(SdFile& dirFile, const char* fileName) {  // NOLINT
-    return open(dirFile, fileName, O_RDWR);
-  }
-  /** \deprecated Use:
-   * uint8_t SdFile::open(SdFile* dirFile, uint16_t index, uint8_t oflag);
-   */
-  uint8_t open(SdFile& dirFile, uint16_t index, uint8_t oflag) {  // NOLINT
-    return open(&dirFile, index, oflag);
-  }
-  /** \deprecated Use: uint8_t SdFile::openRoot(SdVolume* vol); */
-  uint8_t openRoot(SdVolume& vol) {return openRoot(&vol);}  // NOLINT
-
-  /** \deprecated Use: int8_t SdFile::readDir(dir_t* dir); */
-  int8_t readDir(dir_t& dir) {return readDir(&dir);}  // NOLINT
-  /** \deprecated Use:
-   * static uint8_t SdFile::remove(SdFile* dirFile, const char* fileName);
-   */
-  static uint8_t remove(SdFile& dirFile, const char* fileName) {  // NOLINT
-    return remove(&dirFile, fileName);
-  }
-//------------------------------------------------------------------------------
-// rest are private
- private:
-  static void (*oldDateTime_)(uint16_t& date, uint16_t& time);  // NOLINT
-  static void oldToNew(uint16_t* date, uint16_t* time) {
-    uint16_t d;
-    uint16_t t;
-    oldDateTime_(d, t);
-    *date = d;
-    *time = t;
-  }
-#endif  // ALLOW_DEPRECATED_FUNCTIONS
  private:
   // bits defined in flags_
   // should be 0XF
@@ -477,17 +402,6 @@ class SdVolume {
   uint32_t rootDirStart(void) const {return rootDirStart_;}
   /** return a pointer to the Sd2Card object for this volume */
   static Sd2Card* sdCard(void) {return sdCard_;}
-//------------------------------------------------------------------------------
-#if ALLOW_DEPRECATED_FUNCTIONS
-  // Deprecated functions  - suppress cpplint warnings with NOLINT comment
-  /** \deprecated Use: uint8_t SdVolume::init(Sd2Card* dev); */
-  uint8_t init(Sd2Card& dev) {return init(&dev);}  // NOLINT
-
-  /** \deprecated Use: uint8_t SdVolume::init(Sd2Card* dev, uint8_t vol); */
-  uint8_t init(Sd2Card& dev, uint8_t part) {  // NOLINT
-    return init(&dev, part);
-  }
-#endif  // ALLOW_DEPRECATED_FUNCTIONS
 //------------------------------------------------------------------------------
   private:
   // Allow SdFile access to SdVolume private data.

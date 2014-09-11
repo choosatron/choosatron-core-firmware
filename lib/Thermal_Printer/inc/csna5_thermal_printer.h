@@ -42,8 +42,8 @@ class CSN_Thermal : public Print {
     begin(int heatTime=200),
     reset(),
     setDefault(),
-    test(),
-    testPage(),
+    //test(),
+    //testPage(),
 
     normal(),
     inverseOn(),
@@ -74,12 +74,12 @@ class CSN_Thermal : public Print {
     setSize(char value),
     setLineHeight(int val=32),
 
-    printBarcode(char * text, uint8_t type),
-    setBarcodeHeight(int val=50),
+    //printBarcode(char * text, uint8_t type),
+    //setBarcodeHeight(int val=50),
 
-    printBitmap(int w, int h, const uint8_t *bitmap, bool fromProgMem = true),
+    /*printBitmap(int w, int h, const uint8_t *bitmap, bool fromProgMem = true),
     printBitmap(int w, int h, Stream *stream),
-    printBitmap(Stream *stream),
+    printBitmap(Stream *stream),*/
 
     timeoutSet(unsigned long),
     timeoutWait(),
@@ -89,7 +89,7 @@ class CSN_Thermal : public Print {
     setCharSpacing(int spacing), // Not working
     tab();                       // Not working
 
-  bool hasPaper();
+  //bool hasPaper();
 
   virtual size_t write(uint8_t c);
 

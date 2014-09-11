@@ -11,19 +11,12 @@
  (C) Copyright 2010 SparkFun Electronics
 
  */
-
 #ifndef __SD_H__
 #define __SD_H__
 
-//#include <Arduino.h>
-
-//#include <utility/SdFat.h>
-//#include <utility/SdFatUtil.h>
+#include <Application.h>
 #include <SdFat.h>
 #include <SdFatUtil.h>
-
-#include "spark_wiring_stream.h"
-#include "spark_wiring_print.h"
 
 #define FILE_READ O_READ
 #define FILE_WRITE (O_READ | O_WRITE | O_CREAT)
@@ -54,7 +47,7 @@ public:
   boolean isDirectory(void);
   File openNextFile(uint8_t mode = O_RDONLY);
   void rewindDirectory(void);
-  
+
   using Print::write;
 };
 
@@ -65,14 +58,16 @@ private:
   Sd2Card card;
   SdVolume volume;
   SdFile root;
-  
+
   // my quick&dirty iterator, should be replaced
   SdFile getParentDir(const char *filepath, int *indx);
 public:
   // This needs to be called to set up the connection to the SD card
   // before other methods are used.
-  boolean begin(uint8_t csPin = SS);
-  
+  boolean begin(uint8_t csPin = SS);	// HARDWARE SPI
+
+  boolean begin(uint8_t mosiPin, uint8_t misoPin, uint8_t sclkPin, uint8_t csPin);	// SOFTWARE SPI
+
   // Open the specified file/directory with the supplied mode (e.g. read or
   // write, etc). Returns a File object for interacting with the file.
   // Note that currently only one file can be open at a time.
@@ -84,23 +79,23 @@ public:
   // Create the requested directory heirarchy--if intermediate directories
   // do not exist they will be created.
   boolean mkdir(char *filepath);
-  
+
   // Delete the file.
   boolean remove(char *filepath);
-  
+
   boolean rmdir(char *filepath);
 
 private:
 
   // This is used to determine the mode used to open a file
-  // it's here because it's the easiest place to pass the 
+  // it's here because it's the easiest place to pass the
   // information through the directory walking function. But
   // it's probably not the best place for it.
   // It shouldn't be set directly--it is set via the parameters to `open`.
   int fileOpenMode;
-  
+
   friend class File;
-  friend boolean callback_openPath(SdFile&, char *, boolean, void *); 
+  friend boolean callback_openPath(SdFile&, char *, boolean, void *);
 };
 
 extern SDClass SD;
