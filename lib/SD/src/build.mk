@@ -14,8 +14,8 @@ INCLUDE_DIRS += $(TARGET_SD_PATH)/inc
 CSRC +=
 
 # C++ source files included in this build.
-CPPSRC += $(TARGET_SD_SRC_PATH)/File.cpp
-CPPSRC += $(TARGET_SD_SRC_PATH)/SD.cpp
+#CPPSRC += $(TARGET_SD_SRC_PATH)/File.cpp
+#CPPSRC += $(TARGET_SD_SRC_PATH)/SD.cpp
 CPPSRC += $(TARGET_SD_SRC_PATH)/Sd2Card.cpp
 CPPSRC += $(TARGET_SD_SRC_PATH)/SdFile.cpp
 CPPSRC += $(TARGET_SD_SRC_PATH)/SdVolume.cpp
