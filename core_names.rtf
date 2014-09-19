@@ -51,6 +51,32 @@ curl https://api.spark.io/v1/devices/\cf2 48ff6f065067555019501287\cf3 /dfu -d a
 \f0\fs24 \cf0 \
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
 \cf0 \
+Size Info\
+text + data = flash used\
+data + bas = RAM used\
+\
+flash total = 110592\
+RAM total = 20480\
+\
+Tab One\
+cd ~/Code/MwaM/Choosatron/cdam-core-firmware/build/\
+make DEBUG_BUILD=y\
+dfu-util -d 1d50:607f -a 0 -s 0x08005000:leave -D cdam-core-firmware.bin\
+\
+Tab Two\
+cd ~/Code/MwaM/Choosatron/cdam-core-firmware/build/\
+../../DevelopmentTools/Scripts/make-dfu.sh 48ff6f065067555019501287\
+\
+Tab Three\
+cd ~/Code/MwaM/Choosatron/cdam-core-firmware/build/\
+python send_binary.py story_bins/\
+https://api.spark.io/v1/devices/48ff6f065067555019501287/command -d access_token=2bf23aca0f37f6646b6dd20d51630c0907feb004 -d "args=remove_all_stories"\
+https://api.spark.io/v1/devices/48ff6f065067555019501287/command -d access_token=2bf23aca0f37f6646b6dd20d51630c0907feb004 -d "args=set_flag|000"\
+\
+Tab Four\
+cd ~/Code/MwaM/Choosatron/cdam-twine/\
+./generate_story_bins.sh\
+\
 
 \b FOR DEBUG USAGE\
 
