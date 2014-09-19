@@ -26,28 +26,28 @@ dfu-util -d 1d50:607f -a 0 -s 0x08005000:leave -D cdam-core-firmware.bin\
 \cf0 curl "https://api.spark.io/v1/devices/
 \f1\fs28 \cf2 48ff6f065067555019501287
 \f0\fs24 \cf0 /last_command?access_token=
-\f1\fs28 \cf2 2bf23aca0f37f6646b6dd20d51630c0907feb004
+\f1\fs28 \cf2 6c26ed646dd0ce3d2a70ae4fc0433391ff6e6e28
 \f0\fs24 \cf0 "\
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
 \cf0 \
 \pard\pardeftab720\sl420
 \cf0 curl https://api.spark.io/v1/devices/48ff6f065067555019501287/command \\\
      -d access_token=
-\f1\fs28 \cf2 2bf23aca0f37f6646b6dd20d51630c0907feb004
+\f1\fs28 \cf2 6c26ed646dd0ce3d2a70ae4fc0433391ff6e6e28
 \f0\fs24 \cf0  \\\
      -d "args=ping"\
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
 \cf0 \
 \pard\pardeftab720\sl420
 \cf0 curl -H "Authorization: Bearer 
-\f1\fs28 \cf2 2bf23aca0f37f6646b6dd20d51630c0907feb004
+\f1\fs28 \cf2 6c26ed646dd0ce3d2a70ae4fc0433391ff6e6e28
 \f0\fs24 \cf0 "  https://api.spark.io/v1/events/get_seconds\
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
 \cf0 \
 \pard\pardeftab720\sl380
 
 \f1\fs28 \cf3 make DEBUG_BUILD=y\
-curl https://api.spark.io/v1/devices/\cf2 48ff6f065067555019501287\cf3 /dfu -d access_token=\cf2 2bf23aca0f37f6646b6dd20d51630c0907feb004\cf3  -m 2
+curl https://api.spark.io/v1/devices/\cf2 48ff6f065067555019501287\cf3 /dfu -d access_token=\cf2 6c26ed646dd0ce3d2a70ae4fc0433391ff6e6e28\cf3  -m 2
 \f0\fs24 \cf0 \
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
 \cf0 \
@@ -70,8 +70,8 @@ cd ~/Code/MwaM/Choosatron/cdam-core-firmware/build/\
 Tab Three\
 cd ~/Code/MwaM/Choosatron/cdam-core-firmware/build/\
 python send_binary.py story_bins/\
-https://api.spark.io/v1/devices/48ff6f065067555019501287/command -d access_token=2bf23aca0f37f6646b6dd20d51630c0907feb004 -d "args=remove_all_stories"\
-https://api.spark.io/v1/devices/48ff6f065067555019501287/command -d access_token=2bf23aca0f37f6646b6dd20d51630c0907feb004 -d "args=set_flag|000"\
+curl https://api.spark.io/v1/devices/48ff6f065067555019501287/command -d access_token=6c26ed646dd0ce3d2a70ae4fc0433391ff6e6e28 -d "args=remove_all_stories"\
+curl https://api.spark.io/v1/devices/48ff6f065067555019501287/command -d access_token=6c26ed646dd0ce3d2a70ae4fc0433391ff6e6e28 -d "args=set_flag|000"\
 \
 Tab Four\
 cd ~/Code/MwaM/Choosatron/cdam-twine/\
