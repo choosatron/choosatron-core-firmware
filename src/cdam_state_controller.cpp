@@ -104,7 +104,10 @@ void StateController::loopState(GameState aState) {
 			LOG("* DISABLE WIFI *");
 		} else {
 			if (Spark.connected() == false) {
+				WiFi.on();
+            	WiFi.connect();
 				Spark.connect();
+				Spark.syncTime();
 			}
 		}
 		// If button 3 held, don't print, just serial output.
