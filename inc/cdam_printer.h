@@ -57,13 +57,13 @@ public:
 
     //void timeoutSet(unsigned long);
     void printTimeSet(unsigned long);
-    void timeoutWait();
-    void printerWait();
+    //void timeoutWait();
+    //void printerWait();
 
     bool available();
     void feed(uint8_t x=1);
     uint8_t read();
-    uint8_t peek();
+    //uint8_t peek();
     void setABS(bool aTurnOn);
     bool isPrinting();
     bool isReady();

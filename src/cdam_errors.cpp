@@ -10,7 +10,24 @@ struct ErrorDesc_t {
 	ErrorCode code;
 	const char *message;
 } ErrorDesc[] = {
-	{ E_NO_ERROR, "No error." },
+	{ E_NO_ERROR, "0" },
+	{ E_ERROR, "1" },
+	{ E_METADATA_READ_FAIL, "2" },
+	{ E_HEADER_READ_FAIL, "3" },
+	{ E_VARS_READ_FAIL, "4" },
+	{ E_METADATA_WRITE_FAIL, "5" },
+	{ E_DATA_MODEL_UPGRADE_FAIL, "6" },
+	{ E_SERVER_CONNECTION_FAIL, "7" },
+	{ E_SERVER_ADD_STORY_LEN_FAIL, "8" },
+	{ E_SERVER_ADD_STORY_NO_SPACE, "9" },
+	{ E_SERVER_SOCKET_DATA_FAIL, "10" },
+	{ E_INVALID_SMALL_VARIABLE, "11" },
+	{ E_INVALID_BIG_VARIABLE, "12" },
+	{ E_STORY_READ_FAIL, "13" },
+	{ E_STORY_PARSE_FAIL, "14" },
+	{ E_DATA_TOO_LARGE_FAIL, "15" }
+
+	/*{ E_NO_ERROR, "No error." },
 	{ E_ERROR, "Error" },
 	{ E_METADATA_READ_FAIL, "Failed to read from flash." },
 	{ E_HEADER_READ_FAIL, "Failed to read the header of a story." },
@@ -25,7 +42,7 @@ struct ErrorDesc_t {
 	{ E_INVALID_BIG_VARIABLE, "Invalid index provided for big variable." },
 	{ E_STORY_READ_FAIL, "Failed to read from story data." },
 	{ E_STORY_PARSE_FAIL, "Failed to parse a story." },
-	{ E_DATA_TOO_LARGE_FAIL, "Data is too large for buffer." }
+	{ E_DATA_TOO_LARGE_FAIL, "Data is too large for buffer." }*/
 };
 
 ErrorCode Errors::lastError = E_NO_ERROR;

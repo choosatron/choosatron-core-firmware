@@ -75,7 +75,7 @@ void CoinAcceptor::checkForCoin() {
 	} else {
 		if ((_coinSenseCounter >= kCoinAcceptorSenseMin) &&
 		    (_coinSenseCounter <= kCoinAcceptorSenseMax)) {
-			DEBUG("Senser Count: %d", _coinSenseCounter);
+			//DEBUG("Senser Count: %d", _coinSenseCounter);
 			coins++;
 		}
 		_coinSenseCounter = 0;

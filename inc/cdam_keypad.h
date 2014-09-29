@@ -83,7 +83,7 @@ private:
 	ButtonEvent filterButton(ButtonData *aBtnData);
 	void getFilteredButtons(void);
 	uint8_t keypadTotal(uint8_t aButtons);
-	void printBinary(uint8_t aValue);
+	//void printBinary(uint8_t aValue);
 
 	ButtonData buttonData[NUM_BUTTONS];
 

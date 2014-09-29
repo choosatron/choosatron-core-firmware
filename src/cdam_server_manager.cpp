@@ -81,17 +81,17 @@ void ServerManager::handlePendingActions() {
 	if (this->pendingAction) {
 		// Attempt TCP connection.
 		TCPClient *client = new TCPClient();
-		DEBUG("Connecting to client at %u.%u.%u.%u:%u", this->serverIp[0], this->serverIp[1], this->serverIp[2], this->serverIp[3], this->serverPort);
+		//DEBUG("Connecting to client at %u.%u.%u.%u:%u", this->serverIp[0], this->serverIp[1], this->serverIp[2], this->serverIp[3], this->serverPort);
 		if (client->connect(this->serverIp, this->serverPort)) {
-			DEBUG("TCPClient connected");
+			//DEBUG("TCPClient connected");
 			// Add Story Command
 			if (strcmp(Manager::getInstance().serverManager->pendingCommand, kServerCmdAddStory) == 0) {
 				char buffer[8] = "";
 				memcpy(buffer, this->pendingArguments, kServerStorySizeBytes);
 				uint32_t newStorySize = atol(buffer);
-				DEBUG("Incoming story size: %lu", newStorySize);
+				//DEBUG("Incoming story size: %lu", newStorySize);
 
-				DEBUG("Total Pages: %d", Manager::getInstance().dataManager->metadata.usedStoryPages);
+				//DEBUG("Total Pages: %d", Manager::getInstance().dataManager->metadata.usedStoryPages);
 				if (newStorySize > (kFlashMaxStoryBytes -
 				    (Manager::getInstance().dataManager->metadata.usedStoryPages * Flashee::Devices::userFlash().pageSize()))) {
 					Errors::setError(E_SERVER_ADD_STORY_NO_SPACE);
@@ -102,11 +102,11 @@ void ServerManager::handlePendingActions() {
 					memset(&buffer[0], 0, sizeof(buffer));
 					memcpy(buffer, this->pendingArguments + kServerStorySizeBytes, kServerStoryPositionBytes);
 					uint8_t newStoryIndex = atoi(buffer);
-					DEBUG("Story Index: %d", newStoryIndex);
+					//DEBUG("Story Index: %d", newStoryIndex);
 
 					if (getStoryData(client, newStorySize)) {
 						// Update the data manager metadata for the new story.
-						DEBUG("Index: %d, Size: %lu", newStoryIndex, newStorySize);
+						//DEBUG("Index: %d, Size: %lu", newStoryIndex, newStorySize);
 						uint8_t pages = newStorySize / Flashee::Devices::userFlash().pageSize();
 						if (newStorySize % Flashee::Devices::userFlash().pageSize()) {
 							pages++;
@@ -116,7 +116,6 @@ void ServerManager::handlePendingActions() {
 				}
 			}
 	 	} else {
-			DEBUG("TCPClient connection failed");
 			Errors::setError(E_SERVER_CONNECTION_FAIL);
 			ERROR(Errors::errorString());
 		}
@@ -170,7 +169,7 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdKeypadInput) == 0) {
 		/* TODO */
 		uint8_t keypadVal = atoi(serverMan->pendingArguments);
-		DEBUG("Keypad Val: %d", keypadVal);
+		//DEBUG("Keypad Val: %d", keypadVal);
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdButtonInput) == 0) {
 		/* TODO */
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdAdjustCredits) == 0) {
@@ -188,7 +187,6 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		return kServerReturnInvalidIndex;*/
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdRemoveAllStories) == 0) {
 		dataMan->removeAllStoryData();
-		return kServerReturnSuccess;
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdSwapStoryPositions) == 0) {
 		/* TODO */
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdSetFlag) == 0) {
@@ -196,17 +194,17 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		uint8_t flagIndex = aCommandAndArgs.charAt(delimiterPos + 1) - '0';
 		uint8_t bitIndex = aCommandAndArgs.charAt(delimiterPos + 2) - '0';
 		bool value = aCommandAndArgs.charAt(delimiterPos + 3) - '0';
-		DEBUG("Flag Index: %d, Bit Index: %d, Value: %d", flagIndex, bitIndex, value);
+		//DEBUG("Flag Index: %d, Bit Index: %d, Value: %d", flagIndex, bitIndex, value);
 		if (!dataMan->setFlag(flagIndex, bitIndex, value)) {
 			returnVal = kServerReturnFail;
 		}
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdAdminResetMetadata) == 0) {
 		if (!dataMan->resetMetadata()) {
-			return kServerReturnFail;
+			returnVal = kServerReturnFail;
 		}
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdAdminEraseFlash) == 0) {
 		if (!dataMan->eraseFlash()) {
-			return kServerReturnFail;
+			returnVal = kServerReturnFail;
 		}
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdAdminResetUnit) == 0) {
 		dataMan->stateController()->changeState(STATE_INIT);
@@ -259,7 +257,7 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		// We only want to deal with one server connection at a time.
 		if (serverMan->pendingAction) {
 			returnVal =  kServerReturnBusy;
-		} else if (dataMan->metadata.storyCount >= kMaxStoryCount) {
+		} else if (dataMan->metadata.storyCount >= kMaxRandStoryCount) {
 			returnVal =  kServerReturnMaxReached;
 		} else {
 			serverMan->pendingAction = true;
@@ -379,7 +377,7 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 			uint8_t pagesWritten = 0;
 			uint8_t buffer[Flashee::Devices::userFlash().pageSize()];
 			memset(&buffer[0], 0, sizeof(buffer));
-			DEBUG("Story Size: %lu", aStorySize);
+			//DEBUG("Story Size: %lu", aStorySize);
 
 			while (aClient->available()) {
 				// While data available, read data into buffer, then flash space based on page size
@@ -397,8 +395,8 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 					if ((pageBytesRead % Flashee::Devices::userFlash().pageSize() == 0) ||
 						(totalBytesRead == aStorySize)) {
 						// Write data
-						DEBUG("Writing page #: %d", (pagesWritten + 1));
-						DEBUG("Used Pages: %d", Manager::getInstance().dataManager->metadata.usedStoryPages);
+						//DEBUG("Writing page #: %d", (pagesWritten + 1));
+						//DEBUG("Used Pages: %d", Manager::getInstance().dataManager->metadata.usedStoryPages);
 						bool result = Manager::getInstance().dataManager->writeData(buffer,
 						                       (Manager::getInstance().dataManager->metadata.usedStoryPages * Flashee::Devices::userFlash().pageSize()) +
 						                       (pagesWritten * Flashee::Devices::userFlash().pageSize()), sizeof(buffer));
@@ -413,9 +411,9 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 						pageBytesRead = 0;
 						pagesWritten += 1;
 					}
-					DEBUG("Pages: %d, Total bytes: %lu", pagesWritten, totalBytesRead);
+					//DEBUG("Pages: %d, Total bytes: %lu", pagesWritten, totalBytesRead);
 					if (totalBytesRead == aStorySize) {
-						DEBUG("Data Received");
+						//DEBUG("Data Received");
 						aClient->write("COMPLETE");
 						if (aClient->available()) {
 							Errors::setError(E_SERVER_SOCKET_DATA_FAIL);
@@ -434,7 +432,7 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 				}
 			}
 		} else {
-			DEBUG("Timed out waiting to receive story data.");
+			DEBUG("Timed Out");
 		}
 	} else {
 		Errors::setError(E_SERVER_CONNECTION_FAIL);

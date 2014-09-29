@@ -78,61 +78,61 @@ void Printer::logChangedStatus() {
 		_statusUpdated = false;
 		if (statusChanged(PS_ONLINE)) {
 			if (statusOf(PS_ONLINE)) {
-				DEBUG("Status: Online");
+				DEBUG("Online");
 			} else {
-				DEBUG("Status: Offline");
+				DEBUG("Offline");
 			}
 		}
 		if (statusChanged(PS_BUFFER_FULL)) {
 			if (statusOf(PS_BUFFER_FULL)) {
-				DEBUG("Status: Buffer Full");
+				DEBUG("Buffer Full");
 			} else {
-				DEBUG("Status: Buffer Not Full");
+				DEBUG("Buffer Not Full");
 			}
 		}
 		if (statusChanged(PS_NO_PAPER)) {
 			if (statusOf(PS_NO_PAPER)) {
-				DEBUG("Status: No Paper");
+				DEBUG("No Paper");
 			} else {
-				DEBUG("Status: Paper");
+				DEBUG("Paper");
 			}
 		}
 		if (statusChanged(PS_HIGH_VOLTAGE)) {
 			if (statusOf(PS_HIGH_VOLTAGE)) {
-				DEBUG("Status: High Voltage");
+				DEBUG("High Voltage");
 			} else {
-				DEBUG("Status: Normal Voltage");
+				DEBUG("Normal Voltage");
 			}
 		}
 		if (statusChanged(PS_UNKNOWN_ONE)) {
 			if (statusOf(PS_UNKNOWN_ONE)) {
-				DEBUG("Status: Unknown One ON");
+				DEBUG("Unknown 1 ON");
 			} else {
 				// Occurred once when I was printing stories
 				// like crazy, and it ran out and appears to
 				// start to jam.
-				DEBUG("Status: Unknown One OFF");
+				DEBUG("Unknown 1 OFF");
 			}
 		}
 		if (statusChanged(PS_UNKNOWN_TWO)) {
 			if (statusOf(PS_UNKNOWN_TWO)) {
-				DEBUG("Status: Unknown Two ON");
+				DEBUG("Unknown 2 ON");
 			} else {
-				DEBUG("Status: Unknown Two OFF");
+				DEBUG("Unknown 2 OFF");
 			}
 		}
 		if (statusChanged(PS_HIGH_TEMP)) {
 			if (statusOf(PS_HIGH_TEMP)) {
-				DEBUG("Status: High Temp");
+				DEBUG("High Temp");
 			} else {
-				DEBUG("Status: Normal Temp");
+				DEBUG("Normal Temp");
 			}
 		}
 		if (statusChanged(PS_UNKNOWN_THREE)) {
 			if (statusOf(PS_UNKNOWN_THREE)) {
-				DEBUG("Status: Unknown Three ON");
+				DEBUG("Unknown 3 ON");
 			} else {
-				DEBUG("Status: Unknown Three OFF");
+				DEBUG("Unknown 3 OFF");
 			}
 		}
 	}
@@ -325,9 +325,9 @@ uint8_t Printer::wrapText(char* aBuffer, uint8_t aColumns, uint8_t aStartOffset)
 		for (i = 0; i < (aColumns - aStartOffset); ++i) {
 			if (aBuffer[startIndex + i] == '\t') {
 				aBuffer[startIndex + i] = ' ';
-				WARN("Found tab.");
+				//WARN("Found tab.");
 			} else if (aBuffer[startIndex + i] == '\r') {
-				WARN("Found carriage return.");
+				//WARN("Found carriage return.");
 			} else if (aBuffer[startIndex + i] == '\n') {
 				// Found Newline
 				foundBreak = true;
@@ -363,11 +363,11 @@ uint8_t Printer::wrapText(char* aBuffer, uint8_t aColumns, uint8_t aStartOffset)
 }*/
 
 // This function waits (if necessary) for the prior task to complete.
-void Printer::timeoutWait() {
+/*void Printer::timeoutWait() {
 #if (OFFLINE == 1)
 	while((long)(micros() - resumeTime) < 0L); // Rollover-proof
 #endif
-}
+}*/
 
 void Printer::begin(int heatTime) {
 	CSN_Thermal::begin(heatTime);
@@ -389,7 +389,6 @@ size_t Printer::write(const char *buffer, size_t size) {
 	this->printing = true;
 	size_t n = 0;
 	if (Manager::getInstance().dataManager->logPrint) {
-		LOG("OUTPUT: %s", buffer);
 		n = size;
 	} else {
 		while (size--) {
@@ -414,9 +413,9 @@ uint8_t Printer::read() {
 	return Serial1.read();
 }
 
-uint8_t Printer::peek() {
+/*uint8_t Printer::peek() {
 	return Serial1.peek();
-}
+}*/
 
 void Printer::setABS(bool aTurnOn) {
 	uint8_t setting = 0b00000000;

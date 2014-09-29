@@ -16,9 +16,9 @@ bool Choosatron::setup() {
 }
 
 int Choosatron::loop() {
-	//Spark.process();
-	Manager::getInstance().hardwareManager->updateIntervalTimers();
 	Spark.process();
+	Manager::getInstance().hardwareManager->updateIntervalTimers();
+	//Spark.process();
 	Manager::getInstance().serverManager->handlePendingActions();
 	Spark.process();
 	if (Manager::getInstance().dataManager->runState) {

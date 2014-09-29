@@ -15,8 +15,6 @@ namespace cdam
 #define METADATA_STORYCOUNT_OFFSET  (METADATA_VALUES_OFFSET + METADATA_VALUES_COUNT)
 #define METADATA_STORYSIZES_OFFSET  (METADATA_STORYCOUNT_OFFSET + 1)*/
 
-const uint8_t  kMaxStoryCount = 10;
-
 const uint16_t kMetadataBaseAddress = 0;
 const uint16_t kMetadataFirmwareOffset = 1; // adding SOH byte
 const uint16_t kMetadataFirmwareSize = 3;
@@ -146,8 +144,8 @@ typedef struct Metadata_t {
 	MetaValues values;
 	uint8_t storyCount;
 	uint8_t usedStoryPages;
-	uint8_t storyOffsets[kMaxStoryCount];
-	uint8_t storyOrder[kMaxStoryCount];
+	uint16_t storyOffsets[kMaxRandStoryCount];
+	uint8_t storyOrder[kMaxRandStoryCount];
 	//std::vector<uint32_t> storyOffsets;
 } Metadata;
 

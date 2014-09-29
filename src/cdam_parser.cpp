@@ -23,12 +23,6 @@ void Parser::initStory(uint8_t aStoryIndex) {
 	_dataLength = 0;
 
 	_hardwareManager->printer()->printStoryIntro(_dataManager->storyHeader.title, _dataManager->storyHeader.author);
-	/*uint8_t authorLen = strlen(_dataManager->storyHeader.author);
-	char *author = new char[authorLen + 1]();
-	memcpy(author, _dataManager->storyHeader.author, authorLen);
-	_hardwareManager->printer()->wrapText(author, kPrinterColumns);
-	_hardwareManager->printer()->printAuthor(author);
-	delete[] author;*/
 }
 
 ParseState Parser::parsePassage() {
@@ -76,7 +70,7 @@ ParseState Parser::parsePassage() {
 		}
 		// Allocate a buffer of data length, up to a maximum.
 		uint16_t bufferSize = (_dataLength < (kPassageBufferReadSize + _lastIndent)) ? _dataLength : (kPassageBufferReadSize + _lastIndent);
-
+		DEBUG("Bufsize: %d", bufferSize);
 		_buffer = new char[bufferSize + bufferPadding + 1](); // + 1 to null terminate if it is all text.
 		// Insert the numbering.
 		if (dataStart) {
@@ -92,7 +86,7 @@ ParseState Parser::parsePassage() {
 			_lastIndent = _hardwareManager->printer()->wrapText(_buffer, kPrinterColumns, _lastIndent);
 			// Print the text up to the command.
 			_hardwareManager->printer()->print(_buffer);
-			//DEBUG("%s", _buffer);
+			DEBUG("%s", _buffer);
 			_offset += processedBytes;
 			_dataLength -= processedBytes;
 		}
@@ -102,7 +96,7 @@ ParseState Parser::parsePassage() {
 			_buffer = NULL;
 			if (_parsingChoices) { // Passage Index is next.
 				if (_dataManager->readData(&_choices[_choiceIndex].passageIndex, _offset, kPassageIndexSize)) {
-					//DEBUG("Passage Index: %d", _choices[_choiceIndex].passageIndex);
+					DEBUG("Passage Index: %d", _choices[_choiceIndex].passageIndex);
 					_offset += kPassageIndexSize;
 					_choices[_choiceIndex].updatesOffset = _offset;
 					//DEBUG("Updates Offset for choice #%d: %lu", _choiceIndex, _choices[_choiceIndex].updatesOffset);
@@ -201,7 +195,7 @@ ParseState Parser::parsePassage() {
 		uint8_t endingAttr = _dataManager->readByte(_offset);
 		_offset++;
 		uint8_t endingQual = endingAttr & 0x07;
-		DEBUG("Ending Quality: %d", endingQual);
+		//DEBUG("Ending Quality: %d", endingQual);
 		_appended = false;
 		_visibleCount = 0;
 		_lastIndent = 0;
@@ -271,7 +265,7 @@ uint32_t Parser::parseData(uint32_t aOffset, char* aBuffer, uint16_t aLength) {
 
 uint32_t Parser::parseCommand(uint32_t aOffset, char* aBuffer, uint16_t aLength) {
 	uint32_t offset = aOffset;
-	DEBUG("Parsing command of length: %d");
+	//DEBUG("Parsing command of length: %d");
 	return offset - aOffset;;
 }
 
@@ -292,58 +286,58 @@ uint32_t Parser::parseValueUpdates(uint32_t aOffset) {
 		int16_t valueOne = 0;
 		int16_t valueTwo = 0;
 		if (valueSet.varOneType == kValueTypeSmall) {
-			DEBUG("Var One Small");
+			//DEBUG("Var One Small");
 			valueOne = _dataManager->smallVarAtIndex(valueSet.varOne);
 		} else if (valueSet.varOneType == kValueTypeBig) {
-			DEBUG("Var One Big");
+			//DEBUG("Var One Big");
 			valueOne = _dataManager->bigVarAtIndex(valueSet.varOne);
 		}
-		DEBUG("Var One Index: %d, Value: %d", valueSet.varOne, valueOne);
+		//DEBUG("Var One Index: %d, Value: %d", valueSet.varOne, valueOne);
 
 		if (valueSet.varTwoType == kValueTypeRaw) {
-			DEBUG("Var Two Raw");
+			//DEBUG("Var Two Raw");
 			valueTwo = (int16_t)valueSet.varTwo;
 		} else if (valueSet.varTwoType == kValueTypeSmall) {
-			DEBUG("Var Two Small");
+			//DEBUG("Var Two Small");
 			valueTwo = _dataManager->smallVarAtIndex(valueSet.varTwo);
 		} else if (valueSet.varTwoType == kValueTypeBig) {
-			DEBUG("Var Two Big");
+			//DEBUG("Var Two Big");
 			valueTwo = _dataManager->bigVarAtIndex(valueSet.varTwo);
 		}
 
 		if (valueSet.operatorType == kOperatorEquals) {
-			DEBUG("Operator: Equals");
+			//DEBUG("Operator: Equals");
 			valueOne = valueTwo;
 		} else if (valueSet.operatorType == kOperatorPlus) {
-			DEBUG("Operator: Plus");
+			//DEBUG("Operator: Plus");
 			valueOne += valueTwo;
 		} else if (valueSet.operatorType == kOperatorMinus) {
-			DEBUG("Operator: Minus");
+			//DEBUG("Operator: Minus");
 			valueOne -= valueTwo;
 		} else if (valueSet.operatorType == kOperatorMultiply) {
-			DEBUG("Operator: Multiply");
+			//DEBUG("Operator: Multiply");
 			valueOne *= valueTwo;
 		} else if (valueSet.operatorType == kOperatorDivide) {
-			DEBUG("Operator: Divide");
+			//DEBUG("Operator: Divide");
 			valueOne /= valueTwo;
 		} else if (valueSet.operatorType == kOperatorModulus) {
-			DEBUG("Operator: Modulus");
+			//DEBUG("Operator: Modulus");
 			valueOne %= valueTwo;
 		}
 
-		if (valueSet.varTwoType == kValueTypeRaw) {
+		/*if (valueSet.varTwoType == kValueTypeRaw) {
 			DEBUG("Var Two Value: %d", (int16_t)valueSet.varTwo);
 		} else {
 			DEBUG("Var Two Index: %d, Value: %d", valueSet.varTwo, valueTwo);
-		}
+		}*/
 
 		if (valueSet.varOneType == kValueTypeSmall) {
-			DEBUG("Var Two Small");
+			//DEBUG("Var Two Small");
 			if (!_dataManager->setSmallVarAtIndex(valueSet.varOne, (int8_t)valueOne)) {
 				return 0;
 			}
 		} else if (valueSet.varOneType == kValueTypeBig) {
-			DEBUG("Var Two Big");
+			//DEBUG("Var Two Big");
 			if (!_dataManager->setBigVarAtIndex(valueSet.varOne, valueOne)) {
 				return 0;
 			}
@@ -369,243 +363,56 @@ uint32_t Parser::parseConditions(uint32_t aOffset, bool &aResult) {
 		int16_t valueOne = 0;
 		int16_t valueTwo = 0;
 		if (valueSet.varOneType == kValueTypeSmall) {
-			DEBUG("Var One Small");
+			//DEBUG("Var One Small");
 			valueOne = _dataManager->smallVarAtIndex(valueSet.varOne);
 		} else if (valueSet.varOneType == kValueTypeBig) {
-			DEBUG("Var One Big");
+			//DEBUG("Var One Big");
 			valueOne = _dataManager->bigVarAtIndex(valueSet.varOne);
 		}
-		DEBUG("Var One Index: %d, Value: %d", valueSet.varOne, valueOne);
+		//DEBUG("Var One Index: %d, Value: %d", valueSet.varOne, valueOne);
 
 		if (valueSet.varTwoType == kValueTypeRaw) {
-			DEBUG("Var Two Raw");
+			//DEBUG("Var Two Raw");
 			valueTwo = (int16_t)valueSet.varTwo;
 		} else if (valueSet.varTwoType == kValueTypeSmall) {
-			DEBUG("Var Two Small");
+			//DEBUG("Var Two Small");
 			valueTwo = _dataManager->smallVarAtIndex(valueSet.varTwo);
 		} else if (valueSet.varTwoType == kValueTypeBig) {
-			DEBUG("Var Two Big");
+			//DEBUG("Var Two Big");
 			valueTwo = _dataManager->bigVarAtIndex(valueSet.varTwo);
 		}
 
 		if (valueSet.operatorType == kCompareEqual) {
-			DEBUG("Operator: Equals");
+			//DEBUG("Operator: Equals");
 			result = (valueOne == valueTwo) ? true : false;
 		} else if (valueSet.operatorType == kCompareGreater) {
-			DEBUG("Operator: Greater Than");
+			//DEBUG("Operator: Greater Than");
 			result = (valueOne > valueTwo) ? true : false;
 		} else if (valueSet.operatorType == kCompareLess) {
-			DEBUG("Operator: Less Than");
+			//DEBUG("Operator: Less Than");
 			result = (valueOne < valueTwo) ? true : false;
 		} else if (valueSet.operatorType == kCompareEqualGreater) {
-			DEBUG("Operator: Equal or Greater");
+			//DEBUG("Operator: Equal or Greater");
 			result = (valueOne >= valueTwo) ? true : false;
 		} else if (valueSet.operatorType == kCompareEqualLess) {
-			DEBUG("Operator: Equal or Less");
+			//DEBUG("Operator: Equal or Less");
 			result = (valueOne <= valueTwo) ? true : false;
 		} else if (valueSet.operatorType == kCompareModulus) {
-			DEBUG("Operator: Modulus (has remainder)");
+			//DEBUG("Operator: Modulus (has remainder)");
 			result = (valueOne %= valueTwo) ? true : false;
 		}
 
-		if (valueSet.varTwoType == kValueTypeRaw) {
+		/*if (valueSet.varTwoType == kValueTypeRaw) {
 			DEBUG("Var Two Value: %d", (int16_t)valueSet.varTwo);
 		} else {
 			DEBUG("Var Two Index: %d, Value: %d", valueSet.varTwo, valueTwo);
-		}
+		}*/
 
-		DEBUG("Condition: %s", (result ? "true" : "false"));
+		//DEBUG("Condition: %s", (result ? "true" : "false"));
 		// If we have logic gates, we would evalutate here.
 		aResult = (aResult ? result : false);
 	}
 	return offset - aOffset;
 }
-
-/*bool Parser::parsePassage() {
-	// First process any passage body value updates.
-	if ((_offset = parseValueUpdates(_offset))) {
-		// Get the length of the body in bytes.
-		uint32_t bodyLength = 0;
-		if (_dataManager->readData(&bodyLength, _offset, kBodyLengthSize)) {
-			_offset += kBodyLengthSize;
-			DEBUG("Body Length: %lu", bodyLength);
-			// Parse and print the body from the provided byte offset with the given length.
-			if ((_offset = parseAndPrintData(_offset, bodyLength))) {
-				// Get the number of choices, 0 meaning an ending.
-				uint8_t choiceCount = _dataManager->readByte(_offset);
-				_offset++;
-				DEBUG("Choice Count: %d", choiceCount);
-				if (choiceCount == 0) {
-					uint8_t endingAttr = _dataManager->readByte(_offset);
-					_offset++;
-					uint8_t endingQual = endingAttr & 0x07;
-					DEBUG("Ending Quality: %d", endingQual);
-				} else {
-					_choices = new Choice[choiceCount];
-					_choiceIndex = new uint8_t[choiceCount];
-					_visibleChoices = 0;
-					for (int i = 0; i < choiceCount; ++i) {
-						//Choice* choice = new Choice;
-						_offset = parseChoice(_offset, &_choices[i], _visibleChoices);
-						// If NULL, choice isn't visible so we don't need it.
-						if (_choices[i].visible) {
-							_choiceIndex[_visibleChoices] = i;
-							_visibleChoices++;
-							//_choices.push_back(*choice);
-						}
-					}
-				}
-			}
-		}
-	}
-
-	if (_offset == 0) {
-		Errors::setError(E_STORY_PARSE_FAIL);
-		ERROR(Errors::errorString());
-		return false;
-	}
-	return true;
-}*/
-
-/*uint32_t Parser::parseBody(uint32_t aOffset) {
-	uint32_t bodyLength = 0;
-	if (_dataManager->readData(&bodyLength, aOffset, kBodyLengthSize)) {
-		aOffset += kBodyLengthSize;
-		DEBUG("Body Length: %lu", bodyLength);
-		aOffset = parseAndPrintData(aOffset, bodyLength);
-	}
-	return 0;
-}*/
-
-
-/*uint32_t Parser::parseChoice(uint32_t aOffset, Choice* aChoice, uint8_t aVisibleChoices) {
-	uint32_t offset = aOffset;
-	aChoice->attribute = _dataManager->readByte(offset);
-	offset++;
-	DEBUG("Psg #: %d, Append: %s", _dataManager->psgIndex, (aChoice->append ? "on" : "off"));
-	offset += parseConditions(offset, aChoice->visible);
-	DEBUG("Choice %s visible.", (aChoice->visible ? "is" : "not"));
-	uint16_t choiceLength = 0;
-	if (_dataManager->readData(&choiceLength, offset, kChoiceLengthSize)) {
-		DEBUG("Choice Length: %lu", choiceLength);
-		offset += kChoiceLengthSize;
-		if (aChoice->visible) {
-			offset = parseAndPrintData(aOffset, choiceLength);
-		} else {
-			offset += choiceLength;
-		}
-	}
-
-	return offset - aOffset;
-}*/
-
-// aOffset: The byte offset to begin reading from.
-// aLength: The length of the total body of data in bytes.
-/*uint32_t Parser::parseData(uint32_t aOffset, uint16_t aBufferSize) {
-	uint32_t bytesProcessed = 0;
-	DEBUG("Offset: %lu, Length: %lu", aOffset, aLength);
-	while (bytesProcessed < aLength) {
-		uint16_t bytesToRead = ((aLength - bytesProcessed) < kPassageBufferReadSize) ? (aLength - bytesProcessed) : kPassageBufferReadSize;
-		char buffer[bytesToRead + 1];
-		memset(&buffer[0], 0, sizeof(buffer));
-		if (_dataManager->readData(&buffer, aOffset, bytesToRead)) {
-			//bytesProcessed += bytesToRead;
-
-			uint16_t i = 0;
-			bool commandFound = false;
-			for (; i < bytesToRead; ++i) {
-				if (buffer[i] == kAsciiCommandByte) {
-					commandFound = true;
-					// Overwrite the command byte with string ending.
-					buffer[i] = '\0';
-					i++; // Move to the next index, the command length.
-					// Wrap the text up to the command.
-					wrapText(buffer, kPrinterColumns);
-					// Print the text up to the command.
-					DEBUG("PRINT TO CMD: %s", buffer);
-					_hardwareManager->printer()->print(buffer);
-
-					uint16_t commandLength = 0;
-					// Enough bytes remaining in buffer to get command length?
-					if ((i + 1) < bytesToRead) {
-						// Get command length as little endian 2 byte uint.
-						commandLength = (((uint16_t)buffer[i + 1] << 8) +
-					                          (uint16_t)buffer[i]);
-						// Add length bytes.
-						i += 2;
-					} else {
-						if (!_dataManager->readData(&commandLength, aOffset + i, 2)) {
-							return 0;
-						}
-						// Add length bytes.
-						i += 2;
-						// Whatever 'i' is now, we are done with the current buffer.
-						bytesToRead = i;
-					}
-					DEBUG("Command Length: %d", commandLength);
-					if (commandLength > kPassageBufferReadSize) {
-						Errors::setError(E_DATA_TOO_LARGE_FAIL);
-						ERROR(Errors::errorString());
-						return 0;
-					}
-					// If command is longer than remaining bytes...
-					if (commandLength > (bytesToRead - i)) {
-						memset(&buffer[0], 0, sizeof(buffer));
-						_dataManager->readData(&buffer, aOffset + i, commandLength);
-						//if ((bytesToRead - i) > 0) {
-						//	memcpy(buffer, buffer + i, bytesToRead - i);
-						//}
-					}
-					if (!parseCommand(buffer, commandLength)) {
-						return 0;
-					}
-					memset(&buffer[0], 0, sizeof(buffer));
-					i += commandLength;
-				}
-			}
-			if (!commandFound) {
-				// Wrap the text up to the command.
-				wrapText(buffer, kPrinterColumns);
-				// Print the text up to the command.
-				DEBUG("PRINT: %s", buffer);
-				_hardwareManager->printer()->print(buffer);
-			}
-			bytesProcessed += i;
-			aOffset += i;
-		} else {
-			return 0;
-		}
-	}
-	_hardwareManager->printer()->feed(1);
-	return aOffset;
-}*/
-
-/*void Parser::parseData(char* aBuffer, uint16_t aBufferSize, uint32_t aLength) {
-	DEBUG("String: %s", aBuffer);
-	//for (uint16_t i = 0; aBuffer[i] != '\0'; ++i) {
-
-	uint16_t printIndex = 0;
-	for (uint16_t i = 0; i < aLength; ++i) {
-		DEBUG("Char: %c", aBuffer[i]);
-		if (aBuffer[i] == kAsciiCommandByte) {
-			// Overwrite the command byte with string ending.
-			aBuffer[i] = '\0';
-			// Wrap the text up to the command.
-			wrapText(aBuffer, kPrinterColumns);
-			// Print the text up to the command.
-			_hardwareManager->printer()->println(aBuffer + printIndex);
-
-			// Get command length as little endian 2 byte uint.
-			uint16_t commandLength = (((uint16_t)aBuffer[i + 2] << 8) +
-			                          (uint16_t)aBuffer[i + 1]);
-			DEBUG("Command Length: %d", commandLength);
-			// Send a pointer to the byte after the
-			// command byte, the command type.
-
-
-			//printIndex = parseCommand(aBuffer + i + 1)
-		}
-	}
-}*/
 
 }

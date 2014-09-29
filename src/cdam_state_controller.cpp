@@ -72,12 +72,10 @@ void StateController::initState(GameState aState) {
 		_hardwareManager->printer()->printPressButton();
 	} else if (aState == STATE_READY) {
 		_seed = millis();
-		DEBUG("Current seed: %lu", _seed);
   		srand(_seed);
 		_hardwareManager->printer()->printTitle();
 		if (_dataManager->metadata.storyCount > 4) {
 			if (_dataManager->metadata.flags.random) {
-				DEBUG("Shuffle!");
 				Utils::shuffle(_dataManager->liveStoryOrder, _dataManager->metadata.storyCount);
 			} else {
 				_hardwareManager->printer()->printBigNumbers();

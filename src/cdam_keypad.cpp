@@ -184,8 +184,6 @@ uint8_t Keypad::keypadEventValue(KeypadEvent aEvent) {
 void Keypad::clearEvents() {
     for (int i = NUM_BUTTONS - 1; i >= 0; i--) {
         this->buttonData[i].event = BTN_NO_EVENT;
-        //Serial.print("Btn event: ");
-        //Serial.println(this->buttonData[i].event);
     }
     this->lastEvent = this->event;
     this->event = KEYPAD_NO_EVENT;
@@ -269,7 +267,7 @@ ButtonEvent Keypad::filterButton(ButtonData *aBtnData) {
     return aBtnData->event;
 }
 
-void Keypad::printBinary(uint8_t aValue) {
+/*void Keypad::printBinary(uint8_t aValue) {
     Serial.print("0x");
     Serial.print(IsBitSet(aValue, 7) ? '1' : '0');
     Serial.print(IsBitSet(aValue, 6) ? '1' : '0');
@@ -279,7 +277,7 @@ void Keypad::printBinary(uint8_t aValue) {
     Serial.print(IsBitSet(aValue, 2) ? '1' : '0');
     Serial.print(IsBitSet(aValue, 1) ? '1' : '0');
     Serial.println(IsBitSet(aValue, 0) ? '1' : '0');
-}
+}*/
 
 uint8_t Keypad::keypadTotal(uint8_t aButtons) {
     uint8_t total = 0;
