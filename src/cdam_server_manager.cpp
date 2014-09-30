@@ -255,6 +255,12 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		Spark.publish(kServerCmdGetLocalIP, addr, kServerTTLDefault, PRIVATE);
 		returnVal = kServerReturnEventIncoming;
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdAddStory) == 0) {
+#if HAS_SD == 1
+		if (dataMan->metadata.flags.sdCard) {
+			WARN("Adding stories in SD mode not supported.");
+			returnVal = kServerReturnFail;
+		}
+#endif
 		// We only want to deal with one server connection at a time.
 		if (serverMan->pendingAction) {
 			returnVal =  kServerReturnBusy;
