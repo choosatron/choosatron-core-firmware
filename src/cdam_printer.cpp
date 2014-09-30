@@ -363,11 +363,10 @@ uint8_t Printer::wrapText(char* aBuffer, uint8_t aColumns, uint8_t aStartOffset)
 }*/
 
 // This function waits (if necessary) for the prior task to complete.
-/*void Printer::timeoutWait() {
-#if (OFFLINE == 1)
-	while((long)(micros() - resumeTime) < 0L); // Rollover-proof
-#endif
-}*/
+void Printer::timeoutWait() {
+	// BAD NEWS - Should be using buffer full status NOT this.
+	//while((long)(micros() - resumeTime) < 0L); // Rollover-proof
+}
 
 void Printer::begin(int heatTime) {
 	CSN_Thermal::begin(heatTime);

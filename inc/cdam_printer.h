@@ -57,7 +57,7 @@ public:
 
     //void timeoutSet(unsigned long);
     void printTimeSet(unsigned long);
-    //void timeoutWait();
+    void timeoutWait();
     //void printerWait();
 
     bool available();
