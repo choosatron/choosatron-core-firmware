@@ -4,7 +4,7 @@
 namespace cdam
 {
 
-#define HAS_SD 0
+#define HAS_SD 1
 
 // Seconds for timeout of Published Spark Events
 const uint8_t kServerTTLDefault = 60;
