@@ -20,7 +20,7 @@ int Choosatron::loop() {
 	Manager::getInstance().hardwareManager->updateIntervalTimers();
 	//Spark.process();
 	Manager::getInstance().serverManager->handlePendingActions();
-	Spark.process();
+	//Spark.process();
 	if (Manager::getInstance().dataManager->runState) {
 		_stateController->updateState();
 	}

@@ -380,6 +380,7 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 			//DEBUG("Story Size: %lu", aStorySize);
 
 			while (aClient->available()) {
+				Spark.process();
 				// While data available, read data into buffer, then flash space based on page size
 				//memset(&buffer[0], 0, sizeof(buffer));
 				if ((aStorySize - totalBytesRead) < kServerDataBufferSize) {

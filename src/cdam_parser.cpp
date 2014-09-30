@@ -26,6 +26,7 @@ void Parser::initStory(uint8_t aStoryIndex) {
 }
 
 ParseState Parser::parsePassage() {
+	Spark.process();
 	if (_state == PARSE_UPDATES) {
 		uint32_t processedBytes = 0;
 		if ((processedBytes = parseValueUpdates(_offset))) {
