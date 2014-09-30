@@ -71,7 +71,7 @@ ParseState Parser::parsePassage() {
 		}
 		// Allocate a buffer of data length, up to a maximum.
 		uint16_t bufferSize = (_dataLength < (kPassageBufferReadSize + _lastIndent)) ? _dataLength : (kPassageBufferReadSize + _lastIndent);
-		//DEBUG("Bufsize: %d", bufferSize);
+		DEBUG("Bufsize: %d", bufferSize);
 		_buffer = new char[bufferSize + bufferPadding + 1](); // + 1 to null terminate if it is all text.
 		// Insert the numbering.
 		if (dataStart) {
@@ -87,7 +87,7 @@ ParseState Parser::parsePassage() {
 			_lastIndent = _hardwareManager->printer()->wrapText(_buffer, kPrinterColumns, _lastIndent);
 			// Print the text up to the command.
 			_hardwareManager->printer()->print(_buffer);
-			//DEBUG("%s", _buffer);
+			DEBUG("%s", _buffer);
 			_offset += processedBytes;
 			_dataLength -= processedBytes;
 		}
