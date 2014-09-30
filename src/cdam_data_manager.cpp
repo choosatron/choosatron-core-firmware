@@ -1,7 +1,6 @@
 #include "cdam_data_manager.h"
 #include "cdam_constants.h"
 #include "cdam_state_controller.h"
-
 #include "spark_wiring_time.h"
 
 namespace cdam
@@ -12,7 +11,7 @@ namespace cdam
 DataManager::DataManager() {}
 
 bool DataManager::initialize(StateController *aStateController) {
-	_stateControl = aStateController;
+	_stateController = aStateController;
 	this->logPrint = false;
 	this->runState = true;
 	this->metadata = {};
@@ -34,30 +33,42 @@ bool DataManager::initialize(StateController *aStateController) {
 		return false;
 	}
 
-	//testMetadata();
-	//_metaFlash->eraseAll();
-
 	loadFirmwareVersion();
 
 	if (!loadMetadata()) {
 		return false;
 	}
 
-	DEBUG("Stories: %d, Used Pages: %d", this->metadata.storyCount, this->metadata.usedStoryPages);
-	_storyFlash = Flashee::Devices::createWearLevelErase(
-	                                128 * Flashee::Devices::userFlash().pageSize(),
-	                                384 * Flashee::Devices::userFlash().pageSize());
-	if (_storyFlash == NULL) {
-		ERROR("Story Flash is NULL!");
-		return false;
+#if HAS_SD == 1
+	if (this->metadata.flags.sdCard && !initSD()) {
+		this->metadata.flags.sdCard = 0;
 	}
+#endif
+
+#if HAS_SD == 1
+	if (!this->metadata.flags.sdCard) {
+#endif
+		//DEBUG("Stories: %d, Used Pages: %d", this->metadata.storyCount, this->metadata.usedStoryPages);
+		this->liveStoryCount = (this->metadata.storyCount > 10) ? 10 : this->metadata.storyCount;
+		_storyFlash = Flashee::Devices::createWearLevelErase(
+		                                128 * Flashee::Devices::userFlash().pageSize(),
+		                                384 * Flashee::Devices::userFlash().pageSize());
+		if (_storyFlash == NULL) {
+			ERROR("Story Flash is NULL!");
+			return false;
+		}
+#if HAS_SD == 1
+	}
+#endif
 	// Setup story order.
 	memcpy(&this->liveStoryOrder, &this->metadata.storyOrder, sizeof(this->metadata.storyOrder));
+
+    //testMetadata();
+	//_metaFlash->eraseAll();
 
 	//_storyFlash->eraseAll();
 	//logStoryOffsets(&this->metadata);
 	//logStoryBytes(&this->metadata);
-
 	return true;
 }
 
@@ -72,38 +83,117 @@ void DataManager::logMetadata() {
 	Serial.println("END");
 }
 
+#if HAS_SD == 1
+bool DataManager::initSD() {
+	_card = new Sd2Card();
+	_volume = new SdVolume();
+	_root = new SdFile();
+	if (_card->init(PIN_SD_MOSI, PIN_SD_MISO, PIN_SD_SCK, PIN_SD_CS) &&//_card.init(SPI_FULL_SPEED, PIN_SD_CS) &&
+		_volume->init(_card) &&
+		_root->openRoot(_volume)) {
+
+		dir_t filePntr;
+		char fileName[13] = {'\0'};
+		uint16_t fileIndex = 0;
+		uint8_t index = 0;
+		//char title[65] = {'\0'};
+		while (_root->readDir(&filePntr) && (index < kMaxRandStoryCount)) {
+			memcpy(fileName, filePntr.name, 8);
+			memcpy(fileName + 9, filePntr.name + 8, 3);
+			fileName[8] = '.';
+			_storyFile = new SdFile();
+			if (strncmp(fileName + 9, "DAM", 3) == 0) {
+				if (_storyFile->open(_root, fileIndex, O_READ)) {
+					if (_storyFile->read() == kAsciiHeaderByte) {
+						this->metadata.storyOffsets[index] = fileIndex;
+						this->metadata.storyOrder[index] = index;
+						index++;
+						//_storyFile.seekSet(20); // seekCur moves forward given # of bytes
+						//_storyFile.read(title, 64);
+						//DEBUG("Index %d", fileIndex);
+					}
+					_storyFile->close();
+				}
+			}
+			//memset(&fileName[0], 0, sizeof(fileName));
+			delete _storyFile;
+			_storyFile = NULL;
+			fileIndex++;
+		}
+		if (index > 0) {
+			this->metadata.storyCount = index;
+			this->liveStoryCount = (index > 10) ? 10 : index;
+		}
+		//DEBUG("SD: %s", (this->metadata.flags.sdCard ? "on" : "off"));
+		return true;
+	}
+	delete _card;
+	delete _volume;
+	delete _root;
+	return false;
+}
+#endif
+
 uint32_t DataManager::getStoryOffset(uint8_t aIndex) {
-	return this->metadata.storyOffsets[this->liveStoryOrder[aIndex]];
+#if HAS_SD == 1
+	if (this->metadata.flags.sdCard) { return 0; }
+#endif
+	return this->metadata.storyOffsets[this->liveStoryOrder[aIndex]] * Flashee::Devices::userFlash().pageSize();
 }
 
 uint32_t DataManager::getPassageOffset(uint16_t aIndex) {
 	uint32_t offset = 0;
 	if (this->currentStory != -1) {
 		bool result = readData(&offset, this->tocOffset + (kPassageOffsetSize * aIndex), kPassageOffsetSize);
-		if (!result) {
+		/*if (!result) {
 			Errors::setError(E_HEADER_READ_FAIL);
 			ERROR(Errors::errorString());
-		}
+		}*/
 	}
 	return offset;
 }
 
 bool DataManager::getNumberedTitle(char* aBuffer, uint8_t aIndex) {
-	memset(&aBuffer[0], 0, sizeof(aBuffer));
 	sprintf(aBuffer, "%d. ", aIndex + 1);
-
-	uint32_t offset = getStoryOffset(aIndex) * Flashee::Devices::userFlash().pageSize() + kStoryTitleOffset;
-	DEBUG("Offset: %lu", offset);
+	uint32_t offset = kStoryTitleOffset;
+#if HAS_SD == 1
+	if (this->metadata.flags.sdCard) {
+		_storyFile = new SdFile();
+		if (!_storyFile->open(_root, this->metadata.storyOffsets[this->liveStoryOrder[aIndex]], O_READ)) {
+			return false;
+		}
+	} else
+#endif
+	{
+		offset += getStoryOffset(aIndex);
+	}
 	bool result = readData(aBuffer + strlen(aBuffer), offset, kStoryTitleSize);
-	if (!result) {
+#if HAS_SD == 1
+	if (this->metadata.flags.sdCard) {
+		if (_storyFile->isOpen()) {
+			_storyFile->close();
+		}
+		delete _storyFile;
+		_storyFile = NULL;
+	}
+#endif
+	/*if (!result) {
 		Errors::setError(E_HEADER_READ_FAIL);
 		ERROR(Errors::errorString());
-	}
+	}*/
 	return result;
 }
 
 bool DataManager::loadStory(uint8_t aIndex) {
 	this->currentStory = aIndex;
+
+#if HAS_SD == 1
+	if (this->metadata.flags.sdCard) {
+		if (!_storyFile->open(_root, this->metadata.storyOffsets[this->liveStoryOrder[aIndex]], O_READ)) {
+			return false;
+		}
+	}
+#endif
 
 	if (!readStoryHeader(this->currentStory, &this->storyHeader)) {
 		return false;
@@ -116,6 +206,13 @@ bool DataManager::loadStory(uint8_t aIndex) {
 }
 
 void DataManager::unloadStory() {
+#if HAS_SD == 1
+	if (this->metadata.flags.sdCard) {
+		_storyFile->close();
+		delete _storyFile;
+		_storyFile = NULL;
+	}
+#endif
 	this->currentStory = -1;
 	this->points = 0;
 	this->psgCount = 0;
@@ -184,9 +281,13 @@ bool DataManager::addStoryMetadata(uint8_t aIndex, uint8_t aPages) {
 	// Set the position for this story.
 	this->metadata.storyOrder[aIndex] = this->metadata.storyCount;
 	// Increase the story count.
-	this->metadata.storyCount += 1;
+	this->metadata.storyCount++;
+	if (this->liveStoryCount < 10) { this->liveStoryCount++; }
 	// Add the total story bytes to the total used.
 	this->metadata.usedStoryPages += aPages;
+
+	// Reinitialize Choosatron.
+	//_stateController->changeState(STATE_INIT);
 
 	return writeStoryCountData(&this->metadata);
 }
@@ -208,6 +309,7 @@ bool DataManager::addStoryMetadata(uint8_t aIndex, uint8_t aPages) {
 
 	// Decrease the story count.
 	this->metadata.storyCount--;
+	if (this->metadata.storyCount <= 10) { this->liveStoryCount--; }
 	// Decrease used story bytes.
 	this->metadata.usedStoryBytes -= this->storyHeaders[aIndex].storySize;
 
@@ -215,14 +317,15 @@ bool DataManager::addStoryMetadata(uint8_t aIndex, uint8_t aPages) {
 }*/
 
 bool DataManager::removeAllStoryData() {
-	// Increase the story count.
+	// Reset the story count.
 	this->metadata.storyCount = 0;
+	this->liveStoryCount = 0;
 	// Add the total story bytes to the total used.
 	this->metadata.usedStoryPages = 0;
 	// Clear out storyOffsets.
 	//memset(&this->metadata.storyOffsets[0], 0, sizeof(this->metadata.storyOffsets));
 
-	for (int i = 0; i < kMaxStoryCount; ++i) {
+	for (int i = 0; i < kMaxRandStoryCount; ++i) {
 		this->metadata.storyOffsets[i] = 0;
 	}
 
@@ -240,10 +343,10 @@ bool DataManager::setFlag(uint8_t aFlagIndex, uint8_t aBitIndex, bool aValue) {
 	uint8_t flag = (*((uint8_t *) &this->metadata + kMetadataFlagsOffset + aFlagIndex));
 	Errors::clearError();
 	bool result = _metaFlash->writeEraseByte(flag, kMetadataFlagsOffset + aFlagIndex);
-	if (!result) {
+	/*if (!result) {
 		Errors::setError(E_METADATA_WRITE_FAIL);
 		ERROR(Errors::errorString());
-	}
+	}*/
 	return result;
 }
 
@@ -257,34 +360,50 @@ bool DataManager::eraseFlash() {
 
 uint8_t DataManager::readByte(uint32_t aAddress) {
 	uint8_t byte = 0;
+#if HAS_SD == 1
 	if (this->metadata.flags.sdCard) {
-
-	} else {
+		if (_storyFile->seekSet(aAddress)) {
+			byte = _storyFile->read();
+		}
+	} else
+#endif
+	{
 		byte = _storyFlash->readByte(aAddress);
 	}
 	return byte;
 }
 
-bool DataManager::readData(void* aBuffer, uint32_t aAddress, uint32_t aLength) {
+bool DataManager::readData(void* aBuffer, uint32_t aAddress, uint16_t aLength) {
+#if HAS_SD == 1
 	if (this->metadata.flags.sdCard) {
-
-	} else {
-		_storyFlash->read(aBuffer, aAddress, aLength);
+		if (_storyFile->seekSet(aAddress)) {
+			_storyFile->read(aBuffer, aLength);
+		}
+		return true;
+	} else
+#endif
+	{
+		return _storyFlash->read(aBuffer, aAddress, aLength);
 	}
+	return false;
 }
 
-bool DataManager::writeData(void* aBuffer, uint32_t aAddress, uint32_t aLength) {
+bool DataManager::writeData(void* aBuffer, uint32_t aAddress, uint16_t aLength) {
+#if HAS_SD == 1
 	if (this->metadata.flags.sdCard) {
-
-	} else {
-		_storyFlash->write(aBuffer, aAddress, aLength);
+		/* Currently not writing. */
+		//WARN("No writing data in SD mode.");
+	} else
+#endif
+	{
+		return _storyFlash->write(aBuffer, aAddress, aLength);
 	}
 }
 
 /* Accessors */
 
 StateController* DataManager::stateController() {
-	return _stateControl;
+	return _stateController;
 }
 
 /* Private Methods */
@@ -303,14 +422,14 @@ bool DataManager::loadMetadata() {
 
 	// Check for SOH
 	if (_metaFlash->readByte(kMetadataBaseAddress) != kAsciiHeaderByte) {
-		DEBUG("No SOH, write fresh metadata.");
+		//DEBUG("No SOH, write fresh metadata.");
 		if (!initializeMetadata(&this->metadata)) {
 			ERROR(Errors::errorString());
 			return false;
 		}
 	} else {
 		// Data exists. Read it!
-		DEBUG("SOH found, read metadata.");
+		//DEBUG("SOH found, read metadata.");
 		if (!readMetadata(&this->metadata)) {
 			ERROR(Errors::errorString());
 			return false;
@@ -337,29 +456,29 @@ bool DataManager::initializeMetadata(Metadata *aMetadata) {
 	aMetadata->firmwareVer.minor = this->firmwareVersion.minor;
 	aMetadata->firmwareVer.revision = this->firmwareVersion.revision;
 
-	aMetadata->flags.auth = 0;
+	/*aMetadata->flags.auth = 0;
 	aMetadata->flags.offline = 0;
-	aMetadata->flags.demo = 0;
-	aMetadata->flags.sdCard = 0;
-	aMetadata->flags.multiplayer = 0;
+	aMetadata->flags.demo = 0;*/
+	aMetadata->flags.sdCard = 1;
+	/*aMetadata->flags.multiplayer = 0;
 	aMetadata->flags.arcade = 0;
-	aMetadata->flags.continues = 0;
+	aMetadata->flags.continues = 0;*/
 	aMetadata->flags.random = 1;
 
-	aMetadata->flags.rsvd2 = 0;
+	//aMetadata->flags.rsvd2 = 0;
 	aMetadata->flags.logging = 1;
 	aMetadata->flags.logLocal = 1;
-	aMetadata->flags.logLive = 0;
-	aMetadata->flags.logPrint = 0;
+	//aMetadata->flags.logLive = 0;
+	//aMetadata->flags.logPrint = 0;
 
-	aMetadata->flags.rsvd3 = 0;
-	aMetadata->flags.dictOffsetBytes = 0;
+	//aMetadata->flags.rsvd3 = 0;
+	//aMetadata->flags.dictOffsetBytes = 0;
 
 	aMetadata->values.coinsPerCredit = 2;
 	aMetadata->values.coinDenomination = 25;
 
-	aMetadata->storyCount = 0;
-	aMetadata->usedStoryPages = 0;
+	//aMetadata->storyCount = 0;
+	//aMetadata->usedStoryPages = 0;
 
 	if (!writeMetadata(aMetadata)) {
 		return false;
@@ -368,7 +487,7 @@ bool DataManager::initializeMetadata(Metadata *aMetadata) {
 }
 
 bool DataManager::readMetadata(Metadata *aMetadata) {
-	DEBUG("Size of Metadata: %d", sizeof(*aMetadata));
+	//DEBUG("Size of Metadata: %d", sizeof(*aMetadata));
 	if (_metaFlash->readByte(kMetadataBaseAddress) == kAsciiHeaderByte) {
 		bool result = _metaFlash->read(aMetadata, kMetadataBaseAddress, kMetadataSize);
 		if (!result) {
@@ -381,21 +500,21 @@ bool DataManager::readMetadata(Metadata *aMetadata) {
 }
 
 bool DataManager::readStoryHeader(uint8_t aIndex, StoryHeader *aHeader) {
-	uint32_t offset = getStoryOffset(aIndex) * Flashee::Devices::userFlash().pageSize();
-	DEBUG("Pages Offset: %d", getStoryOffset(aIndex));
+	uint32_t offset = getStoryOffset(aIndex);
+	//DEBUG("Pages Offset: %d", getStoryOffset(aIndex));
 
-	DEBUG("StoryHeader offset: %d, size: %d", offset, kStoryHeaderSize);
+	//DEBUG("StoryHeader offset: %d, size: %d", offset, kStoryHeaderSize);
 	bool result = readData((uint8_t*)aHeader, offset, kStoryHeaderSize);
-	if (!result) {
+	/*if (!result) {
 		Errors::setError(E_HEADER_READ_FAIL);
 		ERROR(Errors::errorString());
-	}
+	}*/
 	return result;
 }
 
 bool DataManager::readVariables(uint8_t aIndex) {
 	bool result = true;
-	uint32_t offset = getStoryOffset(aIndex) * Flashee::Devices::userFlash().pageSize() + kStoryHeaderSize;
+	uint32_t offset = getStoryOffset(aIndex) + kStoryHeaderSize;
 	_smallVarCount = readByte(offset);
 	//DEBUG("Small Var Count: %d", _smallVarCount);
 	offset++;
@@ -420,9 +539,9 @@ bool DataManager::readVariables(uint8_t aIndex) {
 	}
 
 	// Read the passage count.
-	DEBUG("Offset: %d", offset);
+	//DEBUG("Offset: %d", offset);
 	result = readData(&this->psgCount, offset, kPassageCountSize) && result ? true : false;
-	DEBUG("Passage Count: %d", this->psgCount);
+	//DEBUG("Passage Count: %d", this->psgCount);
 
 	offset += kPassageCountSize;
 	// Memory offset for where the passage memory offsets begin.
@@ -430,30 +549,30 @@ bool DataManager::readVariables(uint8_t aIndex) {
 	// Grab the offset of the second passage, which gives us the size of the first.
 	result = readData(&this->psgSize, offset + kPassageOffsetSize, kPassageOffsetSize) && result ? true : false;
 
-	if (!result) {
+	/*if (!result) {
 		Errors::setError(E_VARS_READ_FAIL);
 		ERROR(Errors::errorString());
 		return false;
-	}
+	}*/
 
-	DEBUG("Passage Size: %lu", this->psgSize);
-	DEBUG("TOC Offset: %d", this->tocOffset);
+	//DEBUG("Passage Size: %lu", this->psgSize);
+	//DEBUG("TOC Offset: %d", this->tocOffset);
 	offset += this->psgCount * kPassageOffsetSize;
 	this->startOffset = offset;
-	DEBUG("Start Offset: %d", this->startOffset);
+	//DEBUG("Start Offset: %d", this->startOffset);
 	this->psgIndex = 0;
 
 	return true;
 }
 
 bool DataManager::writeMetadata(Metadata *aMetadata) {
-	DEBUG("Size of Metadata: %d", sizeof(*aMetadata));
-	DEBUG("Maybe size: %d", kMetadataSize);
+	//DEBUG("Size of Metadata: %d", sizeof(*aMetadata));
+	//DEBUG("Maybe size: %d", kMetadataSize);
 	bool result = _metaFlash->write(aMetadata, kMetadataBaseAddress, kMetadataSize);
-	if (!result) {
+	/*if (!result) {
 		Errors::setError(E_METADATA_WRITE_FAIL);
 		ERROR(Errors::errorString());
-	}
+	}*/
 	return result;
 }
 
@@ -467,10 +586,10 @@ bool DataManager::writeStoryCountData(Metadata *aMetadata) {
 	result = _metaFlash->write(&aMetadata->usedStoryPages, kMetadataStoryUsedPagesOffset, kMetadataStoryUsedPagesSize) && result ? true : false;
 	result = _metaFlash->write(&aMetadata->storyOffsets, kMetadataStoryOffsetsOffset, kMetadataStoryOffsetsSize) && result ? true : false;
 	result = _metaFlash->write(&aMetadata->storyOrder, kMetadataStoryOrderOffset, kMetadataStoryOrderSize) && result ? true : false;
-	if (!result) {
+	/*if (!result) {
 		Errors::setError(E_METADATA_WRITE_FAIL);
 		ERROR(Errors::errorString());
-	}
+	}*/
 	return result;
 }
 
@@ -480,10 +599,10 @@ bool DataManager::didFirmwareUpdate(Metadata *aMetadata) {
 		aMetadata->firmwareVer.minor != this->firmwareVersion.minor ||
 		aMetadata->firmwareVer.revision != this->firmwareVersion.revision) {
 		// First run after firmware update
-		DEBUG("Firmware has been upgraded from v%d.%d.%d to v%d.%d.%d",
+		/*DEBUG("Firmware has been upgraded from v%d.%d.%d to v%d.%d.%d",
 		    aMetadata->firmwareVer.major, aMetadata->firmwareVer.minor,
 		    aMetadata->firmwareVer.revision, this->firmwareVersion.major,
-		    this->firmwareVersion.minor, this->firmwareVersion.revision);
+		    this->firmwareVersion.minor, this->firmwareVersion.revision);*/
 		return true;
 	}
 	return false;

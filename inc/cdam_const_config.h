@@ -4,7 +4,7 @@
 namespace cdam
 {
 
-//#define HAS_SD 0
+#define HAS_SD 0
 
 // Seconds for timeout of Published Spark Events
 const uint8_t kServerTTLDefault = 60;
@@ -29,7 +29,7 @@ const uint16_t kPassageBufferReadSize = 496;
 // Maximum stories allowed.
 const uint8_t kMaxStoryCount = 10;
 // Maximum stories allowed when in random mode.
-const uint8_t kMaxRandStoryCount = 10;
+const uint8_t kMaxRandStoryCount = 20;
 // Columns available for printing.
 const uint8_t kPrinterColumns = 32;
 

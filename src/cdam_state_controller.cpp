@@ -144,9 +144,10 @@ void StateController::loopState(GameState aState) {
 			changeState(STATE_READY);
 		}
 	} else if (aState == STATE_READY) {
-		if (_dataManager->metadata.storyCount > 0) {
-			uint8_t storyCount = _dataManager->metadata.storyCount;
-			if (_dataManager->metadata.flags.random && (_dataManager->metadata.storyCount >= 4)) {
+		if (_dataManager->liveStoryCount > 0) {
+			uint8_t storyCount = _dataManager->liveStoryCount;
+			DEBUG("Story Count: %d", _dataManager->metadata.storyCount);
+			if (_dataManager->metadata.flags.random && (_dataManager->metadata.storyCount > 4)) {
 				storyCount = 4;
 			}
 			if (storyCount <= 4) {
@@ -155,8 +156,9 @@ void StateController::loopState(GameState aState) {
 			// Buffer for title, max title size + 4 for numbering (ex: "10. Story Title")
 			char titleBuffer[kStoryTitleSize + 4] = "";
 			// Print story titles up to storyCount.
+
 			for (int i = 0; i < storyCount; ++i) {
-				DEBUG("Title index: %d", i);
+				memset(&titleBuffer[0], 0, sizeof(titleBuffer));
 				if (_dataManager->getNumberedTitle(titleBuffer, i)) {
 					_hardwareManager->printer()->wrapText(titleBuffer, kPrinterColumns);
 					_hardwareManager->printer()->println(titleBuffer);
@@ -181,7 +183,7 @@ void StateController::loopState(GameState aState) {
 		}
 	} else if (aState == STATE_SELECT) {
 		// Wait for multi button up event for story selection.
-		uint8_t total = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, _dataManager->metadata.storyCount);
+		uint8_t total = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, _dataManager->liveStoryCount);
 		if (total) {
 			// Story has been selected, initialize the parser with story index (not number).
 			_parser->initStory(total - 1);

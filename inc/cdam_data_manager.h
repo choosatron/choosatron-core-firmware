@@ -27,6 +27,12 @@
 #include "cdam_state_controller.h"
 #include "flashee-eeprom.h"
 
+#if HAS_SD == 1
+#include "SdFat.h"
+//#include "SdFatUtil.h"
+//#include "SD.h"
+#endif
+
 namespace cdam
 {
 
@@ -40,6 +46,10 @@ class DataManager
 
         bool initialize(StateController *aStateController);
         void logMetadata();
+
+#if HAS_SD == 1
+        bool initSD();
+#endif
 
         // Get the page offset the story begins at.
         uint32_t getStoryOffset(uint8_t aIndex);
@@ -72,8 +82,8 @@ class DataManager
         bool eraseFlash();
 
         uint8_t readByte(uint32_t aAddress);
-        bool readData(void* aBuffer, uint32_t aAddress, uint32_t aLength);
-        bool writeData(void* aBuffer, uint32_t aAddress, uint32_t aLength);
+        bool readData(void* aBuffer, uint32_t aAddress, uint16_t aLength);
+        bool writeData(void* aBuffer, uint32_t aAddress, uint16_t aLength);
 
         StateController* stateController();
         //Flashee::FlashDevice* storyFlash();
@@ -85,7 +95,9 @@ class DataManager
         // Whether or not the state machine should execute it's update loop.
         bool runState;
         // Live story order.
-        uint8_t liveStoryOrder[kMaxStoryCount];
+        uint8_t liveStoryOrder[kMaxRandStoryCount];
+        // Live story count. If not in random mode, can be max of 10.
+        uint8_t liveStoryCount;
         // The hard-coded firmware version
         Version firmwareVersion;
         Metadata metadata;
@@ -143,9 +155,15 @@ class DataManager
 
 
         /* Private Variables */
-        StateController* _stateControl;
+        StateController* _stateController;
         Flashee::FlashDevice* _metaFlash;
         Flashee::FlashDevice* _storyFlash;
+#if HAS_SD == 1
+        SdFile* _storyFile;
+        Sd2Card* _card;
+        SdVolume* _volume;
+        SdFile* _root;
+#endif
         int8_t* _smallVars;
         uint8_t _smallVarCount;
         int16_t* _bigVars;

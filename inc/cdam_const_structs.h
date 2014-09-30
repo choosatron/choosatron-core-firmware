@@ -27,9 +27,9 @@ const uint16_t kMetadataStoryCountSize = 1; // bytes
 const uint16_t kMetadataStoryUsedPagesOffset = (kMetadataStoryCountOffset + kMetadataStoryCountSize);
 const uint16_t kMetadataStoryUsedPagesSize = 1; // bytes
 const uint16_t kMetadataStoryOffsetsOffset = (kMetadataStoryUsedPagesOffset + kMetadataStoryUsedPagesSize);
-const uint16_t kMetadataStoryOffsetsSize = kMaxStoryCount; // 1 bytes each.
+const uint16_t kMetadataStoryOffsetsSize = kMaxRandStoryCount; // 1 bytes each.
 const uint16_t kMetadataStoryOrderOffset = (kMetadataStoryOffsetsOffset + kMetadataStoryOffsetsSize);
-const uint16_t kMetadataStoryOrderSize = kMaxStoryCount; // 1 bytes each.
+const uint16_t kMetadataStoryOrderSize = kMaxRandStoryCount; // 1 bytes each.
 const uint16_t kMetadataSize = (kMetadataStoryOrderOffset + kMetadataStoryOrderSize);
 
 //const uint16_t kStoryBaseAddress = (kMetadataStoryOffsetsOffset + kMetadataStoryOffsetsSize);

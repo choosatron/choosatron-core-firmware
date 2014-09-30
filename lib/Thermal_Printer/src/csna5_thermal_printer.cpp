@@ -42,6 +42,7 @@ void CSN_Thermal::timeoutSet(unsigned long x) {
 
 // This function waits (if necessary) for the prior task to complete.
 void CSN_Thermal::timeoutWait() {
+	// This is BAD - now that buffer full status is possible this should be removed.
   while((long)(micros() - resumeTime) < 0L); // Rollover-proof
 }
 
