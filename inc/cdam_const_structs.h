@@ -27,7 +27,7 @@ const uint16_t kMetadataStoryCountSize = 1; // bytes
 const uint16_t kMetadataStoryUsedPagesOffset = (kMetadataStoryCountOffset + kMetadataStoryCountSize);
 const uint16_t kMetadataStoryUsedPagesSize = 1; // bytes
 const uint16_t kMetadataStoryOffsetsOffset = (kMetadataStoryUsedPagesOffset + kMetadataStoryUsedPagesSize);
-const uint16_t kMetadataStoryOffsetsSize = kMaxRandStoryCount; // 1 bytes each.
+const uint16_t kMetadataStoryOffsetsSize = kMaxRandStoryCount * 2; // 2 bytes each (extra byte needed for SD card offsets)
 const uint16_t kMetadataStoryOrderOffset = (kMetadataStoryOffsetsOffset + kMetadataStoryOffsetsSize);
 const uint16_t kMetadataStoryOrderSize = kMaxRandStoryCount; // 1 bytes each.
 const uint16_t kMetadataSize = (kMetadataStoryOrderOffset + kMetadataStoryOrderSize);
@@ -144,7 +144,7 @@ typedef struct Metadata_t {
 	MetaValues values;
 	uint8_t storyCount;
 	uint8_t usedStoryPages;
-	uint8_t storyOffsets[kMaxRandStoryCount];
+	uint16_t storyOffsets[kMaxRandStoryCount];
 	uint8_t storyOrder[kMaxRandStoryCount];
 	//std::vector<uint32_t> storyOffsets;
 } Metadata;
