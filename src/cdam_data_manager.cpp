@@ -354,6 +354,7 @@ bool DataManager::setFlag(uint8_t aFlagIndex, uint8_t aBitIndex, bool aValue) {
 }
 
 bool DataManager::resetMetadata() {
+	//_metaFlash->eraseAll();
 	return initializeMetadata(&this->metadata);
 }
 

@@ -52,6 +52,7 @@ const char* kServerCmdGetLocalIP = "get_local_ip"; // Publishes event.
 const char* kServerCmdAddStory = "add_story";
 
 const uint16_t kServerDataBufferSize = 128; // Must evening devide in Flashee pagesize (4096 currently)
+const uint16_t kStoryDataBufferSize = 1024; // Flashee::Devices::userFlash().pageSize()
 const uint16_t kServerTimeout = 30000;	// ms
 const char kServerArgumentDelimiter = '|';
 
@@ -371,11 +372,11 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 
 		if (aClient->available()) {
 			//uint16_t index = 0;
-			uint16_t pageBytesRead = 0;
+			uint16_t chunkBytesRead = 0;
 			uint32_t totalBytesRead = 0;
 			uint32_t bytesToRead = kServerDataBufferSize;
-			uint8_t pagesWritten = 0;
-			uint8_t buffer[Flashee::Devices::userFlash().pageSize()];
+			uint8_t chunksWritten = 0;
+			uint8_t buffer[kStoryDataBufferSize];
 			memset(&buffer[0], 0, sizeof(buffer));
 			//DEBUG("Story Size: %lu", aStorySize);
 
@@ -387,21 +388,22 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 				if ((aStorySize - totalBytesRead) < kServerDataBufferSize) {
 					bytesToRead = aStorySize - totalBytesRead;
 				}
-				int16_t bytes = aClient->read(buffer + pageBytesRead, bytesToRead);
+
+				int16_t bytes = aClient->read(buffer + chunkBytesRead, bytesToRead);
 				//DEBUG("Bytes read: %d", bytes);
 
 				if (bytes > 0) {
-					pageBytesRead += bytes;
+					chunkBytesRead += bytes;
 					totalBytesRead += bytes;
 
-					if ((pageBytesRead % Flashee::Devices::userFlash().pageSize() == 0) ||
+					if ((chunkBytesRead % kStoryDataBufferSize == 0) ||
 						(totalBytesRead == aStorySize)) {
 						// Write data
 						//DEBUG("Writing page #: %d", (pagesWritten + 1));
 						//DEBUG("Used Pages: %d", Manager::getInstance().dataManager->metadata.usedStoryPages);
 						bool result = Manager::getInstance().dataManager->writeData(buffer,
 						                       (Manager::getInstance().dataManager->metadata.usedStoryPages * Flashee::Devices::userFlash().pageSize()) +
-						                       (pagesWritten * Flashee::Devices::userFlash().pageSize()), sizeof(buffer));
+						                       (chunksWritten * kStoryDataBufferSize), sizeof(buffer));
 
 						if (!result) {
 							Errors::setError(E_SERVER_SOCKET_DATA_FAIL);
@@ -410,8 +412,8 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 							break;
 						}
 						memset(&buffer[0], 0, sizeof(buffer));
-						pageBytesRead = 0;
-						pagesWritten += 1;
+						chunkBytesRead = 0;
+						chunksWritten += 1;
 					}
 					//DEBUG("Pages: %d, Total bytes: %lu", pagesWritten, totalBytesRead);
 					if (totalBytesRead == aStorySize) {
