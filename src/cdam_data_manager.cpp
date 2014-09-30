@@ -92,6 +92,8 @@ bool DataManager::initSD() {
 		_volume->init(_card) &&
 		_root->openRoot(_volume)) {
 
+		_storyFile = new SdFile();
+
 		dir_t filePntr;
 		char fileName[13] = {'\0'};
 		uint16_t fileIndex = 0;
@@ -101,23 +103,23 @@ bool DataManager::initSD() {
 			memcpy(fileName, filePntr.name, 8);
 			memcpy(fileName + 9, filePntr.name + 8, 3);
 			fileName[8] = '.';
-			_storyFile = new SdFile();
 			if (strncmp(fileName + 9, "DAM", 3) == 0) {
 				if (_storyFile->open(_root, fileIndex, O_READ)) {
 					if (_storyFile->read() == kAsciiHeaderByte) {
 						this->metadata.storyOffsets[index] = fileIndex;
 						this->metadata.storyOrder[index] = index;
 						index++;
-						//_storyFile.seekSet(20); // seekCur moves forward given # of bytes
-						//_storyFile.read(title, 64);
-						//DEBUG("Index %d", fileIndex);
+						/*char title[65] = {'\0'};
+						_storyFile->seekSet(20); // seekCur moves forward given # of bytes
+						_storyFile->read(title, 64);
+						DEBUG("Title: %s", title);*/
 					}
 					_storyFile->close();
 				}
 			}
 			//memset(&fileName[0], 0, sizeof(fileName));
-			delete _storyFile;
-			_storyFile = NULL;
+			//delete _storyFile;
+			//_storyFile = NULL;
 			fileIndex++;
 		}
 		if (index > 0) {
@@ -136,9 +138,7 @@ bool DataManager::initSD() {
 
 uint32_t DataManager::getStoryOffset(uint8_t aIndex) {
 #if HAS_SD == 1
-	if (this->metadata.flags.sdCard) {
-		return this->metadata.storyOffsets[this->liveStoryOrder[aIndex]];
-	}
+	if (this->metadata.flags.sdCard) { return 0; }
 #endif
 	return this->metadata.storyOffsets[this->liveStoryOrder[aIndex]] * Flashee::Devices::userFlash().pageSize();
 }
@@ -160,8 +160,8 @@ bool DataManager::getNumberedTitle(char* aBuffer, uint8_t aIndex) {
 	uint32_t offset = kStoryTitleOffset;
 #if HAS_SD == 1
 	if (this->metadata.flags.sdCard) {
-		_storyFile = new SdFile();
-		if (!_storyFile->open(_root, getStoryOffset(aIndex), O_READ)) {
+		//_storyFile = new SdFile();
+		if (!_storyFile->open(_root, this->metadata.storyOffsets[this->liveStoryOrder[aIndex]], O_READ)) {
 			return false;
 		}
 	} else
@@ -175,8 +175,8 @@ bool DataManager::getNumberedTitle(char* aBuffer, uint8_t aIndex) {
 		if (_storyFile->isOpen()) {
 			_storyFile->close();
 		}
-		delete _storyFile;
-		_storyFile = NULL;
+		//delete _storyFile;
+		//_storyFile = NULL;
 	}
 #endif
 	/*if (!result) {
@@ -191,7 +191,8 @@ bool DataManager::loadStory(uint8_t aIndex) {
 
 #if HAS_SD == 1
 	if (this->metadata.flags.sdCard) {
-		if (!_storyFile->open(_root, getStoryOffset(aIndex), O_READ)) {
+		//_storyFile = new SdFile();
+		if (!_storyFile->open(_root, this->metadata.storyOffsets[this->liveStoryOrder[aIndex]], O_READ)) {
 			return false;
 		}
 	}
@@ -211,8 +212,8 @@ void DataManager::unloadStory() {
 #if HAS_SD == 1
 	if (this->metadata.flags.sdCard) {
 		_storyFile->close();
-		delete _storyFile;
-		_storyFile = NULL;
+		//delete _storyFile;
+		//_storyFile = NULL;
 	}
 #endif
 	this->currentStory = -1;

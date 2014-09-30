@@ -12,8 +12,10 @@ void Parser::initialize() {
 	_state = PARSE_IDLE;
 }
 
-void Parser::initStory(uint8_t aStoryIndex) {
-	_dataManager->loadStory(aStoryIndex);
+bool Parser::initStory(uint8_t aStoryIndex) {
+	if (!_dataManager->loadStory(aStoryIndex)) {
+		return 0;
+	}
 	_offset = _dataManager->startOffset;
 	_state = PARSE_UPDATES;
 	_appended = false;
@@ -23,6 +25,7 @@ void Parser::initStory(uint8_t aStoryIndex) {
 	_dataLength = 0;
 
 	_hardwareManager->printer()->printStoryIntro(_dataManager->storyHeader.title, _dataManager->storyHeader.author);
+	return 1;
 }
 
 ParseState Parser::parsePassage() {

@@ -165,7 +165,7 @@ void StateController::loopState(GameState aState) {
 					DEBUG("%s", titleBuffer);
 				} else {
 					changeState(STATE_ERROR);
-					break;
+					return;
 				}
 			}
 			_hardwareManager->printer()->feed(2);
@@ -186,8 +186,11 @@ void StateController::loopState(GameState aState) {
 		uint8_t total = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, _dataManager->liveStoryCount);
 		if (total) {
 			// Story has been selected, initialize the parser with story index (not number).
-			_parser->initStory(total - 1);
-			changeState(STATE_PLAY);
+			if (_parser->initStory(total - 1)) {
+				changeState(STATE_PLAY);
+			} else {
+				changeState(STATE_ERROR);
+			}
 		}
 	} else if (aState == STATE_PLAY) {
 		ParseState state = _parser->parsePassage();

@@ -27,7 +27,7 @@ public:
 	/* Public Methods */
     void initialize();
 
-    void initStory(uint8_t aStoryIndex);
+    bool initStory(uint8_t aStoryIndex);
     ParseState parsePassage();
     //uint32_t parseBody(uint32_t aOffset);
     //void parseData(char* aBuffer);
