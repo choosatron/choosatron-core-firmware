@@ -136,7 +136,9 @@ bool DataManager::initSD() {
 
 uint32_t DataManager::getStoryOffset(uint8_t aIndex) {
 #if HAS_SD == 1
-	if (this->metadata.flags.sdCard) { return 0; }
+	if (this->metadata.flags.sdCard) {
+		return this->metadata.storyOffsets[this->liveStoryOrder[aIndex]];
+	}
 #endif
 	return this->metadata.storyOffsets[this->liveStoryOrder[aIndex]] * Flashee::Devices::userFlash().pageSize();
 }
@@ -159,7 +161,7 @@ bool DataManager::getNumberedTitle(char* aBuffer, uint8_t aIndex) {
 #if HAS_SD == 1
 	if (this->metadata.flags.sdCard) {
 		_storyFile = new SdFile();
-		if (!_storyFile->open(_root, this->metadata.storyOffsets[this->liveStoryOrder[aIndex]], O_READ)) {
+		if (!_storyFile->open(_root, getStoryOffset(aIndex), O_READ)) {
 			return false;
 		}
 	} else
@@ -189,7 +191,7 @@ bool DataManager::loadStory(uint8_t aIndex) {
 
 #if HAS_SD == 1
 	if (this->metadata.flags.sdCard) {
-		if (!_storyFile->open(_root, this->metadata.storyOffsets[this->liveStoryOrder[aIndex]], O_READ)) {
+		if (!_storyFile->open(_root, getStoryOffset(aIndex), O_READ)) {
 			return false;
 		}
 	}
