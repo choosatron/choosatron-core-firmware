@@ -499,7 +499,4 @@ void Printer::setABS(bool aTurnOn) {
   //CSN_Thermal::sleep();
 }*/
 
-
-
-
 }

@@ -26,7 +26,7 @@ void Parser::initStory(uint8_t aStoryIndex) {
 }
 
 ParseState Parser::parsePassage() {
-	Spark.process();
+	//Spark.process();
 	if (_state == PARSE_UPDATES) {
 		uint32_t processedBytes = 0;
 		if ((processedBytes = parseValueUpdates(_offset))) {
@@ -71,7 +71,7 @@ ParseState Parser::parsePassage() {
 		}
 		// Allocate a buffer of data length, up to a maximum.
 		uint16_t bufferSize = (_dataLength < (kPassageBufferReadSize + _lastIndent)) ? _dataLength : (kPassageBufferReadSize + _lastIndent);
-		DEBUG("Bufsize: %d", bufferSize);
+		//DEBUG("Bufsize: %d", bufferSize);
 		_buffer = new char[bufferSize + bufferPadding + 1](); // + 1 to null terminate if it is all text.
 		// Insert the numbering.
 		if (dataStart) {
@@ -87,7 +87,7 @@ ParseState Parser::parsePassage() {
 			_lastIndent = _hardwareManager->printer()->wrapText(_buffer, kPrinterColumns, _lastIndent);
 			// Print the text up to the command.
 			_hardwareManager->printer()->print(_buffer);
-			DEBUG("%s", _buffer);
+			//DEBUG("%s", _buffer);
 			_offset += processedBytes;
 			_dataLength -= processedBytes;
 		}
@@ -97,7 +97,7 @@ ParseState Parser::parsePassage() {
 			_buffer = NULL;
 			if (_parsingChoices) { // Passage Index is next.
 				if (_dataManager->readData(&_choices[_choiceIndex].passageIndex, _offset, kPassageIndexSize)) {
-					DEBUG("Passage Index: %d", _choices[_choiceIndex].passageIndex);
+					//DEBUG("Passage Index: %d", _choices[_choiceIndex].passageIndex);
 					_offset += kPassageIndexSize;
 					_choices[_choiceIndex].updatesOffset = _offset;
 					//DEBUG("Updates Offset for choice #%d: %lu", _choiceIndex, _choices[_choiceIndex].updatesOffset);
