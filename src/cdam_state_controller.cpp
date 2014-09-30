@@ -160,6 +160,9 @@ void StateController::loopState(GameState aState) {
 					_hardwareManager->printer()->wrapText(titleBuffer, kPrinterColumns);
 					_hardwareManager->printer()->println(titleBuffer);
 					DEBUG("%s", titleBuffer);
+				} else {
+					changeState(STATE_ERROR);
+					break;
 				}
 			}
 			_hardwareManager->printer()->feed(2);
@@ -218,7 +221,7 @@ void StateController::endState(GameState aState) {
 	LOG("End State: %s", stateString());
 
 	if (aState == STATE_BOOTING) {
-
+		_dataManager->logMetadata();
 	} else if (aState == STATE_INIT) {
 		_hardwareManager->printer()->active = true;
 	}/* else if (aState == STATE_CREDITS) {

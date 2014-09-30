@@ -34,16 +34,8 @@ bool DataManager::initialize(StateController *aStateController) {
 		return false;
 	}
 
-    //testMetadata();
+	//testMetadata();
 	//_metaFlash->eraseAll();
-	/*char data[kMetadataSize] = "";
-	_metaFlash->read(data, 0, kMetadataSize);
-	for (int i = 0; i < kMetadataSize; ++i) {
-		if (data[i]<0x10) {Serial.print("0");}
-          Serial.print(data[i],HEX);
-          Serial.print(" ");
-	}
-	Serial.println("END");*/
 
 	loadFirmwareVersion();
 
@@ -69,6 +61,17 @@ bool DataManager::initialize(StateController *aStateController) {
 	return true;
 }
 
+void DataManager::logMetadata() {
+	char data[kMetadataSize] = "";
+	_metaFlash->read(data, 0, kMetadataSize);
+	for (int i = 0; i < kMetadataSize; ++i) {
+		if (data[i]<0x10) {Serial.print("0");}
+			Serial.print(data[i],HEX);
+			Serial.print(" ");
+	}
+	Serial.println("END");
+}
+
 uint32_t DataManager::getStoryOffset(uint8_t aIndex) {
 	return this->metadata.storyOffsets[this->liveStoryOrder[aIndex]];
 }
@@ -90,6 +93,7 @@ bool DataManager::getNumberedTitle(char* aBuffer, uint8_t aIndex) {
 	sprintf(aBuffer, "%d. ", aIndex + 1);
 
 	uint32_t offset = getStoryOffset(aIndex) * Flashee::Devices::userFlash().pageSize() + kStoryTitleOffset;
+	DEBUG("Offset: %lu", offset);
 	bool result = readData(aBuffer + strlen(aBuffer), offset, kStoryTitleSize);
 	if (!result) {
 		Errors::setError(E_HEADER_READ_FAIL);

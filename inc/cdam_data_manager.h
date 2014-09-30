@@ -39,6 +39,7 @@ class DataManager
         DataManager();
 
         bool initialize(StateController *aStateController);
+        void logMetadata();
 
         // Get the page offset the story begins at.
         uint32_t getStoryOffset(uint8_t aIndex);

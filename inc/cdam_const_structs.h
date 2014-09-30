@@ -144,7 +144,7 @@ typedef struct Metadata_t {
 	MetaValues values;
 	uint8_t storyCount;
 	uint8_t usedStoryPages;
-	uint16_t storyOffsets[kMaxRandStoryCount];
+	uint8_t storyOffsets[kMaxRandStoryCount];
 	uint8_t storyOrder[kMaxRandStoryCount];
 	//std::vector<uint32_t> storyOffsets;
 } Metadata;
