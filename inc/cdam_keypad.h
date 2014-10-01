@@ -42,14 +42,14 @@ typedef enum {
 } KeypadEvent;
 
 typedef struct {
-	volatile uint8_t pin;   // the pin number of the button
-	volatile uint8_t num;
-  	volatile uint8_t count;
-  	volatile ButtonState state; // The current button state
-  	volatile ButtonEvent event;
-  	volatile uint8_t value:1; // the last digital read value
-  	volatile uint8_t active:1; // the boolean button (active or not)
-  	volatile uint8_t heldFlag:1;
+	uint8_t pin;   // the pin number of the button
+	uint8_t num;
+	uint8_t count;
+	ButtonState state; // The current button state
+	ButtonEvent event;
+	uint8_t value:1; // the last digital read value
+	uint8_t active:1; // the boolean button (active or not)
+	uint8_t heldFlag:1;
 } ButtonData;
 
 
@@ -73,6 +73,8 @@ public:
 	uint8_t keypadEventValue(KeypadEvent aEvent);
 	//char keypadEventChar(KeypadEvent aEvent);
 	void clearEvents();
+	void setButtonEvent(ButtonEvent aEvent, uint8_t aBtnNum);
+	void setKeypadEvent(KeypadEvent aEvent, uint8_t aValue);
 
 	/* Public Variables */
 
@@ -93,20 +95,20 @@ private:
 	KeypadEvent event;
 	KeypadEvent lastEvent;
 
-	volatile uint8_t buttons; // Current active buttons.
-	volatile uint8_t keypadValue; // The value of all currently active buttons.
-	volatile uint8_t lastButtons; // The last valid active buttons.
-	volatile uint8_t lastValue; // The last value of all currently active buttons.
+	uint8_t buttons; // Current active buttons.
+	uint8_t keypadValue; // The value of all currently active buttons.
+	uint8_t lastButtons; // The last valid active buttons.
+	uint8_t lastValue; // The last value of all currently active buttons.
 
-	volatile uint8_t multiCount; // Holds the debounce count for multi-down & multi-up events.
-	volatile uint8_t multiUp; // Temporary holds multi-up value.
-	volatile uint8_t multiUpValue;
+	uint8_t multiCount; // Holds the debounce count for multi-down & multi-up events.
+	uint8_t multiUp; // Temporary holds multi-up value.
+	uint8_t multiUpValue;
 
-	volatile uint8_t pressedEvents;  // Holds which buttons have gone active.
-	volatile uint8_t releasedEvents; // Holds which buttons have been pressed and released.
-    volatile uint8_t heldEvents; // Holds which buttons have been held for more than HOLD_COUNT.
-    volatile uint8_t multiDownEvent; // Holds which buttons were active on a valid multi-down event.
-    volatile uint8_t multiUpEvent; // Holds which buttons were active on a valid multi-up event.
+	uint8_t pressedEvents;  // Holds which buttons have gone active.
+	uint8_t releasedEvents; // Holds which buttons have been pressed and released.
+	uint8_t heldEvents; // Holds which buttons have been held for more than HOLD_COUNT.
+	uint8_t multiDownEvent; // Holds which buttons were active on a valid multi-down event.
+	uint8_t multiUpEvent; // Holds which buttons were active on a valid multi-up event.
 };
 
 }

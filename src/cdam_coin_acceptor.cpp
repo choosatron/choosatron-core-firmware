@@ -26,7 +26,12 @@ void CoinAcceptor::updateState() {
 }
 
 void CoinAcceptor::addCredits(uint8_t aCredits) {
-	coins += (aCredits * coinsPerCredit);
+	int8_t adjustment = aCredits * coinsPerCredit;
+	if ((adjustment < 0) && ((-1 * adjustment) > coins)) {
+		coins = 0;
+	} else {
+		coins += adjustment;
+	}
 }
 
 void CoinAcceptor::setCredits(uint8_t aCredits) {

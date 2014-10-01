@@ -18,37 +18,37 @@ namespace cdam
 Keypad::Keypad() {}
 
 void Keypad::initialize() {
-    pinMode(PIN_BTN_ONE, INPUT_PULLUP);
-    pinMode(PIN_BTN_TWO, INPUT_PULLUP);
-    pinMode(PIN_BTN_THREE, INPUT_PULLUP);
-    pinMode(PIN_BTN_FOUR, INPUT_PULLUP);
+	pinMode(PIN_BTN_ONE, INPUT_PULLUP);
+	pinMode(PIN_BTN_TWO, INPUT_PULLUP);
+	pinMode(PIN_BTN_THREE, INPUT_PULLUP);
+	pinMode(PIN_BTN_FOUR, INPUT_PULLUP);
 
-    ButtonData btnOne   = { PIN_BTN_ONE, 1, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0 };
-    ButtonData btnTwo   = { PIN_BTN_TWO, 2, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0 };
-    ButtonData btnThree = { PIN_BTN_THREE, 3, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0 };
-    ButtonData btnFour  = { PIN_BTN_FOUR, 4, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0 };
+	ButtonData btnOne   = { PIN_BTN_ONE, 1, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0, 0, 0 };
+	ButtonData btnTwo   = { PIN_BTN_TWO, 2, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0, 0, 0 };
+	ButtonData btnThree = { PIN_BTN_THREE, 3, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0, 0, 0 };
+	ButtonData btnFour  = { PIN_BTN_FOUR, 4, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0, 0, 0 };
 
-    this->buttonData[0] = btnOne;
-    this->buttonData[1] = btnTwo;
-    this->buttonData[2] = btnThree;
-    this->buttonData[3] = btnFour;
+	this->buttonData[0] = btnOne;
+	this->buttonData[1] = btnTwo;
+	this->buttonData[2] = btnThree;
+	this->buttonData[3] = btnFour;
 
-    this->state = KEYPAD_IDLE_STATE;
-    this->buttons = 0;
-    this->keypadValue = 0;
-    this->lastValue = 0;
-    this->lastButtons = 0;
-    this->multiCount = 0;
-    this->multiUp = 0;
-    this->multiUpValue = 0;
-    this->clearEvents();
-    this->active = true;
+	this->state = KEYPAD_IDLE_STATE;
+	this->buttons = 0;
+	this->keypadValue = 0;
+	this->lastValue = 0;
+	this->lastButtons = 0;
+	this->multiCount = 0;
+	this->multiUp = 0;
+	this->multiUpValue = 0;
+	this->clearEvents();
+	this->active = true;
 }
 
 void Keypad::updateState() {
-    if (this->active) {
-        getFilteredButtons();
-    }
+	if (this->active) {
+		getFilteredButtons();
+	}
 
     /*for (int i = NUM_BUTTONS - 1; i >= 0; i--) { // notice reverse count order, to accomodate left shift
         ButtonEvent event = buttonData[i].event;
@@ -93,40 +93,40 @@ void Keypad::updateState() {
 //
 
 bool Keypad::buttonsDown() {
-    if (this->lastButtons) {
-        return true;
-    }
-    return false;
+	if (this->lastButtons) {
+		return true;
+	}
+	return false;
 }
 
 bool Keypad::buttonDown(uint8_t aBtnNum) {
-    DEBUG("Button %d: %d", aBtnNum, buttonData[aBtnNum - 1].value);
-    return buttonData[aBtnNum - 1].value ? true : false;
+	DEBUG("Button %d: %d", aBtnNum, buttonData[aBtnNum - 1].value);
+	return buttonData[aBtnNum - 1].value ? true : false;
 }
 
 uint8_t Keypad::buttonEvent(ButtonEvent aEvent, uint8_t aRange) {
-    uint8_t result = 0;
-    for (int i = NUM_BUTTONS - 1; i >= 0; i--) {
-        if (this->buttonData[i].event == aEvent) {
-            if (aRange == 0) {
-                result = this->buttonData[i].num;
-            } else if ((0 < buttonData[i].num) && (buttonData[i].num <= aRange)) {
-                result = this->buttonData[i].num;
-            }
-            clearEvents();
-        }
-    }
-    return result;
+	uint8_t result = 0;
+	for (int i = NUM_BUTTONS - 1; i >= 0; i--) {
+		if (this->buttonData[i].event == aEvent) {
+			if (aRange == 0) {
+				result = this->buttonData[i].num;
+			} else if ((0 < buttonData[i].num) && (buttonData[i].num <= aRange)) {
+				result = this->buttonData[i].num;
+			}
+			clearEvents();
+		}
+	}
+	return result;
 }
 
 uint8_t Keypad::buttonEventValue(ButtonEvent aEvent, uint8_t aBtnNum) {
-    uint8_t result = 0;
-    if (buttonData[aBtnNum - 1].event == aEvent) {
-        this->buttonData[aBtnNum - 1].event = BTN_NO_EVENT;
-        result = buttonData[aBtnNum - 1].num;
-    }
-    //clearEvents();
-    return result;
+	uint8_t result = 0;
+	if (buttonData[aBtnNum - 1].event == aEvent) {
+		this->buttonData[aBtnNum - 1].event = BTN_NO_EVENT;
+		result = buttonData[aBtnNum - 1].num;
+	}
+	//clearEvents();
+	return result;
 }
 
 /*char Keypad::buttonEventChar(ButtonEvent aEvent, uint8_t aBtnNum) {
@@ -138,39 +138,39 @@ uint8_t Keypad::buttonEventValue(ButtonEvent aEvent, uint8_t aBtnNum) {
 }*/
 
 uint8_t Keypad::buttonValue(ButtonState aState, uint8_t aBtnNum) {
-    uint8_t result = 0;
-    if (buttonData[aBtnNum - 1].state == aState) {
-        result = buttonData[aBtnNum - 1].num;
-    }
-    return result;
+	uint8_t result = 0;
+	if (buttonData[aBtnNum - 1].state == aState) {
+		result = buttonData[aBtnNum - 1].num;
+	}
+	return result;
 }
 
 /*char Keypad::buttonChar(uint8_t aBtnNum) {
-    char result = buttonData[aBtnNum].num + '0';
-    return result;
+char result = buttonData[aBtnNum].num + '0';
+return result;
 }*/
 
 uint8_t Keypad::keypadEvent(KeypadEvent aEvent, uint8_t aRange) {
-    uint8_t result = 0;
-    if (this->event == aEvent) {
-        if (aRange == 0) {
-            result = this->lastValue;
-        } else if ((0 < this->lastValue) && (this->lastValue <= aRange)) {
-            result = this->lastValue;
-        }
-        clearEvents();
-    }
-    return result;
+	uint8_t result = 0;
+	if (this->event == aEvent) {
+		if (aRange == 0) {
+			result = this->lastValue;
+		} else if ((0 < this->lastValue) && (this->lastValue <= aRange)) {
+			result = this->lastValue;
+		}
+		clearEvents();
+	}
+	return result;
 }
 
 uint8_t Keypad::keypadEventValue(KeypadEvent aEvent) {
-    uint8_t result = 0;
-    if (this->event == aEvent) {
-        //this->event = KEYPAD_NO_EVENT;
-        result = this->lastValue;
-        clearEvents();
-    }
-    return result;
+	uint8_t result = 0;
+	if (this->event == aEvent) {
+    //this->event = KEYPAD_NO_EVENT;
+		result = this->lastValue;
+		clearEvents();
+	}
+	return result;
 }
 
 /*char Keypad::keypadEventChar(KeypadEvent aEvent) {
@@ -182,89 +182,101 @@ uint8_t Keypad::keypadEventValue(KeypadEvent aEvent) {
 }*/
 
 void Keypad::clearEvents() {
-    for (int i = NUM_BUTTONS - 1; i >= 0; i--) {
-        this->buttonData[i].event = BTN_NO_EVENT;
-    }
-    this->lastEvent = this->event;
-    this->event = KEYPAD_NO_EVENT;
-    this->pressedEvents = 0;
-    this->releasedEvents = 0;
-    this->heldEvents = 0;
-    this->multiDownEvent = 0;
-    this->multiUpEvent = 0;
+	for (int i = NUM_BUTTONS - 1; i >= 0; i--) {
+		this->buttonData[i].event = BTN_NO_EVENT;
+	}
+	this->lastEvent = this->event;
+	this->event = KEYPAD_NO_EVENT;
+	this->pressedEvents = 0;
+	this->releasedEvents = 0;
+	this->heldEvents = 0;
+	this->multiDownEvent = 0;
+	this->multiUpEvent = 0;
 
-    this->state = KEYPAD_IDLE_STATE;
-    this->buttons = 0;
-    this->keypadValue = 0;
-    this->lastValue = 0;
-    this->lastButtons = 0;
-    this->multiCount = 0;
-    this->multiUp = 0;
-    this->multiUpValue = 0;
+	this->state = KEYPAD_IDLE_STATE;
+	this->buttons = 0;
+	this->keypadValue = 0;
+	this->lastValue = 0;
+	this->lastButtons = 0;
+	this->multiCount = 0;
+	this->multiUp = 0;
+	this->multiUpValue = 0;
+}
+
+void Keypad::setButtonEvent(ButtonEvent aEvent, uint8_t aBtnNum) {
+	this->buttonData[aBtnNum - 1].event = aEvent;
+	this->buttonData[aBtnNum - 1].active = 1;
+	this->buttons |= (buttonData[aBtnNum - 1].active << (aBtnNum - 1));
+	this->lastValue += this->buttonData[aBtnNum - 1].num;
+}
+
+void Keypad::setKeypadEvent(KeypadEvent aEvent, uint8_t aValue) {
+	this->event = aEvent;
+	this->lastValue = aValue;
 }
 
 /* Private Methods */
 
 ButtonEvent Keypad::filterButton(ButtonData *aBtnData) {
-    uint8_t val = !digitalRead(aBtnData->pin);
-    aBtnData->event = BTN_NO_EVENT;
-    switch (aBtnData->state)
-    {
-        case BTN_IDLE_STATE:
-            if (!aBtnData->active && (val != 0)) {
-                // Filter button down.
-                aBtnData->count = BTN_FILTER_DOWN_COUNT;
-                aBtnData->state = BTN_FILTER_DOWN_STATE;
-            } else if (aBtnData->active && (val == 0)) {
-                // Filter button up.
-                aBtnData->count = BTN_FILTER_UP_COUNT;
-                aBtnData->state = BTN_FILTER_UP_STATE;
-            }
-            break;
-        case BTN_FILTER_DOWN_STATE:
-            if (val == 1 && (!aBtnData->active)) {
-                if ((aBtnData->count != 0) && (--aBtnData->count == 0)) {
-                    aBtnData->active = val;
-                    aBtnData->event = BTN_DOWN_EVENT;
-                    aBtnData->count = BTN_HOLD_COUNT;
-                    aBtnData->state = BTN_FILTER_HOLD_STATE; // Button is down.
-                }
-            } else {
-                aBtnData->count = BTN_FILTER_UP_COUNT;
-                aBtnData->state = BTN_FILTER_UP_STATE;
-            }
-            break;
-        case BTN_FILTER_HOLD_STATE:
-            if (val == 1 && (aBtnData->active)) {
-                if ((aBtnData->count != 0) && (--aBtnData->count == 0)) {
-                    aBtnData->event = BTN_HELD_EVENT;
-                    aBtnData->state = BTN_IDLE_STATE;
-                }
-            } else {
-                // Filter button up.
-                aBtnData->count = BTN_FILTER_UP_COUNT;
-                aBtnData->state = BTN_FILTER_UP_STATE;
-            }
-            break;
-        case BTN_FILTER_UP_STATE:
-            if (val == 0 && (aBtnData->active)) {
-                if ((aBtnData->count != 0) && (--aBtnData->count == 0)) {
-                    aBtnData->active = val;
-                    aBtnData->heldFlag = 0;
-                    aBtnData->event = BTN_UP_EVENT;
-                    aBtnData->state = BTN_IDLE_STATE; // Button let up.
-                }
-            } else {
-                aBtnData->count = BTN_FILTER_DOWN_COUNT;
-                aBtnData->state = BTN_FILTER_DOWN_STATE;
-            }
-            break;
-        default:
-            aBtnData->state = BTN_IDLE_STATE;
-            break;
-    }
-    aBtnData->value = val;
-    return aBtnData->event;
+	uint8_t val = !digitalRead(aBtnData->pin);
+	aBtnData->event = BTN_NO_EVENT;
+	switch (aBtnData->state)
+	{
+		case BTN_IDLE_STATE:
+			if (!aBtnData->active && (val != 0)) {
+				// Filter button down.
+				aBtnData->count = BTN_FILTER_DOWN_COUNT;
+				aBtnData->state = BTN_FILTER_DOWN_STATE;
+			} else if (aBtnData->active && (val == 0)) {
+				// Filter button up.
+				aBtnData->count = BTN_FILTER_UP_COUNT;
+				aBtnData->state = BTN_FILTER_UP_STATE;
+			}
+			break;
+		case BTN_FILTER_DOWN_STATE:
+			if (val == 1 && (!aBtnData->active)) {
+				if ((aBtnData->count != 0) && (--aBtnData->count == 0)) {
+					aBtnData->active = val;
+					aBtnData->event = BTN_DOWN_EVENT;
+					aBtnData->count = BTN_HOLD_COUNT;
+					aBtnData->state = BTN_FILTER_HOLD_STATE; // Button is down.
+				}
+			} else {
+				aBtnData->count = BTN_FILTER_UP_COUNT;
+				aBtnData->state = BTN_FILTER_UP_STATE;
+			}
+			break;
+		case BTN_FILTER_HOLD_STATE:
+			if (val == 1 && (aBtnData->active)) {
+				if ((aBtnData->count != 0) && (--aBtnData->count == 0)) {
+					aBtnData->event = BTN_HELD_EVENT;
+					aBtnData->state = BTN_IDLE_STATE;
+				}
+			} else {
+				// Filter button up.
+				aBtnData->count = BTN_FILTER_UP_COUNT;
+				aBtnData->state = BTN_FILTER_UP_STATE;
+			}
+			break;
+		case BTN_FILTER_UP_STATE:
+			if (val == 0 && (aBtnData->active)) {
+				if ((aBtnData->count != 0) && (--aBtnData->count == 0)) {
+					aBtnData->active = val;
+					aBtnData->heldFlag = 0;
+					aBtnData->event = BTN_UP_EVENT;
+					aBtnData->state = BTN_IDLE_STATE; // Button let up.
+				}
+			} else {
+				aBtnData->count = BTN_FILTER_DOWN_COUNT;
+				aBtnData->state = BTN_FILTER_DOWN_STATE;
+			}
+			break;
+		default:
+			aBtnData->state = BTN_IDLE_STATE;
+			break;
+	}
+	aBtnData->value = val;
+	return aBtnData->event;
 }
 
 /*void Keypad::printBinary(uint8_t aValue) {
@@ -280,13 +292,13 @@ ButtonEvent Keypad::filterButton(ButtonData *aBtnData) {
 }*/
 
 uint8_t Keypad::keypadTotal(uint8_t aButtons) {
-    uint8_t total = 0;
-    for (int i = NUM_BUTTONS - 1; i >= 0; i--) {
-        if (IsBitSet(aButtons, i)) {
-            total += buttonData[i].num;
-        }
-    }
-    return total;
+	uint8_t total = 0;
+	for (int i = NUM_BUTTONS - 1; i >= 0; i--) {
+		if (IsBitSet(aButtons, i)) {
+			total += buttonData[i].num;
+		}
+	}
+	return total;
 }
 
 void Keypad::getFilteredButtons(void) {

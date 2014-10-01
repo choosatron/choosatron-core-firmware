@@ -5,6 +5,7 @@
 namespace cdam
 {
 
+const int8_t kServerReturnNotImplemented = -6;
 const int8_t kServerReturnMaxReached = -5;
 const int8_t kServerReturnInvalidIndex = -4;
 const int8_t kServerReturnBusy = -3;
@@ -139,42 +140,50 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	int32_t returnVal = kServerReturnSuccess;
 
 	//aCommandAndArgs.trim();
-    //aCommandAndArgs.toLowerCase();
+	//aCommandAndArgs.toLowerCase();
 
 	int cmdLen = aCommandAndArgs.length();
-    int delimiterPos = aCommandAndArgs.indexOf(kServerArgumentDelimiter);
+	int delimiterPos = aCommandAndArgs.indexOf(kServerArgumentDelimiter);
 
 	char commandAndArgs[cmdLen + 1];
 	memset(&commandAndArgs[0], 0, sizeof(commandAndArgs));
 	aCommandAndArgs.toCharArray(commandAndArgs, sizeof(commandAndArgs));
 	DEBUG("Command and Args: %s", commandAndArgs);
 
-    if (delimiterPos > -1) {
+	if (delimiterPos > -1) {
 		int serverDelimPos = aCommandAndArgs.indexOf(kServerArgumentDelimiter, delimiterPos + 1);
-    	if (serverDelimPos > -1) {
-    		char serverAddress[cmdLen - serverDelimPos];
-    		memcpy(serverAddress, commandAndArgs + serverDelimPos + 1, cmdLen - serverDelimPos - 1);
-    		serverMan->parseServerAddress(serverAddress);
-    		cmdLen = serverDelimPos;
-    	}
+		if (serverDelimPos > -1) {
+			char serverAddress[cmdLen - serverDelimPos];
+			memcpy(serverAddress, commandAndArgs + serverDelimPos + 1, cmdLen - serverDelimPos - 1);
+			serverMan->parseServerAddress(serverAddress);
+			cmdLen = serverDelimPos;
+	}
 		serverMan->pendingArguments = new char[cmdLen - delimiterPos]();
 		memcpy(serverMan->pendingArguments, commandAndArgs + delimiterPos + 1, cmdLen - delimiterPos - 1);
 		cmdLen = delimiterPos;
 	}
 
-    serverMan->pendingCommand = new char[cmdLen + 1]();
-    memcpy(serverMan->pendingCommand, commandAndArgs, cmdLen);
+	serverMan->pendingCommand = new char[cmdLen + 1]();
+	memcpy(serverMan->pendingCommand, commandAndArgs, cmdLen);
 
 	if (strcmp(serverMan->pendingCommand, kServerCmdPing) == 0) {
 		//return kServerReturnSuccess;
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdKeypadInput) == 0) {
-		/* TODO */
-		uint8_t keypadVal = atoi(serverMan->pendingArguments);
-		//DEBUG("Keypad Val: %d", keypadVal);
+		KeypadEvent event = (KeypadEvent)(serverMan->pendingArguments[0] - '0');
+		uint8_t value = serverMan->pendingArguments[1] - '0';
+		//DEBUG("Event: %d, Val: %d", event, value);
+		hardMan->keypad()->setKeypadEvent(event, value);
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdButtonInput) == 0) {
-		/* TODO */
+		ButtonEvent event = (ButtonEvent)(serverMan->pendingArguments[0] - '0');
+		uint8_t btnNum = serverMan->pendingArguments[1] - '0';
+		//DEBUG("Event: %d, BtnNum: %d", event, btnNum);
+		hardMan->keypad()->setButtonEvent(event, btnNum);
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdAdjustCredits) == 0) {
-		hardMan->coinAcceptor()->addCredits(atoi(serverMan->pendingArguments));
+		int8_t credits = serverMan->pendingArguments[0] - '0';
+		if (serverMan->pendingArguments[1] == '0') {
+			credits *= -1;
+		}
+		hardMan->coinAcceptor()->addCredits(credits);
 		returnVal = hardMan->coinAcceptor()->getCredits();
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdSetCredits) == 0) {
 		hardMan->coinAcceptor()->setCredits(atoi(serverMan->pendingArguments));
@@ -190,11 +199,12 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		dataMan->removeAllStoryData();
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdSwapStoryPositions) == 0) {
 		/* TODO */
+		returnVal = kServerReturnNotImplemented;
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdSetFlag) == 0) {
 		// Byte 1: Flag Index, Byte 2: Bit Index, Byte 3: 0 or 1 for OFF or ON
-		uint8_t flagIndex = aCommandAndArgs.charAt(delimiterPos + 1) - '0';
-		uint8_t bitIndex = aCommandAndArgs.charAt(delimiterPos + 2) - '0';
-		bool value = aCommandAndArgs.charAt(delimiterPos + 3) - '0';
+		uint8_t flagIndex = serverMan->pendingArguments[0] - '0';
+		uint8_t bitIndex = serverMan->pendingArguments[1] - '0';
+		bool value = serverMan->pendingArguments[2] - '0';
 		//DEBUG("Flag Index: %d, Bit Index: %d, Value: %d", flagIndex, bitIndex, value);
 		if (!dataMan->setFlag(flagIndex, bitIndex, value)) {
 			returnVal = kServerReturnFail;
@@ -224,8 +234,9 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetRSSI) == 0) {
 		returnVal = WiFi.RSSI();
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetState) == 0) {
-		Spark.publish(kServerCmdGetState, dataMan->stateController()->stateString(), kServerTTLDefault, PRIVATE);
-		returnVal = kServerReturnEventIncoming;
+		//Spark.publish(kServerCmdGetState, dataMan->stateController()->stateString(), kServerTTLDefault, PRIVATE);
+		//returnVal = kServerReturnEventIncoming;
+		returnVal = dataMan->stateController()->getState();
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetSSID) == 0) {
 		Spark.publish(kServerCmdGetSSID, WiFi.SSID(), kServerTTLDefault, PRIVATE);
 		returnVal = kServerReturnEventIncoming;
@@ -270,52 +281,6 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 			serverMan->pendingAction = true;
 			returnVal = kServerReturnConnecting;
 		}
-
-		// Parser arguments
-		// args: IP addr uint8_t(4 bytes), port uint16_t(2 bytes), story position uint8_t(1 byte), story size uint32_t(4 bytes), checksum uint8_t(16 bytes)
-		// Validate
-		// Check Storage availability (ensure there is room)
-		// Set State to waiting for data
-		// Create server connection
-		// While connected, wait for data availability (with timeout)
-		// While data available, read data into buffer, then flash space based on page size
-		// Run Checksum
-		// Send back status (success, failure...)
-		/*byte ip[] = { aCommandAndArgs.charAt(delimiterPos + 1), aCommandAndArgs.charAt(delimiterPos + 2),
-			aCommandAndArgs.charAt(delimiterPos + 3), aCommandAndArgs.charAt(delimiterPos + 4)};
-
-		uint16_t port = aCommandAndArgs.charAt(delimiterPos + 5) | (aCommandAndArgs.charAt(delimiterPos + 6) << 8);
-		DEBUG("Port: %d", port);
-		uint8_t storyPos = aCommandAndArgs.charAt(delimiterPos + 7);
-		DEBUG("Story Pos: %d", storyPos);
-		uint32_t storySize = aCommandAndArgs.charAt(delimiterPos + 8) | (aCommandAndArgs.charAt(delimiterPos + 9) << 8) | (aCommandAndArgs.charAt(delimiterPos + 10) << 16) | (aCommandAndArgs.charAt(delimiterPos + 11) << 24);
-		DEBUG("Story Size: %Lu", storySize);
-		DEBUG("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x", aCommandAndArgs.charAt(delimiterPos + 1), aCommandAndArgs.charAt(delimiterPos + 2), aCommandAndArgs.charAt(delimiterPos + 3), aCommandAndArgs.charAt(delimiterPos + 4), aCommandAndArgs.charAt(delimiterPos + 5),
-		      aCommandAndArgs.charAt(delimiterPos + 6), aCommandAndArgs.charAt(delimiterPos + 7), aCommandAndArgs.charAt(delimiterPos + 8),
-		      aCommandAndArgs.charAt(delimiterPos + 9), aCommandAndArgs.charAt(delimiterPos + 10), aCommandAndArgs.charAt(delimiterPos + 11));
-
-		TCPClient client;
-		if (client.connect(ip, port)) {
-	    	DEBUG("TCPClient connected");
-	    	client.write("Hey there mr. server!");
-	    	// client.println("GET /search?q=unicorn HTTP/1.0");
-	    	// client.println("Host: www.google.com");
-	    	// client.println("Content-Length: 0");
-	    	// client.println();
-	    	delay(1000);
-	    	while (client.available()) {
-	    		DEBUG("%c", client.read());
-	    		//Serial.print(client.read());
-	    	}
-	    	//Serial.println("");
-	  	} else {
-	    	Serial.println("TCPClient connection failed");
-	 	}*/
-		// Get server IP address/port (e.g. 1.1.1.1:80) from arguments
-		//String serverAddressAndPort = aCommandAndArgs.substring(delimiterPos + 1, aCommandAndArgs.length());
-
-
-		//downloadStoryData(serverAddressAndPort);
 	} else {
 		returnVal = kServerReturnInvalidCmd;
 	}
@@ -453,82 +418,5 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 	aClient->write(Errors::errorString());
 	return false;
 }
-
-/*bool ServerManager::downloadStoryData(String aServerAddressAndPort) {
-	// Configure port
-    uint16_t port = kDefaultTCPPort;
-    //int delimiterIndex = aServerAddressAndPort.index("");
-
-	// Configure port
-	uint port = kDefaultTCPPort;
-	int colonIndex = aServerAddressAndPort.indexOf(":");
-	if (colonIndex > -1) {
-		String portStr = aServerAddressAndPort.substring(colonIndex+1, aServerAddressAndPort.length());
-		port = atoi(portStr.c_str());
-	} else {
-		// No port supplied, set index to end of string
-		colonIndex = aServerAddressAndPort.length();
-	}
-
-	// Split IP into octets
-	int dotIndex = aServerAddressAndPort.indexOf(".");
-	if (dotIndex == -1) {
-		// Not a valid IP address
-		Errors::setError(E_SERVER_INVALID_IP);
-		ERROR(Errors::errorString());
-		return false;
-	}
-	String octectStr = aServerAddressAndPort.substring(0, dotIndex);
-	uint8_t firstOctet = atoi(octectStr.c_str());
-
-	int nextDotIndex = aServerAddressAndPort.indexOf(".", dotIndex + 1);
-	if (nextDotIndex == -1) {
-		// Not a valid IP address
-		Errors::setError(E_SERVER_INVALID_IP);
-		ERROR(Errors::errorString());
-		return false;
-	}
-	octectStr = aServerAddressAndPort.substring(dotIndex + 1, nextDotIndex);
-	uint8_t secondOctet = atoi(octectStr.c_str());
-
-	dotIndex = nextDotIndex;
-	nextDotIndex = aServerAddressAndPort.indexOf(".", dotIndex + 1);
-	if (nextDotIndex == -1) {
-		// Not a valid IP address
-		Errors::setError(E_SERVER_INVALID_IP);
-		ERROR(Errors::errorString());
-		return false;
-	}
-	octectStr = aServerAddressAndPort.substring(dotIndex + 1, nextDotIndex);
-	uint8_t thirdOctet = atoi(octectStr.c_str());
-
-	dotIndex = nextDotIndex;
-	octectStr = aServerAddressAndPort.substring(dotIndex + 1, colonIndex);
-	uint8_t fourthOctet = atoi(octectStr.c_str());
-
-	DEBUG("Download story data from %u.%u.%u.%u:%u", firstOctet, secondOctet, thirdOctet, fourthOctet, port);
-
-	byte server[] = {firstOctet, secondOctet, thirdOctet, fourthOctet};
-	TCPClient client;
-	if (client.connect(server, port)) {
-    	DEBUG("TCPClient connected");
-    	client.write("Hey there mr. server!");
-    	// client.println("GET /search?q=unicorn HTTP/1.0");
-    	// client.println("Host: www.google.com");
-    	// client.println("Content-Length: 0");
-    	// client.println();
-    	delay(1000);
-    	while (client.available()) {
-    		DEBUG("%c", client.read());
-    		//Serial.print(client.read());
-    	}
-    	//Serial.println("");
-  	}
-  	else
-  	{
-    	Serial.println("TCPClient connection failed");
- 	}
-
-}*/
 
 }

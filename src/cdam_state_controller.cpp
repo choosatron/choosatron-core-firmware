@@ -32,6 +32,10 @@ void StateController::initialize() {
 	changeState(STATE_BOOTING);
 }
 
+GameState StateController::getState() {
+	return _state;
+}
+
 const char* StateController::stateString() {
 	return GameStateDesc[_state].stateDesc;
 }

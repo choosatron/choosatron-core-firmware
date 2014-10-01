@@ -10,7 +10,7 @@ namespace cdam
 
 // Game States
 typedef enum GameState_t {
-	STATE_NONE,
+	STATE_NONE = 0,
 	STATE_ERROR,
 	STATE_BOOTING,
 	STATE_INIT,
@@ -37,6 +37,7 @@ public:
 	StateController();
 
 	void initialize();
+	GameState getState();
 	const char* stateString();
 	void changeState(GameState aState);
 	void updateState();
