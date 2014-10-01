@@ -35,6 +35,7 @@ const char* kServerCmdAdminEraseFlash = "erase_flash";
 const char* kServerCmdAdminResetUnit = "reset_unit";
 
 // Data requests.
+const char* kServerCmdGetCurrentStory = "get_current_story";
 const char* kServerCmdGetStoryCount = "get_story_count";
 const char* kServerCmdGetMillis = "get_millis";
 const char* kServerCmdGetSeconds = "get_seconds";
@@ -223,6 +224,9 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		}
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdAdminResetUnit) == 0) {
 		dataMan->stateController()->changeState(STATE_INIT);
+	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetCurrentStory) == 0) {
+		/* TODO */
+		returnVal = kServerReturnNotImplemented;
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetStoryCount) == 0) {
 		returnVal = dataMan->metadata.storyCount;
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetMillis) == 0) {

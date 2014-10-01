@@ -116,6 +116,7 @@ void StateController::loopState(GameState aState) {
 		if (_hardwareManager->keypad()->buttonDown(3) ||
 			_dataManager->metadata.flags.logPrint) {
 			LOG("* PRINT TO SERIAL *");
+			// TODO - doesn't work
 			_dataManager->logPrint = true;
 		}
 		// Admin mode, if pass required change to STATE_AUTH
