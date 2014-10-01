@@ -108,7 +108,6 @@ void StateController::loopState(GameState aState) {
 			if (Spark.connected() == false) {
 				//WiFi.on();
 				//WiFi.connect();
-				DEBUG("Connecting");
 				Spark.connect();
 				//Spark.syncTime();
 			}

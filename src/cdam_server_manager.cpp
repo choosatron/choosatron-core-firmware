@@ -68,7 +68,7 @@ ServerManager::ServerManager() {
 }
 
 void ServerManager::initialize(StateController *aStateController) {
-	_stateControl = aStateController;
+	_stateController = aStateController;
 	this->pendingAction = false;
 	this->pendingCommand = NULL;
 	this->pendingArguments = NULL;
@@ -114,6 +114,10 @@ void ServerManager::handlePendingActions() {
 							pages++;
 						}
 						Manager::getInstance().dataManager->addStoryMetadata(newStoryIndex, pages);
+						if (_stateController->getState() == STATE_SELECT) {
+							Manager::getInstance().hardwareManager->printer()->println(CDAM_SERVER_REBOOT);
+							_stateController->changeState(STATE_INIT);
+						}
 					}
 				}
 			}
