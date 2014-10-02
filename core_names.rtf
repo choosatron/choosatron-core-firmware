@@ -79,12 +79,10 @@ Tab Four\
 cd ~/Code/MwaM/Choosatron/cdam-twine/\
 ./generate_story_bins.sh\
 \
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
 
-\b \cf0 Flags\
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+\b Flags\
 
-\b0 \cf0 <flag byte index><flag index><on or off>\
+\b0 <flag byte index><flag index><on or off>\
 Flag 0:\
 0 = auth\
 1 = random\
@@ -118,12 +116,10 @@ Event Vals\
 adjust_credits <num of credits><1 = positive, 0 = negative>\
 add or subtract credits using this\
 \
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
 
-\b \cf0 FOR DEBUG USAGE\
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+\b FOR DEBUG USAGE\
 
-\b0 \cf0 Add DEBUG_BUILD=y to make.
+\b0 Add DEBUG_BUILD=y to make.
 \b \
 
 \b0 	
@@ -145,18 +141,16 @@ D3-D7 JTAG PINS\
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
 
 \b \cf0 Backing up entire Flash Memory (User Space)\
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
 
-\b0 \cf0 dfu-util -d 1d50:607f -a 1 -s 0x80000:1572864 -U flash_backup.bin
+\b0 dfu-util -d 1d50:607f -a 1 -s 0x80000:1572864 -U flash_backup.bin
 \b \
 \
 Restoring entire Flash Memory (User Space)
 \b0 \
 dfu-util -d 1d50:607f -a 1 -s 0x80000 -v -D flash_backup.bin\
 \
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
 
-\b \cf0 WiFi Upload
+\b WiFi Upload
 \b0 \
 \
 Jerry Belich\
@@ -264,7 +258,7 @@ Core ID: 53ff6c065067544835590687\
 curl -X PUT https://api.spark.io/v1/devices/53ff6c065067544835590687\\?access_token=2bf23aca0f37f6646b6dd20d51630c0907feb004 -F file=@cdam-core-firmware.bin\
 \
 \
-pilk\
+pilk - Sent to Paris\
 Core ID: 50ff6a065067545626240587\
 \
 curl -X PUT https://api.spark.io/v1/devices/50ff6a065067545626240587\\?access_token=2bf23aca0f37f6646b6dd20d51630c0907feb004 -F file=@cdam-core-firmware.bin\

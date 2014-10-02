@@ -47,7 +47,7 @@ void Printer::updateState() {
 			_status = read();
 			_statusUpdated = true;
 			DEBUG("0x%c%c%c%c%c%c%c%c",
-				IsBitSet(_status, 7) ? '1' : '0'),
+				(IsBitSet(_status, 7) ? '1' : '0'),
 				(IsBitSet(_status, 6) ? '1' : '0'),
 				(IsBitSet(_status, 5) ? '1' : '0'),
 				(IsBitSet(_status, 4) ? '1' : '0'),
