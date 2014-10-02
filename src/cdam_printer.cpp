@@ -47,14 +47,14 @@ void Printer::updateState() {
 			_status = read();
 			_statusUpdated = true;
 			DEBUG("0x%c%c%c%c%c%c%c%c",
-	    (IsBitSet(_status, 7) ? '1' : '0'),
-	    (IsBitSet(_status, 6) ? '1' : '0'),
-	    (IsBitSet(_status, 5) ? '1' : '0'),
-	    (IsBitSet(_status, 4) ? '1' : '0'),
-	    (IsBitSet(_status, 3) ? '1' : '0'),
-	    (IsBitSet(_status, 2) ? '1' : '0'),
-	    (IsBitSet(_status, 1) ? '1' : '0'),
-	    (IsBitSet(_status, 0) ? '1' : '0'));
+				IsBitSet(_status, 7) ? '1' : '0'),
+				(IsBitSet(_status, 6) ? '1' : '0'),
+				(IsBitSet(_status, 5) ? '1' : '0'),
+				(IsBitSet(_status, 4) ? '1' : '0'),
+				(IsBitSet(_status, 3) ? '1' : '0'),
+				(IsBitSet(_status, 2) ? '1' : '0'),
+				(IsBitSet(_status, 1) ? '1' : '0'),
+				(IsBitSet(_status, 0) ? '1' : '0'));
 		}
 	} else {
 		_lastStatus = ASCII_NULL;
@@ -109,8 +109,8 @@ void Printer::logChangedStatus() {
 				DEBUG("Unknown 1 ON");
 			} else {
 				// Occurred once when I was printing stories
-				// like crazy, and it ran out and appears to
-				// start to jam.
+				// like crazy, and it ran out of paper and
+				// appeared to start to jam.
 				DEBUG("Unknown 1 OFF");
 			}
 		}
@@ -416,7 +416,7 @@ uint8_t Printer::read() {
 	return Serial1.peek();
 }*/
 
-void Printer::setABS(bool aTurnOn) {
+void Printer::setASB(bool aTurnOn) {
 	uint8_t setting = 0b00000000;
 	if (aTurnOn) {
 		setting = 0b00100100;

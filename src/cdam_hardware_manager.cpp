@@ -69,7 +69,7 @@ void HardwareManager::initHardware() {
 	_printer->initialize();
 	_printer->begin(160);
 	_printer->setTimes(7000, 300);
-	_printer->setABS(true);
+	_printer->setASB(true);
 	_printer->active = false;
 
 	// Setup Keypad

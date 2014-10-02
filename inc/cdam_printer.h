@@ -64,7 +64,7 @@ public:
     void feed(uint8_t x=1);
     uint8_t read();
     //uint8_t peek();
-    void setABS(bool aTurnOn);
+    void setASB(bool aTurnOn);
     bool isPrinting();
     bool isReady();
     // Number of chars to indent for autojump text.
