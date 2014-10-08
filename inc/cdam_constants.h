@@ -22,9 +22,9 @@ namespace cdam
 
 #define BAUD_RATE 19200
 
-const uint8_t kFirmwareVersionMajor = 0;
+const uint8_t kFirmwareVersionMajor = 2;
 const uint8_t kFirmwareVersionMinor = 0;
-const uint8_t kFirmwareVersionRevision = 1;
+const uint8_t kFirmwareVersionRevision = 0;
 
 typedef enum {
 #if (BOARD_DOT_VERSION >= 6)

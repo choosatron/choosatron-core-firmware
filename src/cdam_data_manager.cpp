@@ -463,7 +463,7 @@ bool DataManager::initializeMetadata(Metadata *aMetadata) {
 	/*aMetadata->flags.auth = 0;
 	aMetadata->flags.offline = 0;
 	aMetadata->flags.demo = 0;*/
-	aMetadata->flags.sdCard = 1;
+	aMetadata->flags.sdCard = 0;
 	/*aMetadata->flags.multiplayer = 0;
 	aMetadata->flags.arcade = 0;
 	aMetadata->flags.continues = 0;*/

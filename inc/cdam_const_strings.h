@@ -20,7 +20,7 @@ const char CDAM_TEAR_GENTLY[] = "<- TEAR GENTLY TO THE SIDE ->\n- - - - - - - - 
 const char CDAM_BIG_NUMBERS[] = "+Add Buttons for Higher Choices+\n [1]+[4] = 5 or [2]+[3]+[4] = 9";
 
 const char CDAM_SERVER_RECEIVE_STORY[] = "Receiving story data...";
-const char CDAM_SERVER_REBOOT[] = "Complete! Rebooting Choosatron...";
+const char CDAM_SERVER_REBOOT[] = "Complete! Rebooting...";
 //const char CDAM_SERVER_COMPLETE[] = "Complete!\nPress any button for menu.";
 
 }
