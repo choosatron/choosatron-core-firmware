@@ -79,7 +79,9 @@ CFLAGS += -DRELEASE_BUILD
 endif
 
 # C++ specific flags
-CPPFLAGS = -fno-exceptions -fno-rtti
+CPPFLAGS = -S -fno-exceptions -fno-rtti
+# To output assembly - the .o files will be assembly, just open them!)
+#CPPFLAGS = -fno-exceptions -fno-rtti
 
 # Collect all object and dep files
 ALLOBJ += $(addprefix $(BUILD_PATH)/, $(CSRC:.c=.o))
