@@ -323,14 +323,9 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
                 <number name="PublishDate" id="121" type="integer" length="4" endian="little"/>
             </structure>
             <structure name="StoryVariables" id="123">
-                <number name="SmallVarCount" id="124" fillcolor="FFEFA6" type="integer" length="1" minval="0" maxval="255">
-                    <description>The number of small variables to allocate space for (8 bit).</description>
-                </number>
-                <number name="SmallDefaults" id="125" repeatmin="SmallVarCount" repeatmax="SmallVarCount" type="integer" length="1" minval="0" maxval="0"/>
-                <number name="BigVarCount" id="126" fillcolor="FFF67D" type="integer" length="1" minval="0" maxval="255">
+                <number name="VariableCount" id="126" fillcolor="FFF67D" type="integer" length="2" minval="0">
                     <description>The number of big variables to allocate space for (16 bit).</description>
                 </number>
-                <number name="BigDefaults" id="127" repeatmin="BigVarCount" repeatmax="BigVarCount" type="integer" length="2" minval="0" maxval="32000"/>
             </structure>
             <structure name="StoryBody" id="129">
                 <number name="PassageCount" id="130" type="integer" length="2"/>
