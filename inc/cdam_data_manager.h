@@ -61,14 +61,10 @@ class DataManager
         bool loadStory(uint8_t aIndex);
         // Cleanup after the finished story.
         void unloadStory();
-        // Get small variable value at index.
-        int8_t smallVarAtIndex(uint8_t aIndex);
-        // Set small variables value at index.
-        bool setSmallVarAtIndex(uint8_t aIndex, int8_t aValue);
-        // Get big variables value at index.
-        int16_t bigVarAtIndex(uint8_t aIndex);
-        // Set small variables value at index.
-        bool setBigVarAtIndex(uint8_t aIndex, int16_t aValue);
+        // Get variable value at index.
+        int16_t varAtIndex(uint8_t aIndex);
+        // Set variable value at index.
+        bool setVarAtIndex(uint8_t aIndex, int16_t aValue);
 
         // Add the metadata for a new story.
         bool addStoryMetadata(uint8_t aPosition, uint8_t aPages);
@@ -118,7 +114,7 @@ class DataManager
         // Current passage byte size.
         uint32_t psgSize;
 
-    private:
+        private:
         /* Private Methods */
 
         // Check start byte and load firmware version.
@@ -133,7 +129,7 @@ class DataManager
         // Read story header from flash.
         bool readStoryHeader(uint8_t aIndex, StoryHeader *aHeader);
         // Read variable counts and default values.
-        bool readVariables(uint8_t aIndex);
+        //bool readVariables(uint8_t aIndex);
         // Write metadata to flash.
         bool writeMetadata(Metadata *aMetadata);
         // Write the storyCount and usedStoryBytes to flash.
@@ -164,10 +160,7 @@ class DataManager
         SdVolume* _volume;
         SdFile* _root;
 #endif
-        int8_t* _smallVars;
-        uint8_t _smallVarCount;
-        int16_t* _bigVars;
-        uint8_t _bigVarCount;
+        int16_t* _variables;
 };
 
 }

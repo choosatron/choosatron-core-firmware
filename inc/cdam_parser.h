@@ -29,12 +29,6 @@ public:
 
     bool initStory(uint8_t aStoryIndex);
     ParseState parsePassage();
-    //uint32_t parseBody(uint32_t aOffset);
-    //void parseData(char* aBuffer);
-    //uint32_t parseChoice(uint32_t aOffset, Choice* aChoice, uint8_t aVisibleChoices);
-    //bool parsePassage(char* aBuffer, uint16_t aIndex);
-    //bool parseValueUpdate(char* aBuffer, uint16_t aIndex);
-    //bool parseChoice(char* aBuffer, uint16_t aIndex);
 
     /* Public Variables */
 protected:
@@ -44,8 +38,9 @@ private:
 	void cleanupAfterPassage();
 	uint32_t parseData(uint32_t aOffset, char* aBuffer, uint16_t aLength);
 	uint32_t parseCommand(uint32_t aOffset, char* aBuffer, uint16_t aLength);
-	uint32_t parseValueUpdates(uint32_t aOffset);
-    uint32_t parseConditions(uint32_t aOffset, bool &aResult);
+	uint32_t parseOperation(uint32_t aOffset, int16_t &aResult);
+    uint32_t parseValueUpdates(uint32_t aOffset);
+    uint32_t parseConditions(uint32_t aOffset, int16_t &aResult);
 
 	/* Private Variables */
     DataManager* _dataManager;
@@ -73,6 +68,8 @@ private:
     uint8_t _visibleCount;
     // The value of the user selected choice (not index).
     uint8_t _choiceSelected;
+    // Passage attributes objects.
+    Passage* _passage;
     // Array of choice objects, visible or not.
     Choice* _choices;
     // Index array to associate choice # with the corresponding visible choice.

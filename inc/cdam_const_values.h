@@ -20,12 +20,11 @@ const uint8_t kAsciiHeaderByte = 0x01;
 // Command byte, ASCII ENQ
 const uint8_t kAsciiCommandByte = 0x05;
 
-const uint8_t kSmallVarSize = 1;
-const uint8_t kBigVarSize = 2;
 const uint8_t kPassageCountSize = 2;
 const uint8_t kPassageOffsetSize = 4;
-const uint8_t kValueSetCountSize = 1;
-const uint8_t kValueSetSize = 5;
+const uint8_t kOperationCountSize = 1;
+const uint8_t kOperationInfoSize = 2;
+const uint8_t kOperationOperandSize = 2;
 const uint8_t kDataLengthSize = 2;
 const uint8_t kPassageIndexSize = 2;
 

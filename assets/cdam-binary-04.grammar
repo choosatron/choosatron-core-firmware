@@ -396,6 +396,7 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
                             <number name="Value/Index1" id="219" type="integer" length="2"/>
                             <number name="Value/Index2" id="220" type="integer" length="2"/>
                         </structure>
+                        <number name="UpdateLength" id="320" type="integer" length="2"/>
                         <number name="UpdateCount" id="225" type="integer" length="1"/>
                         <structure name="ValueUpdate" id="226" length="5" repeatmin="UpdateCount" repeatmax="UpdateCount" encoding="ISO_8859-1:1987" endian="little" signed="no">
                             <number name="VariableTypes" id="227" type="integer" length="8" lengthunit="bit" display="binary">

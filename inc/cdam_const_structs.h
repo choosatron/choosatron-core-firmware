@@ -154,7 +154,9 @@ typedef struct Metadata_t {
 
 const uint16_t kStoryBinaryVersionOffset = 1; // adding SOH byte
 const uint16_t kStoryBinaryVersionSize = 3;
-const uint16_t kStoryFlagsOffset = (kStoryBinaryVersionOffset + kStoryBinaryVersionSize);
+const uint16_t kStoryUuidOffset = (kStoryBinaryVersionOffset + kStoryBinaryVersionSize);
+const uint16_t kStoryUuidSize = 16; // bytes
+const uint16_t kStoryFlagsOffset = (kStoryUuidOffset + kStoryUuidSize);
 const uint16_t kStoryFlagsSize = 4; // bytes
 const uint16_t kStorySizeOffset = (kStoryFlagsOffset + kStoryFlagsSize);
 const uint16_t kStorySizeSize = 4; // bytes
@@ -176,42 +178,53 @@ const uint16_t kStoryContactOffset = (kStoryCreditsOffset + kStoryCreditsSize);
 const uint16_t kStoryContactSize = 128; // bytes
 const uint16_t kStoryPublishedOffset = (kStoryContactOffset + kStoryContactSize);
 const uint16_t kStoryPublishedSize = 4; // bytes
-const uint16_t kStoryHeaderSize = (kStoryPublishedOffset + kStoryPublishedSize);
-//const uint16_t kStoryHeaderSize = 376;
+const uint16_t kStoryVarCountOffset = (kStoryPublishedOffset + kStoryPublishedSize);
+const uint16_t kStoryVarCountSize = 2; // bytes
+const uint16_t kStoryHeaderSize = (kStoryVarCountOffset + kStoryVarCountSize);
+//const uint16_t kStoryHeaderSize = 394;
 
 typedef struct StoryFlags_t
 {
 	union {
-	    uint8_t flag1;
-	    struct {
-	    	uint8_t rsvd1 				:5;
-	    	uint8_t images				:1;
-	    	uint8_t variables			:1;
-	    	uint8_t scripting			:1;
-	    };
+		uint8_t flag1;
+		struct {
+			uint8_t rsvd1 				:5;
+			uint8_t images				:1;
+			uint8_t variables			:1;
+			uint8_t scripting			:1;
+		};
 	};
 	union {
 		uint8_t flag2;
 		struct {
-	        uint8_t rsvd2 			:5;
-	        uint8_t hideUsed		:1;
-	        uint8_t multiplayer		:1;
-	        uint8_t continues		:1;
+			uint8_t rsvd2 			:5;
+			uint8_t hideUsed		:1;
+			uint8_t multiplayer		:1;
+			uint8_t continues		:1;
 		};
-    };
+	};
 	union {
 		uint8_t flag3;
 		struct {
-	        uint8_t rsvd3 			:8;
+			uint8_t rsvd3 			:8;
 		};
-    };
-    union {
+	};
+	union {
 		uint8_t flag4;
 		struct {
-	        uint8_t rsvd4 			:8;
+			uint8_t rsvd4 			:8;
 		};
-    };
+	};
 } StoryFlags;
+
+typedef struct Uuid_t {
+	uint32_t time_low;
+	uint16_t time_mid;
+	uint16_t time_hi_and_version;
+	uint8_t clock_seq_hi_and_reserved;
+	uint8_t clock_seq_low;
+	uint8_t node[6];
+} Uuid;
 
 /*typedef struct StoryVars_t {
 	uint8_t small; // How many 8 bit variables
@@ -220,9 +233,10 @@ typedef struct StoryFlags_t
 	uint8_t rsvd2;
 } StoryVars;*/
 
-typedef struct StoryHeader_t { // Total Size: 376 bytes
+typedef struct StoryHeader_t { // Total Size: 394 bytes
 	uint8_t soh;
 	Version binaryVer;
+	Uuid uuid;
 	StoryFlags flags;
     uint32_t storySize;
     Version storyVer;
@@ -234,10 +248,67 @@ typedef struct StoryHeader_t { // Total Size: 376 bytes
     char credits[kStoryCreditsSize];
     char contact[kStoryContactSize];
     time_t publishDate;
+    uint16_t variableCount;
 } StoryHeader;
 
+const uint8_t kOpTypeRaw = 1;
+const uint8_t kOpTypeVar = 2;
+const uint8_t kOpTypeOperation  = 3;
 
-const uint8_t kValueTypeRaw = 0;
+const uint8_t kOpEqualTo = 1; // Returns 0 or 1
+const uint8_t kOpNotEqualTo = 2; // Returns 0 or 1
+const uint8_t kOpGreaterThan = 3; // Returns 0 or 1
+const uint8_t kOpLessThan = 4; // Returns 0 or 1
+const uint8_t kOpEqualGreater = 5; // Returns 0 or 1
+const uint8_t kOpEqualLess = 6; // Returns 0 or 1
+const uint8_t kOpAND = 7; // Returns 0 or 1
+const uint8_t kOpOR = 8; // Returns 0 or 1
+const uint8_t kOpXOR = 9; // Returns 0 or 1
+const uint8_t kOpNAND = 10; // Returns 0 or 1
+const uint8_t kOpNOR = 11; // Returns 0 or 1
+const uint8_t kOpXNOR = 12; // Returns 0 or 1
+const uint8_t kOpChoiceVisible = 13; // Returns 0 or 1
+const uint8_t kOpModulus = 14; // Returns int16_t - remainder of division
+const uint8_t kOpSet = 15; // Returns int16_t - value of the right operand
+const uint8_t kOpPlus = 16; // Returns int16_t
+const uint8_t kOpMinus = 17; // Returns int16_t
+const uint8_t kOpMultiply = 18; // Returns int16_t
+const uint8_t kOpDivide = 19; // Returns int16_t - non float, whole number
+const uint8_t kOpRandom = 20; // Returns int16_t - takes min & max (inclusive)
+const uint8_t kOpDiceRoll = 21; // Returns int16_t - take # of dice & # of sides per die
+const uint8_t kOpIfStatement = 22; // Returns 0 if false, result of right operand if true
+
+/*typedef enum {
+	OP_TYPE_RAW = 1,
+	OP_TYPE_VAR,
+	OP_TYPE_OPERATION
+} OperandType;
+
+typedef enum {
+	OP_CMD_EQUAL_TO = 1,
+	OP_CMD_NOT_EQUAL_TO,
+	OP_CMD_GREATER_THAN,
+	OP_CMD_LESS_THAN,
+	OP_CMD_EQUAL_GREATER,
+	OP_CMD_EQUAL_LESS,
+	OP_CMD_AND,
+	OP_CMD_OR,
+	OP_CMD_XOR,
+	OP_CMD_NAND,
+	OP_CMD_XNOR,
+	OP_CMD_CHOICE_VISIBLE,
+	OP_CMD_MODULUS,
+	OP_CMD_SET,
+	OP_CMD_PLUS,
+	OP_CMD_MINUS,
+	OP_CMD_MULTIPLY,
+	OP_CMD_DIVIDE,
+	OP_CMD_RANDOM,
+	OP_CMD_DICE_ROLL,
+	OP_CMD_IF_STATEMENT
+} OperationCmd;*/
+
+/*const uint8_t kValueTypeRaw = 0;
 const uint8_t kValueTypeBool = 1;
 const uint8_t kValueTypeSmall = 2;
 const uint8_t kValueTypeBig = 3;
@@ -254,13 +325,12 @@ const uint8_t kCompareGreater = 1;
 const uint8_t kCompareLess = 2;
 const uint8_t kCompareEqualGreater = 3;
 const uint8_t kCompareEqualLess = 4;
-const uint8_t kCompareModulus = 5;
+const uint8_t kCompareModulus = 5;*/
 
-typedef struct ValueSet_t {
+/*typedef struct ValueSet_t {
 	union {
 		uint8_t varTypes;
 		struct {
-			//uint8_t logicGate    :1; Should add logic gates? AND, OR, XOR?
 			uint8_t operatorType :4;
 			uint8_t varTwoType   :2;
 			uint8_t varOneType   :2;
@@ -268,7 +338,30 @@ typedef struct ValueSet_t {
 	};
 	uint16_t varOne;
 	uint16_t varTwo;
-} ValueSet;
+} ValueSet;*/
+
+typedef struct Operation_t {
+	union {
+		uint8_t operandTypes;
+		struct {
+			uint8_t leftType  :4;
+			uint8_t rightType :4;
+		};
+	};
+	uint8_t operationType;
+	int16_t leftOperand;
+	int16_t rightOperand;
+} Operation;
+
+typedef struct Passage_t {
+	union {
+		uint8_t attribute;
+		struct {
+			uint8_t rsvd   :7;
+			uint8_t append :1;
+		};
+	};
+} Passage;
 
 typedef struct Choice_t {
 	union {
@@ -278,7 +371,7 @@ typedef struct Choice_t {
 			uint8_t append :1;
 		};
 	};
-	bool visible;
+	int16_t visible;
 	uint32_t updatesOffset;
 	uint16_t passageIndex;
 } Choice;

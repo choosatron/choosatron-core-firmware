@@ -33,6 +33,12 @@ ParseState Parser::parsePassage() {
 	Spark.process();
 	if (_state == PARSE_UPDATES) {
 		uint32_t processedBytes = 0;
+		if (!_parsingChoices) {
+			// Get passage attributes.
+			_passage = new Passage();
+			_passage->attribute = _dataManager->readByte(_offset);
+			_offset++;
+		}
 		if ((processedBytes = parseValueUpdates(_offset))) {
 			_offset += processedBytes;
 			// Only occurs if a choice has been selected.
@@ -103,11 +109,6 @@ ParseState Parser::parsePassage() {
 				if (_dataManager->readData(&_choices[_choiceIndex].passageIndex, _offset, kPassageIndexSize)) {
 					//DEBUG("Passage Index: %d", _choices[_choiceIndex].passageIndex);
 					_offset += kPassageIndexSize;
-					_choices[_choiceIndex].updatesOffset = _offset;
-					//DEBUG("Updates Offset for choice #%d: %lu", _choiceIndex, _choices[_choiceIndex].updatesOffset);
-					// Jump past the value updates for the choice.
-					uint8_t updateCount = _dataManager->readByte(_offset);
-					_offset += (updateCount * kValueSetSize) + kValueSetCountSize;
 					_state = PARSE_CHOICE;
 					// Don't parse updates yet, we need user input first.
 					//_state = PARSE_UPDATES;
@@ -170,16 +171,28 @@ ParseState Parser::parsePassage() {
 		if ((processedBytes = parseConditions(_offset, _choices[_choiceIndex].visible))) {
 			_offset += processedBytes;
 			//DEBUG("Choice #%d %s visible.", (_choiceIndex + 1), (_choices[_choiceIndex].visible ? "is" : "not"));
+			// Track variable update memory offset in case this choice is picked.
+
+			uint16_t updatesLength = 0;
+			// Read two bytes of update length.
+			_dataManager->readData(&updatesLength, _offset, kDataLengthSize);
+			_offset += kDataLengthSize;
+			// Bookmark offset for value update count.
+			_choices[_choiceIndex].updatesOffset = _offset;
+			// Move offset to just after value updates.
+			_offset += updatesLength;
 			if (_choices[_choiceIndex].visible) {
+				// Associate choice indexes with visible choice indexes.
 				_choiceLinks[_visibleCount] = _choiceIndex;
 				_visibleCount++;
+				// Parse and print this choices text.
 				_state = PARSE_DATA;
 			} else {
+				// Choice isn't visible, skip over the rest of this choices bytes.
 				_dataManager->readData(&_dataLength, _offset, kDataLengthSize);
-				_offset += (kDataLengthSize + _dataLength + kPassageCountSize);
+				_offset += (kDataLengthSize + _dataLength + kPassageIndexSize);
 				_dataLength = 0;
-				uint8_t updateCount = _dataManager->readByte(_offset);
-				_offset += (updateCount * kValueSetSize) + kValueSetCountSize;
+
 				_choiceIndex++;
 				if (_choiceIndex == _choiceCount) {
 					_hardwareManager->printer()->feed(2);
@@ -223,6 +236,8 @@ ParseState Parser::parsePassage() {
 void Parser::cleanupAfterPassage() {
 	_parsingChoices = false;
 
+	delete _passage;
+	_passage = NULL;
 	delete[] _choices;
 	_choices = NULL;
 	delete[] _choiceLinks;
@@ -277,6 +292,155 @@ uint32_t Parser::parseCommand(uint32_t aOffset, char* aBuffer, uint16_t aLength)
 // aOffset: The byte offset to begin processing at.
 // Returns: The number of bytes processed beyond the provided offset.
 uint32_t Parser::parseValueUpdates(uint32_t aOffset) {
+	uint32_t offset = aOffset;
+	// 1 byte - Value of how many distinct value updates there are.
+	uint8_t count = _dataManager->readByte(offset);
+	offset += kOperationCountSize;
+
+	int16_t address = 0;
+	int16_t result = 0;
+	for (int i = 0; i < count; ++i) {
+		// Jump ahead slightly to get the address of the left operand. This is base of
+		// a potentially recursive set of operations, and the only variable to be set.
+		_dataManager->readData(&address, offset + kOperationInfoSize, kOperationOperandSize);
+		// Get the result of all the operations in result. Add the # of bytes read to the offset.
+		offset += parseOperation(offset, result);
+		DEBUG("Address: %d, Result: %d", address, result);
+		// Set the variable to the result.
+		if (!_dataManager->setVarAtIndex(address, result)) {
+			return 0;
+		}
+	}
+
+	return offset - aOffset;
+}
+
+uint32_t Parser::parseConditions(uint32_t aOffset, int16_t &aResult) {
+	uint32_t offset = aOffset;
+	// 1 byte - Value of how many distinct value updates there are.
+	uint8_t count = _dataManager->readByte(offset);
+	offset += kOperationCountSize;
+
+	aResult = 1;
+	int16_t result = 1;
+	for (int i = 0; i < count; ++i) {
+		offset += parseOperation(offset, result);
+		DEBUG("Final Result: %d, Result: %d", aResult, result);
+		aResult = (aResult ? result : 0);
+	}
+
+	return offset - aOffset;
+}
+
+uint32_t Parser::parseOperation(uint32_t aOffset, int16_t &aResult) {
+	int16_t result = 0;
+	uint32_t offset = aOffset;
+
+	Operation op;
+	_dataManager->readData(&op, offset, kOperationInfoSize);
+	offset += kOperationInfoSize;
+	if (op.leftType == kOpTypeOperation) {
+		offset += parseOperation(offset, op.leftOperand);
+	} else {
+		_dataManager->readData(&op.leftOperand, offset, kOperationOperandSize);
+		offset += kOperationOperandSize;
+		if (op.leftType == kOpTypeVar) {
+			op.leftOperand = _dataManager->varAtIndex(op.leftOperand);
+		}
+	}
+	if (op.rightType == kOpTypeOperation) {
+		offset += parseOperation(offset, op.rightOperand);
+	} else {
+		_dataManager->readData(&op.rightOperand, offset, kOperationOperandSize);
+		offset += kOperationOperandSize;
+		if (op.rightType == kOpTypeVar) {
+			op.rightOperand = _dataManager->varAtIndex(op.rightOperand);
+		}
+	}
+
+	switch(op.operationType)
+	{
+		case kOpEqualTo:
+			result = (op.leftOperand == op.rightOperand) ? 1 : 0;
+			break;
+		case kOpNotEqualTo:
+			result = (op.leftOperand != op.rightOperand) ? 1 : 0;
+			break;
+		case kOpGreaterThan:
+			result = (op.leftOperand > op.rightOperand) ? 1 : 0;
+			break;
+		case kOpLessThan:
+			result = (op.leftOperand < op.rightOperand) ? 1 : 0;
+			break;
+		case kOpEqualGreater:
+			result = (op.leftOperand >= op.rightOperand) ? 1 : 0;
+			break;
+		case kOpEqualLess:
+			result = (op.leftOperand <= op.rightOperand) ? 1 : 0;
+			break;
+		case kOpAND:
+			result = (op.leftOperand && op.rightOperand) ? 1 : 0;
+			break;
+		case kOpOR:
+			result = (op.leftOperand || op.rightOperand) ? 1 : 0;
+			break;
+		case kOpXOR:
+			result = (!op.leftOperand != !op.rightOperand) ? 1 : 0;
+			break;
+		case kOpNAND:
+			result = (!op.leftOperand || !op.rightOperand) ? 1 : 0;
+			break;
+		case kOpNOR:
+			result = !(op.leftOperand || op.rightOperand) ? 1 : 0;
+			break;
+		case kOpXNOR:
+			result = !(op.leftOperand != op.rightOperand) ? 1 : 0;
+			break;
+		case kOpChoiceVisible:
+			result = (op.leftOperand == op.rightOperand) ? 1 : 0;
+			break;
+		case kOpModulus:
+			result = op.leftOperand % op.rightOperand;
+			break;
+		case kOpSet:
+			result = op.leftOperand = op.rightOperand;
+			break;
+		case kOpPlus:
+			result = op.leftOperand + op.rightOperand;
+			break;
+		case kOpMinus:
+			result = op.leftOperand - op.rightOperand;
+			break;
+		case kOpMultiply:
+			result = op.leftOperand * op.rightOperand;
+			break;
+		case kOpDivide:
+			result = op.leftOperand / op.rightOperand;
+			break;
+		case kOpRandom:
+			// Add 1 to max to make it inclusive.
+			result = random(op.leftOperand, op.rightOperand + 1);
+			break;
+		case kOpDiceRoll:
+			for (int i = 0; i < op.leftOperand; ++i) {
+				result += random(1, op.rightOperand + 1);
+			}
+			break;
+		case kOpIfStatement:
+			if (op.leftOperand) {
+				result = op.rightOperand;
+			}
+			break;
+		default:
+			break;
+	}
+	aResult = result;
+	return offset - aOffset;
+}
+
+// aOffset: The byte offset to begin processing at.
+// Returns: The number of bytes processed beyond the provided offset.
+/*uint32_t Parser::parseValueUpdates(uint32_t aOffset) {
 	//DEBUG("Updates Offset: %lu", aOffset);
 	uint32_t offset = aOffset;
 	uint8_t count = _dataManager->readByte(offset);
@@ -330,11 +494,11 @@ uint32_t Parser::parseValueUpdates(uint32_t aOffset) {
 			valueOne %= valueTwo;
 		}
 
-		/*if (valueSet.varTwoType == kValueTypeRaw) {
-			DEBUG("Var Two Value: %d", (int16_t)valueSet.varTwo);
-		} else {
-			DEBUG("Var Two Index: %d, Value: %d", valueSet.varTwo, valueTwo);
-		}*/
+		//if (valueSet.varTwoType == kValueTypeRaw) {
+		//	DEBUG("Var Two Value: %d", (int16_t)valueSet.varTwo);
+		//} else {
+		//	DEBUG("Var Two Index: %d, Value: %d", valueSet.varTwo, valueTwo);
+		}
 
 		if (valueSet.varOneType == kValueTypeSmall) {
 			//DEBUG("Var Two Small");
@@ -407,17 +571,17 @@ uint32_t Parser::parseConditions(uint32_t aOffset, bool &aResult) {
 			result = (valueOne %= valueTwo) ? true : false;
 		}
 
-		/*if (valueSet.varTwoType == kValueTypeRaw) {
-			DEBUG("Var Two Value: %d", (int16_t)valueSet.varTwo);
-		} else {
-			DEBUG("Var Two Index: %d, Value: %d", valueSet.varTwo, valueTwo);
-		}*/
+		//if (valueSet.varTwoType == kValueTypeRaw) {
+		//	DEBUG("Var Two Value: %d", (int16_t)valueSet.varTwo);
+		//} else {
+		//	DEBUG("Var Two Index: %d, Value: %d", valueSet.varTwo, valueTwo);
+		//}
 
 		//DEBUG("Condition: %s", (result ? "true" : "false"));
 		// If we have logic gates, we would evalutate here.
 		aResult = (aResult ? result : false);
 	}
 	return offset - aOffset;
-}
+}*/
 
 }

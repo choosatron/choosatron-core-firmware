@@ -36,4 +36,25 @@ void Utils::shuffle(uint8_t *aArray, uint8_t aElements)
 	}
 }*/
 
+	/*
+ *    Converts a UUID from binary representation to a string representation.
+ */
+
+void uuidToString(const Uuid *uuid, char *str, size_t strsz)
+{
+	snprintf(str, strsz,
+	     "%08lx-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+	     uuid->time_low,
+	     uuid->time_mid,
+	     uuid->time_hi_and_version,
+	     (unsigned char)uuid->clock_seq_hi_and_reserved,
+	     (unsigned char)uuid->clock_seq_low,
+	     (unsigned char)uuid->node[0],
+	     (unsigned char)uuid->node[1],
+	     (unsigned char)uuid->node[2],
+	     (unsigned char)uuid->node[3],
+	     (unsigned char)uuid->node[4],
+	     (unsigned char)uuid->node[5]);
+}
+
 }

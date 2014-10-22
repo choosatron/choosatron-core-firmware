@@ -76,7 +76,7 @@ void StateController::initState(GameState aState) {
 		_hardwareManager->printer()->printPressButton();
 	} else if (aState == STATE_READY) {
 		_seed = millis();
-  		srand(_seed);
+  		randomSeed(_seed);
 		_hardwareManager->printer()->printTitle();
 		if (_dataManager->metadata.storyCount > 4) {
 			if (_dataManager->metadata.flags.random) {
