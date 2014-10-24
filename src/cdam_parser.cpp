@@ -397,7 +397,13 @@ uint32_t Parser::parseOperation(uint32_t aOffset, int16_t &aResult) {
 			result = !(op.leftOperand != op.rightOperand) ? 1 : 0;
 			break;
 		case kOpChoiceVisible:
-			result = (op.leftOperand == op.rightOperand) ? 1 : 0;
+			result = 0;
+			if ((op.leftOperand <= _choiceIndex) &&
+			    (op.leftOperand <= len(_choices)) {
+			    if (_choices[op.leftOperand - 1].visible == op.rightOperand) {
+			    	result = 1;
+			    }
+			}
 			break;
 		case kOpModulus:
 			result = op.leftOperand % op.rightOperand;
