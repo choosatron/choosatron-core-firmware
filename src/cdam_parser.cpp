@@ -398,8 +398,8 @@ uint32_t Parser::parseOperation(uint32_t aOffset, int16_t &aResult) {
 			break;
 		case kOpChoiceVisible:
 			result = 0;
-			if ((op.leftOperand <= _choiceIndex) &&
-			    (op.leftOperand <= len(_choices)) {
+			if ((op.leftOperand > 0) &&
+			    (op.leftOperand <= _choiceIndex)) {
 			    if (_choices[op.leftOperand - 1].visible == op.rightOperand) {
 			    	result = 1;
 			    }
