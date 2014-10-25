@@ -6,7 +6,10 @@
             <script name="Operation" type="DataType" id="404">
                 <source language="Python"># custom data type script
 
+report = &quot;&quot;
+
 def parseByteRange(element, byteView, bitPos, bitLength, results):
+    global report
     # this method parses data starting at bitPos, bitLength bits are remaining
     &quot;&quot;&quot;parseByteRange method&quot;&quot;&quot;
 
@@ -15,17 +18,26 @@ def parseByteRange(element, byteView, bitPos, bitLength, results):
     iteration = 0
     bytePos = bitPos / 8
 
+    report = &quot;&quot;
     opResult = results.addStructureStart(element.getEnclosingStructure(), bytePos, 0, &quot;Operations&quot;, True)
     processedBytes = parseOperation(bytePos, element, byteView, results, iteration)
+    formElement = Element(ELEMENT_STRING, &quot;Formula&quot;, True)
+    formString = StringValue()
+    formString.setString(report)
+    results.addElement(formElement, 0, iteration, formString)
     opResult = results.addStructureEnd(bytePos + processedBytes)
+    print report
 
     # return number of processed bytes
     return processedBytes
 
 def parseOperation(bytePos, element, byteView, results, iteration):
+    global report
     #print &quot;Iteration: &quot; + str(iteration)
     iteration += 1
     offset = bytePos
+
+    report += &quot;( &quot;
 
     # The recursive parser
     operandTypes = byteView.readByte(offset)
@@ -63,17 +75,17 @@ def parseOperation(bytePos, element, byteView, results, iteration):
     opName = &quot;&quot;
 
     if operationType == 0x01:
-        opName = &quot;Equal&quot;
+        opName = &quot;==&quot;
     elif operationType == 0x02:
-        opName = &quot;Not Equal&quot;
+        opName = &quot;!=&quot;
     elif operationType == 0x03:
-        opName = &quot;Greater&quot;
+        opName = &quot;&gt;&quot;
     elif operationType == 0x04:
-        opName = &quot;Less&quot;
+        opName = &quot;&lt;&quot;
     elif operationType == 0x05:
-        opName = &quot;Greater Equal&quot;
+        opName = &quot;&gt;=&quot;
     elif operationType == 0x06:
-        opName = &quot;Less Equal&quot;
+        opName = &quot;&lt;=&quot;
     elif operationType == 0x07:
         opName = &quot;AND&quot;
     elif operationType == 0x08:
@@ -87,19 +99,19 @@ def parseOperation(bytePos, element, byteView, results, iteration):
     elif operationType == 0x0C:
         opName = &quot;XNOR&quot;
     elif operationType == 0x0D:
-        opName = &quot;Choice Visible&quot;
+        opName = &quot;ChoiceVisible&quot;
     elif operationType == 0x0E:
-        opName = &quot;Mod&quot;
+        opName = &quot;%&quot;
     elif operationType == 0x0F:
-        opName = &quot;Set&quot;
+        opName = &quot;=&quot;
     elif operationType == 0x10:
-        opName = &quot;Plus&quot;
+        opName = &quot;+&quot;
     elif operationType == 0x11:
-        opName = &quot;Minus&quot;
+        opName = &quot;-&quot;
     elif operationType == 0x12:
-        opName = &quot;Multiply&quot;
+        opName = &quot;*&quot;
     elif operationType == 0x13:
-        opName = &quot;Divide&quot;
+        opName = &quot;/&quot;
     elif operationType == 0x14:
         opName = &quot;Rand&quot;
     elif operationType == 0x15:
@@ -128,6 +140,7 @@ def parseOperation(bytePos, element, byteView, results, iteration):
         value.setName(&quot;Left Raw&quot;)
         results.addElement(leftValElement, 2, iteration, value)
         offset += 2
+        report += &quot;[&quot; + str(leftVal) + &quot;] &quot; + opName + &quot; &quot; 
     elif leftType == 0x02: # Variable
         print &quot;LeftType: Var&quot;
         leftVal = byteView.readUnsignedInt(offset, 2, ENDIAN_LITTLE)
@@ -140,11 +153,13 @@ def parseOperation(bytePos, element, byteView, results, iteration):
         value.setName(&quot;Left Index&quot;)
         results.addElement(leftValElement, 2, iteration, value)
         offset += 2
+        report += &quot;[&quot; + str(leftVal) + &quot;] &quot; + opName + &quot; &quot; 
     elif leftType == 0x03: # Operation
         print &quot;LeftType: Operation&quot;
         opResult = results.addStructureStart(element.getEnclosingStructure(), offset, 0, &quot;Left: Op&quot;, True)
         offset += parseOperation(offset, element, byteView, results, iteration)
         results.addStructureEnd(offset)
+        report += &quot; &quot; + opName + &quot; &quot;
 
     if rightType == 0x01: # Raw Value
         print &quot;RightType: Raw&quot;
@@ -158,6 +173,7 @@ def parseOperation(bytePos, element, byteView, results, iteration):
         value.setName(&quot;Right Raw&quot;)
         results.addElement(rightValElement, 2, iteration, value)
         offset += 2
+        report += str(rightVal)
     elif rightType == 0x02: # Variable
         print &quot;RightType: Var&quot;
         rightVal = byteView.readUnsignedInt(offset, 2, ENDIAN_LITTLE)
@@ -170,11 +186,14 @@ def parseOperation(bytePos, element, byteView, results, iteration):
         value.setName(&quot;Right Index&quot;)
         results.addElement(rightValElement, 2, iteration, value)
         offset += 2
+        report += &quot;[&quot; + str(rightVal) + &quot;]&quot;
     elif rightType == 0x03: # Operation
         print &quot;RightType: Operation&quot;
         opResult = results.addStructureStart(element.getEnclosingStructure(), offset, 0, &quot;Right: Op&quot;, True)
         offset += parseOperation(offset, element, byteView, results, iteration)
         results.addStructureEnd(offset)
+
+    report += &quot; )&quot;
 
     #opResult = results.addStructureEnd(offset)
     return offset - bytePos
