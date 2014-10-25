@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ufwb version="1.9">
+    <grammar name="OperationTest" start="id:18" author="Jerry">
+        <description>Grammar for my file format</description>
+        <scripts>
+            <script name="Operation" type="DataType" id="404">
+                <source language="Python"># custom data type script
+
+def parseByteRange(element, byteView, bitPos, bitLength, results):
+    # this method parses data starting at bitPos, bitLength bits are remaining
+    &quot;&quot;&quot;parseByteRange method&quot;&quot;&quot;
+
+    # how many bytes were processed?
+    processedBytes = 0
+    iteration = 0
+    bytePos = bitPos / 8
+
+    opResult = results.addStructureStart(element.getEnclosingStructure(), bytePos, 0, &quot;Operations&quot;, True)
+    processedBytes = parseOperation(bytePos, element, byteView, results, iteration)
+    opResult = results.addStructureEnd(bytePos + processedBytes)
+
+    # return number of processed bytes
+    return processedBytes
+
+def parseOperation(bytePos, element, byteView, results, iteration):
+    #print &quot;Iteration: &quot; + str(iteration)
+    iteration += 1
+    offset = bytePos
+
+    # The recursive parser
+    operandTypes = byteView.readByte(offset)
+    argTypesOffset = offset
+    offset +=1
+    operationType = byteView.readByte(offset)
+    opTypeOffset = offset
+    offset +=1
+    leftType = (operandTypes &amp; 0xF0) &gt;&gt; 4
+    rightType = operandTypes &amp; 0x0F
+
+    #typesElement = Element(1, &quot;Argument Types&quot;, True)
+    #typesElement.setLength(1)
+
+    leftTypeVal = StringValue()
+    if leftType == 0x01:
+        leftTypeVal.setString(&quot;Raw&quot;)
+    elif leftType == 0x02:
+        leftTypeVal.setString(&quot;Var&quot;)
+    elif leftType == 0x03:
+        leftTypeVal.setString(&quot;Op&quot;)
+    leftTypeElement = Element(ELEMENT_STRING, &quot;Left Type&quot;, True)
+    results.addElementBits(leftTypeElement, 4, iteration, leftTypeVal)
+
+    rightTypeVal = StringValue()
+    if rightType == 0x01:
+        rightTypeVal.setString(&quot;Raw&quot;)
+    elif rightType == 0x02:
+        rightTypeVal.setString(&quot;Var&quot;)
+    elif rightType == 0x03:
+        rightTypeVal.setString(&quot;Op&quot;)
+    rightTypeElement = Element(ELEMENT_STRING, &quot;Right Type&quot;, True)
+    results.addElementBits(rightTypeElement, 4, iteration, rightTypeVal)
+
+    opName = &quot;&quot;
+
+    if operationType == 0x01:
+        opName = &quot;Equal&quot;
+    elif operationType == 0x02:
+        opName = &quot;Not Equal&quot;
+    elif operationType == 0x03:
+        opName = &quot;Greater&quot;
+    elif operationType == 0x04:
+        opName = &quot;Less&quot;
+    elif operationType == 0x05:
+        opName = &quot;Greater Equal&quot;
+    elif operationType == 0x06:
+        opName = &quot;Less Equal&quot;
+    elif operationType == 0x07:
+        opName = &quot;AND&quot;
+    elif operationType == 0x08:
+        opName = &quot;OR&quot;
+    elif operationType == 0x09:
+        opName = &quot;XOR&quot;
+    elif operationType == 0x0A:
+        opName = &quot;NAND&quot;
+    elif operationType == 0x0B:
+        opName = &quot;NOR&quot;
+    elif operationType == 0x0C:
+        opName = &quot;XNOR&quot;
+    elif operationType == 0x0D:
+        opName = &quot;Choice Visible&quot;
+    elif operationType == 0x0E:
+        opName = &quot;Mod&quot;
+    elif operationType == 0x0F:
+        opName = &quot;Set&quot;
+    elif operationType == 0x10:
+        opName = &quot;Plus&quot;
+    elif operationType == 0x11:
+        opName = &quot;Minus&quot;
+    elif operationType == 0x12:
+        opName = &quot;Multiply&quot;
+    elif operationType == 0x13:
+        opName = &quot;Divide&quot;
+    elif operationType == 0x14:
+        opName = &quot;Rand&quot;
+    elif operationType == 0x15:
+        opName = &quot;DiceRoll&quot;
+    elif operationType == 0x06:
+        opName = &quot;If&quot;
+
+    print &quot;Operation: &quot; + opName
+
+    opValue = StringValue()
+    opValue.setString(opName)
+    opTypeElement = Element(1, &quot;Op Type&quot;, True)
+    results.addElement(opTypeElement, 1, iteration, opValue)
+
+    #opResult = results.addStructureStart(element.getEnclosingStructure(), offset, 0, opName, True)
+
+    if leftType == 0x01: # Raw Value
+        print &quot;LeftType: Raw&quot;
+        leftVal = byteView.readSignedInt(offset, 2, ENDIAN_LITTLE)
+        print &quot;LeftVal: &quot; + str(leftVal)
+        
+        value = NumberValue()
+        value.setSigned(leftVal)
+        leftValElement = Element(ELEMENT_NUMBER, &quot;Left: Value&quot;, True)
+
+        value.setName(&quot;Left Raw&quot;)
+        results.addElement(leftValElement, 2, iteration, value)
+        offset += 2
+    elif leftType == 0x02: # Variable
+        print &quot;LeftType: Var&quot;
+        leftVal = byteView.readUnsignedInt(offset, 2, ENDIAN_LITTLE)
+        print &quot;LeftIndex: &quot; + str(leftVal)
+
+        value = NumberValue()
+        value.setUnsigned(leftVal)
+        leftValElement = Element(ELEMENT_NUMBER, &quot;Left: Index&quot;, True)
+
+        value.setName(&quot;Left Index&quot;)
+        results.addElement(leftValElement, 2, iteration, value)
+        offset += 2
+    elif leftType == 0x03: # Operation
+        print &quot;LeftType: Operation&quot;
+        opResult = results.addStructureStart(element.getEnclosingStructure(), offset, 0, &quot;Left: Op&quot;, True)
+        offset += parseOperation(offset, element, byteView, results, iteration)
+        results.addStructureEnd(offset)
+
+    if rightType == 0x01: # Raw Value
+        print &quot;RightType: Raw&quot;
+        rightVal = byteView.readSignedInt(offset, 2, ENDIAN_LITTLE)
+        print &quot;RightVal: &quot; + str(rightVal)
+
+        value = NumberValue()
+        value.setSigned(rightVal)
+        rightValElement = Element(ELEMENT_NUMBER, &quot;Right: Value&quot;, True)
+
+        value.setName(&quot;Right Raw&quot;)
+        results.addElement(rightValElement, 2, iteration, value)
+        offset += 2
+    elif rightType == 0x02: # Variable
+        print &quot;RightType: Var&quot;
+        rightVal = byteView.readUnsignedInt(offset, 2, ENDIAN_LITTLE)
+        print &quot;RightIndex: &quot; + str(rightVal)
+
+        value = NumberValue()
+        value.setUnsigned(rightVal)
+        rightValElement = Element(ELEMENT_NUMBER, &quot;Right: Index&quot;, True)
+
+        value.setName(&quot;Right Index&quot;)
+        results.addElement(rightValElement, 2, iteration, value)
+        offset += 2
+    elif rightType == 0x03: # Operation
+        print &quot;RightType: Operation&quot;
+        opResult = results.addStructureStart(element.getEnclosingStructure(), offset, 0, &quot;Right: Op&quot;, True)
+        offset += parseOperation(offset, element, byteView, results, iteration)
+        results.addStructureEnd(offset)
+
+    #opResult = results.addStructureEnd(offset)
+    return offset - bytePos
+
+
+def fillByteRange(value, byteArray, bitPos, bitLength):
+    # this method translates edited values back to the file
+    &quot;&quot;&quot;fillByteRange method&quot;&quot;&quot;
+
+    # write an integer back to file
+    # byteArray.writeUnsignedIntBits(highWord, bitPos, bitLength, ENDIAN_LITTLE)</source>
+            </script>
+        </scripts>
+        <structure name="OpTest" id="18" encoding="ISO_8859-1:1987" endian="little" signed="no">
+            <number name="OperationCount" id="19" type="integer" length="2"/>
+            <custom name="Operation" id="20" repeatmin="OperationCount" repeatmax="OperationCount" script="id:404"/>
+        </structure>
+    </grammar>
+</ufwb>
