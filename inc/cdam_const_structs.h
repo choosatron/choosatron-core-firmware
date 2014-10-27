@@ -57,65 +57,65 @@ typedef struct Version_t {
 
 typedef struct MetaFlags_t {
 	union {
-	    uint8_t flag1;
-	    struct {
-	    	uint8_t auth 			:1; // Bit 0
-	    	uint8_t random          :1;
-	    	uint8_t continues       :1;
-	    	uint8_t arcade			:1;
-	    	uint8_t multiplayer		:1;
-	    	uint8_t sdCard			:1;
-	    	uint8_t demo			:1;
-	    	uint8_t offline			:1; // Bit 7
-	    };
+		int8_t flag1;
+		struct {
+			uint8_t auth 			:1; // Bit 0
+			uint8_t random			:1;
+			uint8_t continues		:1;
+			uint8_t arcade			:1;
+			uint8_t multiplayer		:1;
+			uint8_t sdCard			:1;
+			uint8_t demo			:1;
+			uint8_t offline			:1; // Bit 7
+		};
 	};
 	union {
 		uint8_t flag2;
 		struct {
-		    uint8_t rsvd2 			:4; // Bit 0
-		    uint8_t logPrint        :1;
-		    uint8_t logLive			:1;
-		    uint8_t logLocal		:1;
-		    uint8_t logging 		:1; // Bit 7
+			uint8_t rsvd2 			:4; // Bit 0
+			uint8_t logPrint		:1;
+			uint8_t logLive			:1;
+			uint8_t logLocal		:1;
+			uint8_t logging 		:1; // Bit 7
 		};
-    };
+	};
 	union {
 		uint8_t flag3;
 		struct {
-	        uint8_t rsvd3 			:7;
-	        uint8_t dictOffsetBytes	:1; // 0 = 2byte length dict codes, 1 = 3 bytes
+			uint8_t rsvd3 			:7;
+			uint8_t dictOffsetBytes	:1; // 0 = 2byte length dict codes, 1 = 3 bytes
 		};
-    };
-    union {
+	};
+	union {
 		uint8_t flag4;
 		struct {
-	        uint8_t rsvd4			:8;
+			uint8_t rsvd4			:8;
 		};
-    };
-    union {
+	};
+	union {
 		uint8_t flag5;
 		struct {
-	        uint8_t rsvd5 			:8;
+			uint8_t rsvd5 			:8;
 		};
-    };
-    union {
+	};
+	union {
 		uint8_t flag6;
 		struct {
-	        uint8_t rsvd6			:8;
+			uint8_t rsvd6			:8;
 		};
-    };
-    union {
+	};
+	union {
 		uint8_t flag7;
 		struct {
-	        uint8_t rsvd7 			:8;
+			uint8_t rsvd7 			:8;
 		};
-    };
-    union {
+	};
+	union {
 		uint8_t flag8;
 		struct {
-	        uint8_t rsvd8			:8;
+			uint8_t rsvd8			:8;
 		};
-    };
+	};
 } MetaFlags;
 
 typedef struct MetaValues_t {
@@ -344,8 +344,8 @@ typedef struct Operation_t {
 	union {
 		uint8_t operandTypes;
 		struct {
-			uint8_t leftType  :4;
 			uint8_t rightType :4;
+			uint8_t leftType  :4;
 		};
 	};
 	uint8_t operationType;

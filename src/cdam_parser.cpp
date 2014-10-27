@@ -63,7 +63,7 @@ ParseState Parser::parsePassage() {
 		if (_dataLength == 0) {
 			dataStart = true;
 			if ((!_appended && !_parsingChoices && (_visibleCount > 1)) ||
-			    (_parsingChoices && !_choices[_choiceIndex].append)) {
+			    (_parsingChoices && !_passage->append)) {
 				_lastIndent = 0;
 				// Setup padding for printing a number in front of the text.
 				choiceData = _parsingChoices ? _visibleCount : _choiceSelected;
@@ -113,7 +113,7 @@ ParseState Parser::parsePassage() {
 					// Don't parse updates yet, we need user input first.
 					//_state = PARSE_UPDATES;
 					_choiceIndex++;
-					if (!_choices[_choiceIndex - 1].append) {
+					if (!_passage->append) {
 						if (_choiceIndex < _choiceCount) {
 							_hardwareManager->printer()->feed(1);
 						} else {
@@ -146,14 +146,14 @@ ParseState Parser::parsePassage() {
 			_offset++;
 			_state = PARSE_CONDITIONALS;
 			// Print spacing for the body passage, only makes sense if this is the first choice.
-			if (!_choices[_choiceIndex].append && (_choiceIndex == 0)) {
+			if (!_passage->append && (_choiceIndex == 0)) {
 				_hardwareManager->printer()->feed(2);
 				if (_choiceCount > 4) {
 					_hardwareManager->printer()->printBigNumbers();
 				}
 			}
 		} else {
-			if ((_choiceCount == 1) && _choices[0].append) {
+			if (_passage->append) {
 				//DEBUG("Append to next passage!");
 				_appended = true;
 				_offset = _dataManager->startOffset + _dataManager->getPassageOffset(_choices[0].passageIndex);
@@ -180,7 +180,7 @@ ParseState Parser::parsePassage() {
 			// Bookmark offset for value update count.
 			_choices[_choiceIndex].updatesOffset = _offset;
 			// Move offset to just after value updates.
-			_offset += updatesLength;
+			_offset += updatesLength + kOperationCountSize;
 			if (_choices[_choiceIndex].visible) {
 				// Associate choice indexes with visible choice indexes.
 				_choiceLinks[_visibleCount] = _choiceIndex;
@@ -305,11 +305,13 @@ uint32_t Parser::parseValueUpdates(uint32_t aOffset) {
 		_dataManager->readData(&address, offset + kOperationInfoSize, kOperationOperandSize);
 		// Get the result of all the operations in result. Add the # of bytes read to the offset.
 		offset += parseOperation(offset, result);
-		DEBUG("Address: %d, Result: %d", address, result);
+		//DEBUG("Address: %d, Result: %d", address, result);
 		// Set the variable to the result.
+		//DEBUG("PreVal: %d", _dataManager->varAtIndex(address));
 		if (!_dataManager->setVarAtIndex(address, result)) {
 			return 0;
 		}
+		//DEBUG("PostVal: %d", _dataManager->varAtIndex(address));
 	}
 
 	return offset - aOffset;
@@ -325,7 +327,7 @@ uint32_t Parser::parseConditions(uint32_t aOffset, int16_t &aResult) {
 	int16_t result = 1;
 	for (int i = 0; i < count; ++i) {
 		offset += parseOperation(offset, result);
-		DEBUG("Final Result: %d, Result: %d", aResult, result);
+		//DEBUG("Final Result: %d, Result: %d", aResult, result);
 		aResult = (aResult ? result : 0);
 	}
 
@@ -338,6 +340,7 @@ uint32_t Parser::parseOperation(uint32_t aOffset, int16_t &aResult) {
 
 	Operation op;
 	_dataManager->readData(&op, offset, kOperationInfoSize);
+	//DEBUG("lType: %d, rType: %d, op: %d", op.leftType, op.rightType, op.operationType);
 	offset += kOperationInfoSize;
 	if (op.leftType == kOpTypeOperation) {
 		offset += parseOperation(offset, op.leftOperand);
@@ -345,7 +348,10 @@ uint32_t Parser::parseOperation(uint32_t aOffset, int16_t &aResult) {
 		_dataManager->readData(&op.leftOperand, offset, kOperationOperandSize);
 		offset += kOperationOperandSize;
 		if (op.leftType == kOpTypeVar) {
+			//DEBUG("lIndex: %d", op.leftOperand);
 			op.leftOperand = _dataManager->varAtIndex(op.leftOperand);
+		} else {
+			//DEBUG("lVal: %d", op.leftOperand);
 		}
 	}
 	if (op.rightType == kOpTypeOperation) {
@@ -354,7 +360,10 @@ uint32_t Parser::parseOperation(uint32_t aOffset, int16_t &aResult) {
 		_dataManager->readData(&op.rightOperand, offset, kOperationOperandSize);
 		offset += kOperationOperandSize;
 		if (op.rightType == kOpTypeVar) {
+			//DEBUG("rIndex: %d", op.rightOperand);
 			op.rightOperand = _dataManager->varAtIndex(op.rightOperand);
+		} else {
+			//DEBUG("rVal: %d", op.rightOperand);
 		}
 	}
 
@@ -433,7 +442,7 @@ uint32_t Parser::parseOperation(uint32_t aOffset, int16_t &aResult) {
 			}
 			break;
 		case kOpIfStatement:
-			if (op.leftOperand) {
+			if (op.leftOperand >= 0) {
 				result = op.rightOperand;
 			}
 			break;
@@ -441,153 +450,8 @@ uint32_t Parser::parseOperation(uint32_t aOffset, int16_t &aResult) {
 			break;
 	}
 	aResult = result;
+	//DEBUG("Result: %d", aResult);
 	return offset - aOffset;
 }
-
-// aOffset: The byte offset to begin processing at.
-// Returns: The number of bytes processed beyond the provided offset.
-/*uint32_t Parser::parseValueUpdates(uint32_t aOffset) {
-	//DEBUG("Updates Offset: %lu", aOffset);
-	uint32_t offset = aOffset;
-	uint8_t count = _dataManager->readByte(offset);
-	//DEBUG("Update Count: %d", count);
-	offset += kValueSetCountSize;
-	for (int i = 0; i < count; ++i) {
-		ValueSet valueSet;
-		valueSet.varTypes = _dataManager->readByte(offset);
-		_dataManager->readData(&valueSet.varOne, offset + 1, 2);
-		_dataManager->readData(&valueSet.varTwo, offset + 3, 2);
-		offset += kValueSetSize;
-		int16_t valueOne = 0;
-		int16_t valueTwo = 0;
-		if (valueSet.varOneType == kValueTypeSmall) {
-			//DEBUG("Var One Small");
-			valueOne = _dataManager->smallVarAtIndex(valueSet.varOne);
-		} else if (valueSet.varOneType == kValueTypeBig) {
-			//DEBUG("Var One Big");
-			valueOne = _dataManager->bigVarAtIndex(valueSet.varOne);
-		}
-		//DEBUG("Var One Index: %d, Value: %d", valueSet.varOne, valueOne);
-
-		if (valueSet.varTwoType == kValueTypeRaw) {
-			//DEBUG("Var Two Raw");
-			valueTwo = (int16_t)valueSet.varTwo;
-		} else if (valueSet.varTwoType == kValueTypeSmall) {
-			//DEBUG("Var Two Small");
-			valueTwo = _dataManager->smallVarAtIndex(valueSet.varTwo);
-		} else if (valueSet.varTwoType == kValueTypeBig) {
-			//DEBUG("Var Two Big");
-			valueTwo = _dataManager->bigVarAtIndex(valueSet.varTwo);
-		}
-
-		if (valueSet.operatorType == kOperatorEquals) {
-			//DEBUG("Operator: Equals");
-			valueOne = valueTwo;
-		} else if (valueSet.operatorType == kOperatorPlus) {
-			//DEBUG("Operator: Plus");
-			valueOne += valueTwo;
-		} else if (valueSet.operatorType == kOperatorMinus) {
-			//DEBUG("Operator: Minus");
-			valueOne -= valueTwo;
-		} else if (valueSet.operatorType == kOperatorMultiply) {
-			//DEBUG("Operator: Multiply");
-			valueOne *= valueTwo;
-		} else if (valueSet.operatorType == kOperatorDivide) {
-			//DEBUG("Operator: Divide");
-			valueOne /= valueTwo;
-		} else if (valueSet.operatorType == kOperatorModulus) {
-			//DEBUG("Operator: Modulus");
-			valueOne %= valueTwo;
-		}
-
-		//if (valueSet.varTwoType == kValueTypeRaw) {
-		//	DEBUG("Var Two Value: %d", (int16_t)valueSet.varTwo);
-		//} else {
-		//	DEBUG("Var Two Index: %d, Value: %d", valueSet.varTwo, valueTwo);
-		}
-
-		if (valueSet.varOneType == kValueTypeSmall) {
-			//DEBUG("Var Two Small");
-			if (!_dataManager->setSmallVarAtIndex(valueSet.varOne, (int8_t)valueOne)) {
-				return 0;
-			}
-		} else if (valueSet.varOneType == kValueTypeBig) {
-			//DEBUG("Var Two Big");
-			if (!_dataManager->setBigVarAtIndex(valueSet.varOne, valueOne)) {
-				return 0;
-			}
-		}
-	}
-	return offset - aOffset;
-}
-
-uint32_t Parser::parseConditions(uint32_t aOffset, bool &aResult) {
-	//DEBUG("Updates Offset: %lu", aOffset);
-	uint32_t offset = aOffset;
-	uint8_t count = _dataManager->readByte(offset);
-	offset += kValueSetCountSize;
-	//DEBUG("Condition Count: %d, Offset: %lu", count, offset);
-	aResult = true;
-	bool result = true;
-	for (int i = 0; i < count; ++i) {
-		ValueSet valueSet;
-		valueSet.varTypes = _dataManager->readByte(offset);
-		_dataManager->readData(&valueSet.varOne, offset + 1, 2);
-		_dataManager->readData(&valueSet.varTwo, offset + 3, 2);
-		offset += kValueSetSize;
-		int16_t valueOne = 0;
-		int16_t valueTwo = 0;
-		if (valueSet.varOneType == kValueTypeSmall) {
-			//DEBUG("Var One Small");
-			valueOne = _dataManager->smallVarAtIndex(valueSet.varOne);
-		} else if (valueSet.varOneType == kValueTypeBig) {
-			//DEBUG("Var One Big");
-			valueOne = _dataManager->bigVarAtIndex(valueSet.varOne);
-		}
-		//DEBUG("Var One Index: %d, Value: %d", valueSet.varOne, valueOne);
-
-		if (valueSet.varTwoType == kValueTypeRaw) {
-			//DEBUG("Var Two Raw");
-			valueTwo = (int16_t)valueSet.varTwo;
-		} else if (valueSet.varTwoType == kValueTypeSmall) {
-			//DEBUG("Var Two Small");
-			valueTwo = _dataManager->smallVarAtIndex(valueSet.varTwo);
-		} else if (valueSet.varTwoType == kValueTypeBig) {
-			//DEBUG("Var Two Big");
-			valueTwo = _dataManager->bigVarAtIndex(valueSet.varTwo);
-		}
-
-		if (valueSet.operatorType == kCompareEqual) {
-			//DEBUG("Operator: Equals");
-			result = (valueOne == valueTwo) ? true : false;
-		} else if (valueSet.operatorType == kCompareGreater) {
-			//DEBUG("Operator: Greater Than");
-			result = (valueOne > valueTwo) ? true : false;
-		} else if (valueSet.operatorType == kCompareLess) {
-			//DEBUG("Operator: Less Than");
-			result = (valueOne < valueTwo) ? true : false;
-		} else if (valueSet.operatorType == kCompareEqualGreater) {
-			//DEBUG("Operator: Equal or Greater");
-			result = (valueOne >= valueTwo) ? true : false;
-		} else if (valueSet.operatorType == kCompareEqualLess) {
-			//DEBUG("Operator: Equal or Less");
-			result = (valueOne <= valueTwo) ? true : false;
-		} else if (valueSet.operatorType == kCompareModulus) {
-			//DEBUG("Operator: Modulus (has remainder)");
-			result = (valueOne %= valueTwo) ? true : false;
-		}
-
-		//if (valueSet.varTwoType == kValueTypeRaw) {
-		//	DEBUG("Var Two Value: %d", (int16_t)valueSet.varTwo);
-		//} else {
-		//	DEBUG("Var Two Index: %d, Value: %d", valueSet.varTwo, valueTwo);
-		//}
-
-		//DEBUG("Condition: %s", (result ? "true" : "false"));
-		// If we have logic gates, we would evalutate here.
-		aResult = (aResult ? result : false);
-	}
-	return offset - aOffset;
-}*/
 
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ufwb version="1.9">
-    <grammar name="OperationTest" start="id:18" author="Jerry">
+    <grammar name="OperationTest" start="id:174" author="Jerry">
         <description>Grammar for my file format</description>
         <scripts>
             <script name="Operation" type="DataType" id="404">
@@ -116,7 +116,7 @@ def parseOperation(bytePos, element, byteView, results, iteration):
         opName = &quot;Rand&quot;
     elif operationType == 0x15:
         opName = &quot;DiceRoll&quot;
-    elif operationType == 0x06:
+    elif operationType == 0x16:
         opName = &quot;If&quot;
 
     print &quot;Operation: &quot; + opName
@@ -207,9 +207,9 @@ def fillByteRange(value, byteArray, bitPos, bitLength):
     # byteArray.writeUnsignedIntBits(highWord, bitPos, bitLength, ENDIAN_LITTLE)</source>
             </script>
         </scripts>
-        <structure name="OpTest" id="18" encoding="ISO_8859-1:1987" endian="little" signed="no">
-            <number name="OperationCount" id="19" type="integer" length="2"/>
-            <custom name="Operation" id="20" repeatmin="OperationCount" repeatmax="OperationCount" script="id:404"/>
+        <structure name="OpTest" id="174" encoding="ISO_8859-1:1987" endian="little" signed="no">
+            <number name="OperationCount" id="175" type="integer" length="2"/>
+            <custom name="Operation" id="176" repeatmin="OperationCount" repeatmax="OperationCount" script="id:404"/>
         </structure>
     </grammar>
 </ufwb>
