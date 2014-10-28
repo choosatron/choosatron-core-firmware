@@ -39,6 +39,10 @@ bool DataManager::initialize(StateController *aStateController) {
 		return false;
 	}
 
+	return true;
+}
+
+bool DataManager::initStorage() {
 #if HAS_SD == 1
 	if (this->metadata.flags.sdCard && !initSD()) {
 		this->metadata.flags.sdCard = 0;
@@ -201,9 +205,9 @@ bool DataManager::loadStory(uint8_t aIndex) {
 	if (!readStoryHeader(this->currentStory, &this->storyHeader)) {
 		return false;
 	}
-	if (!readVariables(this->currentStory)) {
+	/*if (!readVariables(this->currentStory)) {
 		return false;
-	}
+	}*/
 
 	return true;
 }
@@ -224,42 +228,23 @@ void DataManager::unloadStory() {
 	this->psgIndex = 0;
 	this->psgSize = 0;
 
-	if (_smallVarCount > 0) {
-		delete[] _smallVars;
-		_smallVars = NULL;
+	if (this->storyHeader.variableCount > 0) {
+		delete[] _variables;
+		_variables = NULL;
 	}
-	if (_bigVarCount > 0) {
-		delete[] _bigVars;
-		_bigVars = NULL;
-	}
-	_smallVarCount = 0;
-	_bigVarCount = 0;
+	this->storyHeader = {};
 }
 
-int8_t DataManager::smallVarAtIndex(uint8_t aIndex) {
-	return _smallVars[aIndex];
+int16_t DataManager::varAtIndex(uint8_t aIndex) {
+	return _variables[aIndex];
 }
 
-bool DataManager::setSmallVarAtIndex(uint8_t aIndex, int8_t aValue) {
-	if (aIndex < _smallVarCount) {
-		_smallVars[aIndex] = aValue;
+bool DataManager::setVarAtIndex(uint8_t aIndex, int16_t aValue) {
+	if (aIndex < this->storyHeader.variableCount) {
+		_variables[aIndex] = aValue;
 		return true;
 	}
-	Errors::setError(E_INVALID_SMALL_VARIABLE);
-	ERROR(Errors::errorString());
-	return false;
-}
-
-int16_t DataManager::bigVarAtIndex(uint8_t aIndex) {
-	return _bigVars[aIndex];
-}
-
-bool DataManager::setBigVarAtIndex(uint8_t aIndex, int16_t aValue) {
-	if (aIndex < _bigVarCount) {
-		_bigVars[aIndex] = aValue;
-		return true;
-	}
-	Errors::setError(E_INVALID_BIG_VARIABLE);
+	Errors::setError(E_INVALID_VARIABLE);
 	ERROR(Errors::errorString());
 	return false;
 }
@@ -509,14 +494,30 @@ bool DataManager::readStoryHeader(uint8_t aIndex, StoryHeader *aHeader) {
 
 	//DEBUG("StoryHeader offset: %d, size: %d", offset, kStoryHeaderSize);
 	bool result = readData((uint8_t*)aHeader, offset, kStoryHeaderSize);
-	/*if (!result) {
+	_variables = new int16_t[aHeader->variableCount]();
+	offset += kStoryHeaderSize;
+
+	result = readData(&this->psgCount, offset, kPassageCountSize) && result ? true : false;
+	offset += kPassageCountSize;
+
+	// Memory offset for where the passage memory offsets begin.
+	this->tocOffset = offset;
+
+	// Grab the offset of the second passage, which gives us the size of the first.
+	result = readData(&this->psgSize, offset + kPassageOffsetSize, kPassageOffsetSize) && result ? true : false;
+
+	offset += this->psgCount * kPassageOffsetSize;
+	this->startOffset = offset;
+	//DEBUG("Start Offset: %d", this->startOffset);
+	this->psgIndex = 0;
+	if (!result) {
 		Errors::setError(E_HEADER_READ_FAIL);
 		ERROR(Errors::errorString());
-	}*/
+	}
 	return result;
 }
 
-bool DataManager::readVariables(uint8_t aIndex) {
+/*bool DataManager::readVariables(uint8_t aIndex) {
 	bool result = true;
 	uint32_t offset = getStoryOffset(aIndex) + kStoryHeaderSize;
 	_smallVarCount = readByte(offset);
@@ -553,11 +554,11 @@ bool DataManager::readVariables(uint8_t aIndex) {
 	// Grab the offset of the second passage, which gives us the size of the first.
 	result = readData(&this->psgSize, offset + kPassageOffsetSize, kPassageOffsetSize) && result ? true : false;
 
-	/*if (!result) {
-		Errors::setError(E_VARS_READ_FAIL);
-		ERROR(Errors::errorString());
-		return false;
-	}*/
+	//if (!result) {
+	//	Errors::setError(E_VARS_READ_FAIL);
+	//	ERROR(Errors::errorString());
+	//	return false;
+	//}
 
 	//DEBUG("Passage Size: %lu", this->psgSize);
 	//DEBUG("TOC Offset: %d", this->tocOffset);
@@ -567,7 +568,7 @@ bool DataManager::readVariables(uint8_t aIndex) {
 	this->psgIndex = 0;
 
 	return true;
-}
+}*/
 
 bool DataManager::writeMetadata(Metadata *aMetadata) {
 	//DEBUG("Size of Metadata: %d", sizeof(*aMetadata));

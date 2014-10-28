@@ -76,6 +76,7 @@ void HardwareManager::initHardware() {
 	_keypad = new Keypad();
 	_keypad->initialize();
 	_keypad->active = false;
+	_keypadElapsed = kIntervalKeypadMillis;
 
 	// Setup Coin Acceptor
 	_coinAcceptor = new CoinAcceptor();
@@ -84,7 +85,7 @@ void HardwareManager::initHardware() {
 }
 
 void HardwareManager::printerIntervalUpdate() {
-	if (_printerElapsed > kIntervalPrinterMillis) {
+	if (_printerElapsed >= kIntervalPrinterMillis) {
 		_printer->updateState();
 		_printer->logChangedStatus();
 		// Allow printing to continue across loops.
@@ -96,7 +97,7 @@ void HardwareManager::printerIntervalUpdate() {
 }
 
 void HardwareManager::keypadIntervalUpdate() {
-	if (_keypadElapsed > kIntervalKeypadMillis) {
+	if (_keypadElapsed >= kIntervalKeypadMillis) {
 		_keypad->updateState();
 		_keypadElapsed = 0;
 	}
@@ -104,7 +105,7 @@ void HardwareManager::keypadIntervalUpdate() {
 
 void HardwareManager::coinAcceptorIntervalUpdate() {
 	if (Manager::getInstance().dataManager->metadata.flags.arcade &&
-	    	_coinElapsed > kIntervalCoinAcceptorMillis) {
+	    	_coinElapsed >= kIntervalCoinAcceptorMillis) {
 		_coinAcceptor->updateState();
 		_coinElapsed = 0;
 	}
