@@ -29,8 +29,6 @@
 
 #if HAS_SD == 1
 #include "SdFat.h"
-//#include "SdFatUtil.h"
-//#include "SD.h"
 #endif
 
 namespace cdam
@@ -45,6 +43,7 @@ class DataManager
         DataManager();
 
         bool initialize(StateController *aStateController);
+        bool initStorage();
         void logMetadata();
 
 #if HAS_SD == 1

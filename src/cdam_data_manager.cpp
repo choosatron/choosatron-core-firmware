@@ -39,6 +39,10 @@ bool DataManager::initialize(StateController *aStateController) {
 		return false;
 	}
 
+	return true;
+}
+
+bool DataManager::initStorage() {
 #if HAS_SD == 1
 	if (this->metadata.flags.sdCard && !initSD()) {
 		this->metadata.flags.sdCard = 0;

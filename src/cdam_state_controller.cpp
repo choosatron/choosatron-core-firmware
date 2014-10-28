@@ -101,27 +101,29 @@ void StateController::initState(GameState aState) {
 void StateController::loopState(GameState aState) {
 	if (aState == STATE_BOOTING) {
 		// If button 1 held (or hardset to Offline), disable WiFi.
-		if ((_hardwareManager->keypad()->buttonDown(1) &&
-			_dataManager->metadata.flags.offline) ||
-			(!_hardwareManager->keypad()->buttonDown(1) &&
-			!_dataManager->metadata.flags.offline)) {
-
+		if (_hardwareManager->keypad()->buttonDown(1)) {
+			_dataManager->metadata.flags.offline = !_dataManager->metadata.flags.offline;
+		}
+		if (!_dataManager->metadata.flags.offline) {
 			if (Spark.connected() == false) {
 				//WiFi.on();
 				//WiFi.connect();
 				Spark.connect();
 				//Spark.syncTime();
 			}
-		} else {
-			LOG("* DISABLE WIFI *");
 		}
 		// If button 3 held, don't print, just serial output.
-		if (_hardwareManager->keypad()->buttonDown(3) ||
+		/*if (_hardwareManager->keypad()->buttonDown(3) ||
 			_dataManager->metadata.flags.logPrint) {
 			LOG("* PRINT TO SERIAL *");
 			// TODO - doesn't work
 			_dataManager->logPrint = true;
+		}*/
+		if (_hardwareManager->keypad()->buttonDown(3)) {
+			_dataManager->metadata.flags.sdCard = !_dataManager->metadata.flags.sdCard;
 		}
+		// Override has had a chance to get set, now setup storage.
+		_dataManager->initStorage();
 		// Admin mode, if pass required change to STATE_AUTH
 		if (_hardwareManager->keypad()->buttonDown(2)) {
 			if (_dataManager->metadata.flags.auth) {
