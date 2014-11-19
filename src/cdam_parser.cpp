@@ -70,8 +70,10 @@ ParseState Parser::parsePassage() {
 				if (choiceData > 0) {
 					bufferPadding = (_choiceSelected == 10) ? 4 : 3;
 				}
-			} else {
-				_appended = false;
+			} else if (_appended) {
+				// Add padding for a single inserted space between previous passage
+				// and the one we are about to append.
+				bufferPadding = 1;
 			}
 			// Get the length of the data bytes.
 			if (!_dataManager->readData(&_dataLength, _offset, kDataLengthSize)) {
@@ -86,6 +88,12 @@ ParseState Parser::parsePassage() {
 		// Insert the numbering.
 		if (dataStart) {
 			sprintf(_buffer, "%d. ", choiceData);
+		}
+
+		// Now that we've loaded our buffer data, insert the space.
+		if (_appended) {
+			_appended = false;
+			_buffer[0] = ' ';
 		}
 		// Will either fill buffer with raw text or text generated from a command.
 		// It will always stop on a command byte barrier to print what it has so far,
@@ -159,8 +167,6 @@ ParseState Parser::parsePassage() {
 				_offset = _dataManager->startOffset + _dataManager->getPassageOffset(_choices[0].passageIndex);
 				//DEBUG("Jumping to passage %d at offset: %lu", _choices[0].passageIndex, _offset);
 				cleanupAfterPassage();
-				_hardwareManager->printer()->print(" ");
-				_lastIndent++;
 				_state = PARSE_UPDATES;
 			} else {
 				_state = PARSE_USER_INPUT;
@@ -205,6 +211,7 @@ ParseState Parser::parsePassage() {
 		// Wait for multi button up event for story selection.
 		_choiceSelected = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, _visibleCount);
 		if (_choiceSelected) {
+			_lastIndent = 0;
 			// Choice has been selected.
 			_offset = _choices[_choiceLinks[_choiceSelected - 1]].updatesOffset;
 			_state = PARSE_UPDATES;

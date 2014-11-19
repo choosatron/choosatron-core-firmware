@@ -338,7 +338,7 @@ uint8_t Printer::wrapText(char* aBuffer, uint8_t aColumns, uint8_t aStartOffset)
 
 		// Search for a space to break on.
 		if (foundBreak == false) {
-			for (i = (aColumns - aStartOffset); i > 0; --i) {
+			for (i = (aColumns - aStartOffset); i >= 0; --i) {
 				if (aBuffer[startIndex + i] == ' ') {
 					// Found Space
 					foundBreak = true;
