@@ -83,7 +83,7 @@ ParseState Parser::parsePassage() {
 		}
 		// Allocate a buffer of data length, up to a maximum.
 		uint16_t bufferSize = (_dataLength < (kPassageBufferReadSize + _lastIndent)) ? _dataLength : (kPassageBufferReadSize + _lastIndent);
-		DEBUG("Bufsize: %d", bufferSize);
+		//DEBUG("Bufsize: %d", bufferSize);
 		_buffer = new char[bufferSize + bufferPadding + 1](); // + 1 to null terminate if it is all text.
 		// Insert the numbering.
 		if (dataStart) {
@@ -449,7 +449,7 @@ uint32_t Parser::parseOperation(uint32_t aOffset, int16_t &aResult) {
 			}
 			break;
 		case kOpIfStatement:
-			if (op.leftOperand >= 0) {
+			if (op.leftOperand > 0) {
 				result = op.rightOperand;
 			}
 			break;
