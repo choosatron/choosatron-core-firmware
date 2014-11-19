@@ -40,9 +40,7 @@ public:
     void printEmpty();
     void printStart();
     void printStoryIntro(char* aTitle, char* aAuthor);
-    //void printAuthor(char* aAuthor);
     //void printAuthors(char* aAuthor, char* aCredits);
-    //void printPoints(int16_t aPoints, int16_t aPerfectScore);
     void printBigNumbers();
     void printContinue(uint8_t aCoinsToContinue);
     void printEnding(char* aCredits, char* aContact);
@@ -51,15 +49,6 @@ public:
 
     void begin(int heatTime=200);
 
-    //void printFile(const char *aPath, bool aWrapped, bool aLinefeed, uint8_t aPrependLen, uint8_t aOffset);
-    //int printWrapped(char *aMsg, uint8_t aColumns, bool aBufferMode);
-
-
-    //void timeoutSet(unsigned long);
-    void printTimeSet(unsigned long);
-    void timeoutWait();
-    //void printerWait();
-
     bool available();
     void feed(uint8_t x=1);
     uint8_t read();
@@ -67,10 +56,6 @@ public:
     void setASB(bool aTurnOn);
     bool isPrinting();
     bool isReady();
-    // Number of chars to indent for autojump text.
-    uint8_t jumpIndent;
-
-    bool bufferFull;
 
     bool active;
 

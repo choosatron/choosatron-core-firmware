@@ -32,10 +32,8 @@ Printer::Printer() : CSN_Thermal::CSN_Thermal() {
 
 void Printer::initialize() {
 	CSN_Thermal::init();
-	this->jumpIndent = 0;
 	this->ready = false;
 	this->printing = false;
-	this->bufferFull = false;
 	this->printTime = 0;
 	this->active = true;
 }
@@ -216,18 +214,7 @@ void Printer::printStoryIntro(char* aTitle, char* aAuthor) {
 	CSN_Thermal::justify('L');
 }
 
-/*void Printer::printAuthor(char* aAuthor) {
-	CSN_Thermal::boldOn();
-	CSN_Thermal::justify('C');
-
-	println(CDAM_STORY_BY);
-	println(aAuthor);
-
-	CSN_Thermal::justify('L');
-	CSN_Thermal::boldOff();
-}
-
-void Printer::printAuthors(char* aAuthor, char* aCredits) {
+/*void Printer::printAuthors(char* aAuthor, char* aCredits) {
 	CSN_Thermal::boldOn();
 	CSN_Thermal::justify('C');
 
@@ -239,27 +226,6 @@ void Printer::printAuthors(char* aAuthor, char* aCredits) {
 	if (sizeof(aCredits) > 0) {
 		DEBUG("Printing credits...");
 		snprintf(buffer, sizeof(buffer), CDAM_CREDITS, aCredits);
-	}
-
-	CSN_Thermal::justify('L');
-	CSN_Thermal::boldOff();
-}*/
-
-/*void Printer::printPoints(int16_t aPoints, int16_t aPerfectScore) {
-	CSN_Thermal::boldOn();
-	CSN_Thermal::justify('C');
-
-	char buffer[20];
-	if (aPerfectScore) { // 0 means there isn't a perfect score.
-		snprintf(buffer, sizeof(buffer), CDAM_POINTS_OUT_OF, aPoints, aPerfectScore);
-		println(buffer);
-
-		if (aPoints == aPerfectScore) {
-			println(CDAM_POINTS_PERFECT);
-		}
-	} else {
-		snprintf(buffer, sizeof(buffer), CDAM_POINTS, aPoints);
-		println(buffer);
 	}
 
 	CSN_Thermal::justify('L');
@@ -356,18 +322,6 @@ uint8_t Printer::wrapText(char* aBuffer, uint8_t aColumns, uint8_t aStartOffset)
 	return (length - startIndex) % aColumns;
 }
 
-// This method sets the estimated completion time for a just-issued task.
-/*void Printer::timeoutSet(unsigned long x) {
-  //Serial.println("Setting Timeout");
-  resumeTime = micros() + x;
-}*/
-
-// This function waits (if necessary) for the prior task to complete.
-void Printer::timeoutWait() {
-	// BAD NEWS - Should be using buffer full status NOT this.
-	//while((long)(micros() - resumeTime) < 0L); // Rollover-proof
-}
-
 void Printer::begin(int heatTime) {
 	CSN_Thermal::begin(heatTime);
 	this->ready = true;
@@ -404,7 +358,9 @@ bool Printer::available() {
 
 void Printer::feed(uint8_t x) {
 	if (!Manager::getInstance().dataManager->logPrint) {
-		CSN_Thermal::feed(x);
+		while (x--) {
+			write('\n');
+		}
 	}
 }
 
@@ -423,79 +379,5 @@ void Printer::setASB(bool aTurnOn) {
 	}
 	writeBytes(29, 97, setting);
 }
-
-/*uint8_t Printer::printWrapped(char* aBuffer, uint8_t aColumns) {
-	println(aBuffer);
-	return 0;
-}*/
-
-// Load up to the max number of bytes, print, and repeat until end of file.
-/*void Printer::printFile(const char *aPath, boolean aWrapped, boolean aLinefeed, byte aPrependLen, byte aOffset = 0) {
-  //CSN_Thermal::wake();
-	unsigned long fileSize = StoryLoad::getFileSize(aPath);
-	if (fileSize == 0) {
-		DEBUG("File has no size!");
-		return;
-	}
-	fileSize -= aOffset;
-	unsigned long index = aOffset;
-	byte indent = 0;
-	if (aWrapped) {
-		indent = aPrependLen;
-	}
-
-	unsigned int numToRead = 0;
-
-	while (fileSize > 0) {
-		if (indent > 0) {
-      // Read one beyond the line max in case it's a space.
-			numToRead = kPrinterColumns - indent + 1;
-		} else {
-			numToRead = kMaxPassageBytes;
-		}
-		char *text = StoryLoad::getStringFromFile(aPath, numToRead, index);
-		unsigned int length = strlen(text);
-
-#if (DEBUG && MEMORY)
-		slog("\t* Free Memory: ");
-		DEBUG(freeMemory());
-		slog("\t* Text Bytesize: ");
-		DEBUG(fileSize);
-#endif
-
-		fileSize -= length;
-		index += length;
-		if (aWrapped) {
-      // Receive the length of the last line.
-			this->jumpIndent = printWrapped(text, kPrinterColumns - indent, true);
-			indent = strlen(text);
-			fileSize += indent;
-			index -= indent;
-			indent = 0;
-		} else {
-			this->jumpIndent = 0;
-			print(text);
-      //delay(1000);
-		}
-		free(text);
-    //delay(1000);
-	}
-
-	if (aLinefeed) {
-		if (aOffset > 0) {
-      // Printing a choice, only 1 feed.
-			feed(1);
-		} else {
-      // Printing a passage, 2 feeds.
-			feed(2);
-		}
-	} else {
-    // Should be a autojump.
-		print(" ");
-	}
-  //slog(F("Jump indent: "));
-  //DEBUG(this->jumpIndent);
-  //CSN_Thermal::sleep();
-}*/
 
 }

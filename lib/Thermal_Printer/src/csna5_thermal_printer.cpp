@@ -19,33 +19,6 @@
 // print and feed mechanisms are the limiting factor, not the port speed.
 #define BAUDRATE  19200
 
-// Number of microseconds to issue one byte to the printer.  11 bits
-// (not 8) to accommodate idle, start and stop bits.  Idle time might
-// be unnecessary, but erring on side of caution here.
-#define BYTE_TIME (11L * 1000000L / BAUDRATE)
-
-// Because there's no flow control between the printer and Arduino,
-// special care must be taken to avoid overrunning the printer's buffer.
-// Serial output is throttled based on serial speed as well as an estimate
-// of the device's print and feed rates (relatively slow, being bound to
-// moving parts and physical reality).  After an operation is issued to
-// the printer (e.g. bitmap print), a timeout is set before which any
-// other printer operations will be suspended.  This is generally more
-// efficient than using delay() in that it allows the parent code to
-// continue with other duties (e.g. receiving or decoding an image)
-// while the printer physically completes the task.
-
-// This method sets the estimated completion time for a just-issued task.
-void CSN_Thermal::timeoutSet(unsigned long x) {
-  resumeTime = micros() + x;
-}
-
-// This function waits (if necessary) for the prior task to complete.
-void CSN_Thermal::timeoutWait() {
-	// This is BAD - now that buffer full status is possible this should be removed.
-  while((long)(micros() - resumeTime) < 0L); // Rollover-proof
-}
-
 // Printer performance may vary based on the power supply voltage,
 // thickness of paper, phase of the moon and other seemingly random
 // variables.  This method sets the times (in microseconds) for the
@@ -83,52 +56,38 @@ void CSN_Thermal::init() {
 // commands, printing bitmaps or barcodes, etc.  Not when printing text.
 
 void CSN_Thermal::writeBytes(uint8_t a) {
-  timeoutWait();
   PRINTER_PRINT(a);
-  timeoutSet(BYTE_TIME);
 }
 
 void CSN_Thermal::writeBytes(uint8_t a, uint8_t b) {
-  timeoutWait();
   PRINTER_PRINT(a);
   PRINTER_PRINT(b);
-  timeoutSet(2 * BYTE_TIME);
 }
 
 void CSN_Thermal::writeBytes(uint8_t a, uint8_t b, uint8_t c) {
-  timeoutWait();
   PRINTER_PRINT(a);
   PRINTER_PRINT(b);
   PRINTER_PRINT(c);
-  timeoutSet(3 * BYTE_TIME);
 }
 
 void CSN_Thermal::writeBytes(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
-  timeoutWait();
   PRINTER_PRINT(a);
   PRINTER_PRINT(b);
   PRINTER_PRINT(c);
   PRINTER_PRINT(d);
-  timeoutSet(3 * BYTE_TIME);
 }
 
 // The underlying method for all high-level printing (e.g. println()).
 // The inherited Print class handles the rest!
 size_t CSN_Thermal::write(uint8_t c) {
   if(c != 0x13) { // Strip carriage returns
-    timeoutWait();
     PRINTER_PRINT(c);
-    unsigned long d = BYTE_TIME;
     if((c == '\n') || (column == maxColumn)) { // If newline or wrap
-      d += (prevByte == '\n') ?
-        ((charHeight+lineSpacing) * dotFeedTime) :             // Feed line
-        ((charHeight*dotPrintTime)+(lineSpacing*dotFeedTime)); // Text line
       column = 0;
-      c      = '\n'; // Treat wrap as newline on next pass
+      c = '\n'; // Treat wrap as newline on next pass
     } else {
       column++;
     }
-    timeoutSet(d);
     prevByte = c;
   }
 
@@ -137,11 +96,6 @@ size_t CSN_Thermal::write(uint8_t c) {
 
 void CSN_Thermal::begin(int heatTime) {
   SERIAL_IMPL.begin(BAUDRATE);
-
-  // The printer can't start receiving data immediately upon power up --
-  // it needs a moment to cold boot and initialize.  Allow at least 1/2
-  // sec of uptime before printer can receive data.
-  timeoutSet(500000L);
 
   wake();
   reset();
@@ -209,39 +163,6 @@ void CSN_Thermal::setDefault(){
   setSize('s');
 }
 
-/*void CSN_Thermal::test(){
-  println("Hello World!");
-  feed(2);
-}*/
-
-/*void CSN_Thermal::testPage() {
-  writeBytes(18, 84);
-  timeoutSet(
-    dotPrintTime * 24 * 26 +      // 26 lines w/text (ea. 24 dots high)
-    dotFeedTime * (8 * 26 + 32)); // 26 text lines (feed 8 dots) + blank line
-}*/
-
-/*void CSN_Thermal::setBarcodeHeight(int val) { // Default is 50
-  if(val < 1) val = 1;
-  barcodeHeight = val;
-  writeBytes(29, 104, val);
-}*/
-
-/*void CSN_Thermal::printBarcode(char * text, uint8_t type) {
-  int  i = 0;
-  byte c;
-
-  writeBytes(29,  72, 2);    // Print label below barcode
-  writeBytes(29, 119, 3);    // Barcode width
-  writeBytes(29, 107, type); // Barcode type (listed in .h file)
-  do { // Copy string + NUL terminator
-    writeBytes(c = text[i++]);
-  } while(c);
-  timeoutSet((barcodeHeight + 40) * dotPrintTime);
-  prevByte = '\n';
-  feed(2);
-}*/
-
 // === Character commands ===
 
 #define INVERSE_MASK       (1 << 1)
@@ -297,21 +218,21 @@ void CSN_Thermal::doubleHeightOff(){
   unsetPrintMode(DOUBLE_HEIGHT_MASK);
 }
 
-void CSN_Thermal::doubleWidthOn(){
+/*void CSN_Thermal::doubleWidthOn(){
   setPrintMode(DOUBLE_WIDTH_MASK);
 }
 
 void CSN_Thermal::doubleWidthOff(){
   unsetPrintMode(DOUBLE_WIDTH_MASK);
-}
+}*/
 
-void CSN_Thermal::strikeOn(){
+/*void CSN_Thermal::strikeOn(){
   setPrintMode(STRIKE_MASK);
 }
 
 void CSN_Thermal::strikeOff(){
   unsetPrintMode(STRIKE_MASK);
-}
+}*/
 
 void CSN_Thermal::boldOn(){
   setPrintMode(BOLD_MASK);
@@ -334,21 +255,20 @@ void CSN_Thermal::justify(char value){
 }
 
 // Feeds by the specified number of lines
-void CSN_Thermal::feed(uint8_t x){
+/*void CSN_Thermal::feed(uint8_t x){
   // The datasheet claims sending bytes 27, 100, <x> will work, but
   // it feeds much more than that.  So it's done manually:
   while(x--) write('\n');
-}
+}*/
 
 // Feeds by the specified number of individual  pixel rows
-void CSN_Thermal::feedRows(uint8_t rows) {
+/*void CSN_Thermal::feedRows(uint8_t rows) {
   writeBytes(27, 74, rows);
-  timeoutSet(rows * dotFeedTime);
-}
+}*/
 
-void CSN_Thermal::flush() {
+/*void CSN_Thermal::flush() {
   writeBytes(12);
-}
+}*/
 
 void CSN_Thermal::setSize(char value){
   uint8_t size;
@@ -478,7 +398,6 @@ void CSN_Thermal::wake() {
   // Printer may have been idle for a very long time, during which the
   // micros() counter has rolled over.  To avoid shenanigans, reset the
   // timeout counter before issuing the wake command.
-  timeoutSet(0);
   writeBytes(255);
   // Datasheet recomments a 50 mS delay before issuing further commands,
   // but in practice this alone isn't sufficient (e.g. text size/style
@@ -486,7 +405,6 @@ void CSN_Thermal::wake() {
   // delay, interspersed with ESC chars (no-ops) seems to help.
   for(uint8_t i=0; i<10; i++) {
     writeBytes(27);
-    timeoutSet(10000L);
   }
 }
 
