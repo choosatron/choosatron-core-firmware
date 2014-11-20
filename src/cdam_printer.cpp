@@ -55,7 +55,7 @@ void Printer::initialize() {
 	_maxChunkHeight = 0;
 	_dotPrintTime = 0;
 	_dotFeedTime = 0;
-	_resumeTime = 0;
+	//_resumeTime = 0;
 }
 
 void Printer::updateState() {
@@ -437,7 +437,7 @@ void Printer::begin(int aHeatTime) {
 
 	DEBUG("Begin");
 
-	timeoutSet(500000L);
+	//timeoutSet(500000L);
 
 	wake();
 	reset();
@@ -509,7 +509,7 @@ void Printer::wake() {
 	// Printer may have been idle for a very long time, during which the
 	// micros() counter has rolled over.  To avoid shenanigans, reset the
 	// timeout counter before issuing the wake command.
-	timeoutSet(0);
+	//timeoutSet(0);
 	writeBytes(255);
 	// Datasheet recomments a 50 mS delay before issuing further commands,
 	// but in practice this alone isn't sufficient (e.g. text size/style
@@ -517,7 +517,7 @@ void Printer::wake() {
 	// delay, interspersed with ESC chars (no-ops) seems to help.
 	for (uint8_t i = 0; i < 10; i++) {
 		writeBytes(27);
-		timeoutSet(10000L);
+		//timeoutSet(10000L);
 	}
 }
 
@@ -684,15 +684,15 @@ void Printer::setCharSpacing(int aSpacing) {
 /////////////////////////
 
 // This method sets the estimated completion time for a just-issued task.
-void Printer::timeoutSet(uint32_t aDuration) {
+/*void Printer::timeoutSet(uint32_t aDuration) {
 	_resumeTime = micros() + aDuration;
-}
+}*/
 
 // This function waits (if necessary) for the prior task to complete.
-void Printer::timeoutWait() {
+/*void Printer::timeoutWait() {
 	// BAD NEWS - Should be using buffer full status NOT this.
 	//while((long)(micros() - _resumeTime) < 0L); // Rollover-proof
-}
+}*/
 
 void Printer::setMaxChunkHeight(int aValue) {
 	_maxChunkHeight = aValue;
@@ -742,7 +742,7 @@ size_t Printer::write(uint8_t c) {
 		logChangedStatus();
 	}
 	if (c != 0x13) { // Strip carriage returns
-		timeoutWait();
+		//timeoutWait();
 		PRINTER_PRINT(c);
 		uint32_t d = BYTE_TIME;
 		if ((c == '\n') || (_column == _maxColumn)) { // If newline or wrap
@@ -754,7 +754,7 @@ size_t Printer::write(uint8_t c) {
 		} else {
 			_column++;
 		}
-		timeoutSet(d);
+		//timeoutSet(d);
 		_prevByte = c;
 	}
 	return 1;
@@ -779,33 +779,33 @@ size_t Printer::write(const char *aBuffer, size_t aSize) {
 // commands, printing bitmaps or barcodes, etc.  Not when printing text.
 
 void Printer::writeBytes(uint8_t a) {
-	timeoutWait();
+	//timeoutWait();
 	PRINTER_PRINT(a);
-	timeoutSet(BYTE_TIME);
+	//timeoutSet(BYTE_TIME);
 }
 
 void Printer::writeBytes(uint8_t a, uint8_t b) {
-	timeoutWait();
+	//timeoutWait();
 	PRINTER_PRINT(a);
 	PRINTER_PRINT(b);
-	timeoutSet(2 * BYTE_TIME);
+	//timeoutSet(2 * BYTE_TIME);
 }
 
 void Printer::writeBytes(uint8_t a, uint8_t b, uint8_t c) {
-	timeoutWait();
+	//timeoutWait();
 	PRINTER_PRINT(a);
 	PRINTER_PRINT(b);
 	PRINTER_PRINT(c);
-	timeoutSet(3 * BYTE_TIME);
+	//timeoutSet(3 * BYTE_TIME);
 }
 
 void Printer::writeBytes(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
-	timeoutWait();
+	//timeoutWait();
 	PRINTER_PRINT(a);
 	PRINTER_PRINT(b);
 	PRINTER_PRINT(c);
 	PRINTER_PRINT(d);
-	timeoutSet(4 * BYTE_TIME);
+	//timeoutSet(4 * BYTE_TIME);
 }
 
 }

@@ -90,8 +90,8 @@ private:
 	void tab();
 	void setCharSpacing(int aSpacing);
 	///////////
-	void timeoutSet(uint32_t aDuration);
-	void timeoutWait();
+	//void timeoutSet(uint32_t aDuration);
+	//void timeoutWait();
 	void setMaxChunkHeight(int aValue);
 	void setLineHeight(int aValue);
 	void setPrintMode(uint8_t aMask);
@@ -116,7 +116,7 @@ private:
 	uint16_t _maxChunkHeight;
 	uint32_t _dotPrintTime;
 	uint32_t _dotFeedTime;
-	uint32_t _resumeTime;
+	//uint32_t _resumeTime;
 
 	char _status;
 	char _lastStatus;
