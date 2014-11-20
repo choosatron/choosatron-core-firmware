@@ -45,6 +45,8 @@ void Printer::initialize() {
 	this->writing = false;
 	this->active = true;
 
+	_prevByte;
+	_column = 0;
 	_maxColumn = 0;
 	_charHeight = 0;
 	_lineSpacing = 0;
@@ -183,6 +185,7 @@ void Printer::printPressButton() {
 	justify('C');
 
 	println(CDAM_PRESS_BUTTON);
+	DEBUG("PRESS");
 
 	boldOff();
 	justify('L');
@@ -387,6 +390,7 @@ void Printer::printBitmap(int aWidth, int aHeight, const uint8_t *aBitmap) {
 			i += rowBytes - rowBytesClipped;
 		}
 	}
+	_prevByte = '\n';
 }
 
 void Printer::printBitmap(int aWidth, int aHeight, Stream *aStream) {
@@ -412,6 +416,7 @@ void Printer::printBitmap(int aWidth, int aHeight, Stream *aStream) {
 			}
 		}
 	}
+	_prevByte = '\n';
 }
 
 void Printer::printBitmap(Stream *aStream) {
@@ -429,6 +434,8 @@ void Printer::printBitmap(Stream *aStream) {
 
 void Printer::begin(int aHeatTime) {
 	SERIAL_IMPL.begin(kPrinterBaudRate);
+
+	DEBUG("Begin");
 
 	timeoutSet(500000L);
 
@@ -591,6 +598,7 @@ void Printer::setSize(char aValue) {
 	}
 
 	writeBytes(29, 33, size, 10);
+	_prevByte = '\n';
 }
 
 void Printer::justify(char aValue) {
@@ -732,11 +740,27 @@ size_t Printer::write(uint8_t c) {
 		updateState();
 		logChangedStatus();
 	}
-	write(c);
+	if (c != 0x13) { // Strip carriage returns
+		timeoutWait();
+		PRINTER_PRINT(c);
+		uint32_t d = BYTE_TIME;
+		if ((c == '\n') || (_column == _maxColumn)) { // If newline or wrap
+			d += (_prevByte == '\n') ?
+				((_charHeight + _lineSpacing) * _dotFeedTime) :             // Feed line
+				((_charHeight * _dotPrintTime) + (_lineSpacing * _dotFeedTime)); // Text line
+			_column = 0;
+			c = '\n'; // Treat wrap as newline on next pass
+		} else {
+			_column++;
+		}
+		timeoutSet(d);
+		_prevByte = c;
+	}
 	return 1;
 }
 
 size_t Printer::write(const char *aBuffer, size_t aSize) {
+	DEBUG("S: %s", aBuffer);
 	this->writing = true;
 	size_t n = 0;
 	if (Manager::getInstance().dataManager->logPrint) {
