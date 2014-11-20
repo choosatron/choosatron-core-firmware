@@ -5,10 +5,6 @@
 #ifndef CDAM_PRINTER_H
 #define CDAM_PRINTER_H
 
-//#include <stdint.h>
-//#include "cdam_constants.h"
-#include "csna5_thermal_printer.h"
-
 namespace cdam
 {
 
@@ -84,6 +80,8 @@ public:
 	void underlineOn(uint8_t aWeight = 1);
     void underlineOff();
 
+    virtual size_t write(uint8_t c);
+
 	bool active;
 	bool writing;
 
@@ -101,7 +99,7 @@ private:
 	void writePrintMode();
 	uint8_t read();
 	//uint8_t peek();
-	size_t write(uint8_t aChar);
+	
 	size_t write(const char *aBuffer, size_t aSize);
 	void writeBytes(uint8_t a);
 	void writeBytes(uint8_t a, uint8_t b);

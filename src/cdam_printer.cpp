@@ -451,7 +451,7 @@ void Printer::begin(int aHeatTime) {
 
 	writeBytes(27, 55);   // Esc 7 (print settings)
 	writeBytes(kPrinterMaxHeatingDots);       // Heating dots (20=balance of darkness vs no jams)
-	writeBytes(kPrinterHeatingTime); // Library default = 255 (max)
+	writeBytes(aHeatTime); // Library default = 255 (max)
 	writeBytes(kPrinterHeatingInterval);      // Heat interval (500 uS = slower, but darker)
 
 	// Description of print density from page 23 of the manual:
@@ -727,12 +727,12 @@ uint8_t Printer::read() {
 	return SERIAL_IMPL.peek();
 }*/
 
-size_t Printer::write(uint8_t aChar) {
+size_t Printer::write(uint8_t c) {
 	while (statusOf(PS_BUFFER_FULL)) {
 		updateState();
 		logChangedStatus();
 	}
-	write(aChar);
+	write(c);
 	return 1;
 }
 
