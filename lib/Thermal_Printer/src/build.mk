@@ -14,7 +14,7 @@ INCLUDE_DIRS += $(TARGET_CDAM_PRINTER_PATH)/inc
 CSRC +=
 
 # C++ source files included in this build.
-CPPSRC += $(TARGET_CDAM_PRINTER_SRC_PATH)/csna5_thermal_printer.cpp
+#CPPSRC += $(TARGET_CDAM_PRINTER_SRC_PATH)/csna5_thermal_printer.cpp
 
 # ASM source files included in this build.
 ASRC +=
