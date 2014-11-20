@@ -690,7 +690,8 @@ void Printer::timeoutSet(uint32_t aDuration) {
 
 // This function waits (if necessary) for the prior task to complete.
 void Printer::timeoutWait() {
-	while((long)(micros() - _resumeTime) < 0L); // Rollover-proof
+	// BAD NEWS - Should be using buffer full status NOT this.
+	//while((long)(micros() - _resumeTime) < 0L); // Rollover-proof
 }
 
 void Printer::setMaxChunkHeight(int aValue) {
