@@ -67,7 +67,7 @@ void HardwareManager::initHardware() {
 	// Setup Printer
 	_printer = new Printer();
 	_printer->initialize();
-	_printer->begin(160);
+	_printer->begin(kPrinterHeatingTime);
 	_printer->setTimes(7000, 300);
 	_printer->setASB(true);
 	_printer->active = false;
