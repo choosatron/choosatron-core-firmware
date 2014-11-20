@@ -539,7 +539,7 @@ void Printer::setDefault() {
 	setLineHeight(32);
 	boldOff();
 	underlineOff();
-	//setBarcodeHeight(50);
+	setBarcodeHeight(50);
 	setSize('S');
 }
 
@@ -731,9 +731,9 @@ uint8_t Printer::read() {
 	return SERIAL_IMPL.read();
 }
 
-/*uint8_t Printer::peek() {
+uint8_t Printer::peek() {
 	return SERIAL_IMPL.peek();
-}*/
+}
 
 size_t Printer::write(uint8_t c) {
 	while (statusOf(PS_BUFFER_FULL)) {
@@ -746,7 +746,7 @@ size_t Printer::write(uint8_t c) {
 		uint32_t d = BYTE_TIME;
 		if ((c == '\n') || (_column == _maxColumn)) { // If newline or wrap
 			d += (_prevByte == '\n') ?
-				((_charHeight + _lineSpacing) * _dotFeedTime) :             // Feed line
+				((_charHeight + _lineSpacing) * _dotFeedTime) : // Feed line
 				((_charHeight * _dotPrintTime) + (_lineSpacing * _dotFeedTime)); // Text line
 			_column = 0;
 			c = '\n'; // Treat wrap as newline on next pass
