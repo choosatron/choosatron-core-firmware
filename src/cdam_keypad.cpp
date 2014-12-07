@@ -100,7 +100,7 @@ bool Keypad::buttonsDown() {
 }
 
 bool Keypad::buttonDown(uint8_t aBtnNum) {
-	DEBUG("Button %d: %d", aBtnNum, buttonData[aBtnNum - 1].value);
+	//DEBUG("Button %d: %d", aBtnNum, buttonData[aBtnNum - 1].value);
 	return buttonData[aBtnNum - 1].value ? true : false;
 }
 

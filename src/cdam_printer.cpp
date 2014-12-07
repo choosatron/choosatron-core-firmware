@@ -185,7 +185,6 @@ void Printer::printPressButton() {
 	justify('C');
 
 	println(CDAM_PRESS_BUTTON);
-	DEBUG("PRESS");
 
 	boldOff();
 	justify('L');
