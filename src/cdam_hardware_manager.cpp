@@ -11,7 +11,7 @@ HardwareManager::HardwareManager() {
 }
 
 bool HardwareManager::initialize(StateController *aStateController) {
-	_stateControl = aStateController;
+	_stateController = aStateController;
 	_coinAcceptor = NULL;
 	setupHardwarePins();
 	initHardware();

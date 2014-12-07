@@ -62,10 +62,6 @@ class HardwareManager {
 
         // Assign the Spark Core pins.
         void setupHardwarePins();
-        // Check start byte and load firmware version.
-        bool loadFirmwareVersion();
-        // Load flags, values, and basic story info.
-        bool loadMetadata();
         // Setup hardware communication objects.
         void initHardware();
         // Check the printer elapse time interval, react.
@@ -76,7 +72,7 @@ class HardwareManager {
         void coinAcceptorIntervalUpdate();
 
         /* Private Variables */
-        StateController* _stateControl;
+        StateController* _stateController;
         Printer* _printer;
         Keypad* _keypad;
         CoinAcceptor* _coinAcceptor;
