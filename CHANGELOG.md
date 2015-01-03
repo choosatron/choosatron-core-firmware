@@ -2,7 +2,8 @@
 
 Features:
 
-  -
+  - Added firmware binaries for all tagged versions.
+  - Cleaned up debug comments.
 
 Bugfixes:
 
