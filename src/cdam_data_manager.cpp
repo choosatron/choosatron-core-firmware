@@ -150,7 +150,8 @@ uint32_t DataManager::getStoryOffset(uint8_t aIndex) {
 uint32_t DataManager::getPassageOffset(uint16_t aIndex) {
 	uint32_t offset = 0;
 	if (this->currentStory != -1) {
-		bool result = readData(&offset, this->tocOffset + (kPassageOffsetSize * aIndex), kPassageOffsetSize);
+		//bool result =
+		readData(&offset, this->tocOffset + (kPassageOffsetSize * aIndex), kPassageOffsetSize);
 		/*if (!result) {
 			Errors::setError(E_HEADER_READ_FAIL);
 			ERROR(Errors::errorString());
@@ -387,6 +388,7 @@ bool DataManager::writeData(void* aBuffer, uint32_t aAddress, uint16_t aLength) 
 	{
 		return _storyFlash->write(aBuffer, aAddress, aLength);
 	}
+	return false;
 }
 
 /* Accessors */

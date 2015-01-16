@@ -339,6 +339,7 @@ uint8_t SdFile::makeDir(SdFile* dir, const char* dirName) {
 
   // write first block
   return SdVolume::cacheFlush();*/
+  return 0;
 }
 //------------------------------------------------------------------------------
 /**
@@ -793,6 +794,7 @@ uint8_t SdFile::remove(void) {
 
   // write entry to SD
   return SdVolume::cacheFlush();*/
+  return 0;
 }
 //------------------------------------------------------------------------------
 /**
@@ -817,6 +819,7 @@ uint8_t SdFile::remove(SdFile* dirFile, const char* fileName) {
   /*SdFile file;
   if (!file.open(dirFile, fileName, O_WRITE)) return false;
   return file.remove();*/
+  return 0;
 }
 //------------------------------------------------------------------------------
 /** Remove a directory file.
@@ -855,6 +858,7 @@ uint8_t SdFile::rmDir(void) {
   type_ = FAT_FILE_TYPE_NORMAL;
   flags_ |= O_WRITE;
   return remove();*/
+  return 0;
 }
 //------------------------------------------------------------------------------
 /** Recursively delete a directory and all contained files.
@@ -909,6 +913,7 @@ uint8_t SdFile::rmRfStar(void) {
   // don't try to delete root
   if (isRoot()) return true;
   return rmDir();*/
+  return 0;
 }
 //------------------------------------------------------------------------------
 /**
@@ -984,7 +989,7 @@ uint8_t SdFile::sync(void) {
     flags_ &= ~F_FILE_DIR_DIRTY;
   }
   return SdVolume::cacheFlush();*/
-  return 1;
+  return 0;
 }
 //------------------------------------------------------------------------------
 /**
@@ -1055,6 +1060,7 @@ uint8_t SdFile::timestamp(uint8_t flags, uint16_t year, uint8_t month,
   }
   SdVolume::cacheSetDirty();
   return sync();*/
+  return 0;
 }
 //------------------------------------------------------------------------------
 /**
@@ -1110,6 +1116,7 @@ uint8_t SdFile::truncate(uint32_t length) {
 
   // set file to correct position
   return seekSet(newPos);*/
+  return 0;
 }
 //------------------------------------------------------------------------------
 /**
@@ -1221,6 +1228,7 @@ size_t SdFile::write(const void* buf, uint16_t nbyte) {
   setWriteError();
   //return 0;
   return -1;*/
+  return 0;
 }
 //------------------------------------------------------------------------------
 /**
@@ -1229,7 +1237,7 @@ size_t SdFile::write(const void* buf, uint16_t nbyte) {
  * Use SdFile::writeError to check for errors.
  */
 size_t SdFile::write(uint8_t b) {
-  //return write(&b, 1);
+  return write(&b, 1);
 }
 //------------------------------------------------------------------------------
 /**
@@ -1238,7 +1246,7 @@ size_t SdFile::write(uint8_t b) {
  * Use SdFile::writeError to check for errors.
  */
 size_t SdFile::write(const char* str) {
-  //return write(str, strlen(str));
+  return write(str, strlen(str));
 }
 //------------------------------------------------------------------------------
 /**

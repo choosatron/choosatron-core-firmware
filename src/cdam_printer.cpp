@@ -45,7 +45,7 @@ void Printer::initialize() {
 	this->writing = false;
 	this->active = true;
 
-	_prevByte;
+	_prevByte = 0;
 	_column = 0;
 	_maxColumn = 0;
 	_charHeight = 0;

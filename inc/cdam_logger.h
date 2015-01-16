@@ -5,7 +5,7 @@
 #ifndef CDAM_CONSTANTS_H
 #define CDAM_CONSTANTS_H
 
-class Logger
+/*class Logger
 {
   public:
     Logger() {} ; // Constructor does nothing now as no per logger state
@@ -20,4 +20,4 @@ class Logger
     static char state;
     static int lineCount;
 
-};
+};*/

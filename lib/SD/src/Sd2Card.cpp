@@ -192,8 +192,8 @@ uint8_t Sd2Card::erase(uint32_t firstBlock, uint32_t lastBlock) {
 
  fail:
   chipSelectHigh();
-  Serial.println("Error: Sd2Card::Erase()");
-  return false;*/
+  Serial.println("Error: Sd2Card::Erase()");*/
+  return false;
 }
 //------------------------------------------------------------------------------
 /** Determine if card supports single block erase.

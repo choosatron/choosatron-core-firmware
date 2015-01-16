@@ -1,6 +1,6 @@
 
 
-#include <Logger.h>
+/*#include "cdam_logger.h"
 
 // initialise the static memeber variables.
 
@@ -36,4 +36,4 @@ void Logger::writeLine(char *line)
   open() ; // open file
   // logFile.writeLine(line) ;
   lineCount ++ ;
-}
+}*/

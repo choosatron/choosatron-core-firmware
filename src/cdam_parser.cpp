@@ -217,9 +217,13 @@ ParseState Parser::parsePassage() {
 			_state = PARSE_UPDATES;
 		}
 	} else if (_state == PARSE_ENDING) {
+		// TODO: User ending attribute (contains ending quality).
 		uint8_t endingAttr = _dataManager->readByte(_offset);
+		if (endingAttr) {}; // Warning treated as error workaround.
 		_offset++;
+		// TODO: User ending quality.
 		uint8_t endingQual = endingAttr & 0x07;
+		if (endingQual) {}; // Warning treated as error workaround.
 		//DEBUG("Ending Quality: %d", endingQual);
 		_appended = false;
 		_visibleCount = 0;
