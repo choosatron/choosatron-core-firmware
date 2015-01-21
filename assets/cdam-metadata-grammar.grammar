@@ -85,32 +85,33 @@ Random: If there are more than 4 stories, randomize a menu of 4 choices.</descri
                 <number name="Flag7" id="31" type="integer" length="8" lengthunit="bit" display="binary"/>
                 <number name="Flag8" id="32" type="integer" length="8" lengthunit="bit" display="binary"/>
             </structure>
-            <structure name="Values" id="34" length="16" fillcolor="FFBE6B">
-                <number name="CoinsPerCredit" id="35" type="integer" length="1"/>
-                <number name="CoinDenomination" id="36" type="integer" length="1"/>
-                <number name="CoinsToContinue" id="37" type="integer" length="1"/>
-                <number name="Value4" id="38" type="integer" length="1"/>
-                <number name="Value5" id="39" type="integer" length="1"/>
-                <number name="Value6" id="40" type="integer" length="1"/>
-                <number name="Value7" id="41" type="integer" length="1"/>
-                <number name="Value8" id="42" type="integer" length="1"/>
-                <number name="Value9" id="43" type="integer" length="1"/>
-                <number name="Value10" id="44" type="integer" length="1"/>
-                <number name="Value11" id="45" type="integer" length="1"/>
-                <number name="Value12" id="46" type="integer" length="1"/>
-                <number name="Value13" id="47" type="integer" length="1"/>
-                <number name="Value14" id="48" type="integer" length="1"/>
-                <number name="Value15" id="49" type="integer" length="1"/>
-                <number name="Value16" id="50" type="integer" length="1"/>
+            <structure name="Values" id="34" length="32" fillcolor="FFBE6B">
+                <number name="CoinsPerCredit" id="35" type="integer" length="2"/>
+                <number name="CoinDenomination" id="36" type="integer" length="2"/>
+                <number name="CoinsToContinue" id="37" type="integer" length="2"/>
+                <number name="Value4" id="38" type="integer" length="2"/>
+                <number name="Value5" id="39" type="integer" length="2"/>
+                <number name="Value6" id="40" type="integer" length="2"/>
+                <number name="Value7" id="41" type="integer" length="2"/>
+                <number name="Value8" id="42" type="integer" length="2"/>
+                <number name="Value9" id="43" type="integer" length="2"/>
+                <number name="Value10" id="44" type="integer" length="2"/>
+                <number name="Value11" id="45" type="integer" length="2"/>
+                <number name="Value12" id="46" type="integer" length="2"/>
+                <number name="Value13" id="47" type="integer" length="2"/>
+                <number name="Value14" id="48" type="integer" length="2"/>
+                <number name="Value15" id="49" type="integer" length="2"/>
+                <number name="Value16" id="50" type="integer" length="2"/>
             </structure>
-            <string name="DeviceName" id="57" repeatmin="0" repeatmax="22" type="fixed-length" length="22"/>
-            <string name="OwnerUser" id="58" repeatmin="0" repeatmax="40" type="fixed-length" length="40"/>
-            <number name="StoryCount" id="52" fillcolor="FF6CEE" type="integer" length="1" minval="0" maxval="20"/>
+            <number name="VisibleStoryCount" id="52" fillcolor="FF6CEE" type="integer" length="1" minval="0" maxval="20"/>
+            <number name="TotalStoryCount" id="60" type="integer" length="1" minval="0" maxval="20"/>
             <number name="UsedStoryPages" id="53" type="integer" length="1" minval="0" maxval="255">
                 <description>Total bytes used.</description>
             </number>
             <number name="StoryOffset" id="54" fillcolor="4CCDFF" repeatmin="20" repeatmax="20" type="integer" length="2" minval="0" maxval="255"/>
             <number name="StoryOrder" id="55" repeatmin="20" repeatmax="20" type="integer" length="1" minval="0" maxval="255"/>
+            <string name="DeviceName" id="57" type="fixed-length" length="22"/>
+            <string name="OwnerName" id="58" type="fixed-length" length="40"/>
         </structure>
     </grammar>
 </ufwb>
