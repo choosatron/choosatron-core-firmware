@@ -106,7 +106,7 @@ void ServerManager::handlePendingActions() {
 				if (newStorySize > (kFlashMaxStoryBytes -
 				    (Manager::getInstance().dataManager->metadata.usedStoryPages * Flashee::Devices::userFlash().pageSize()))) {
 					Errors::setError(E_SERVER_ADD_STORY_NO_SPACE);
-					ERROR(Errors::errorString());
+					//ERROR(Errors::errorString());
 					client->write(Errors::errorString());
 				} else {
 					//serverMan->newStoryIndex = ((serverMan->pendingArguments[kServerStorySizeBytes] - '0') % 48) - 1;
@@ -132,7 +132,7 @@ void ServerManager::handlePendingActions() {
 			}
 	 	} else {
 			Errors::setError(E_SERVER_CONNECTION_FAIL);
-			ERROR(Errors::errorString());
+			//ERROR(Errors::errorString());
 		}
 	 	// Cleanup
  		client->stop();
@@ -161,7 +161,7 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	char commandAndArgs[cmdLen + 1];
 	memset(&commandAndArgs[0], 0, sizeof(commandAndArgs));
 	aCommandAndArgs.toCharArray(commandAndArgs, sizeof(commandAndArgs));
-	DEBUG("Command and Args: %s", commandAndArgs);
+	//DEBUG("Command and Args: %s", commandAndArgs);
 
 	if (delimiterPos > -1) {
 		int serverDelimPos = aCommandAndArgs.indexOf(kServerArgumentDelimiter, delimiterPos + 1);
@@ -398,7 +398,7 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 
 						if (!result) {
 							Errors::setError(E_SERVER_SOCKET_DATA_FAIL);
-							ERROR(Errors::errorString());
+							//ERROR(Errors::errorString());
 							aClient->write(Errors::errorString());
 							break;
 						}
@@ -412,7 +412,7 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 						aClient->write("COMPLETE");
 						if (aClient->available()) {
 							Errors::setError(E_SERVER_SOCKET_DATA_FAIL);
-							ERROR(Errors::errorString());
+							//ERROR(Errors::errorString());
 							aClient->write(Errors::errorString());
 						}
 						/*DEBUG("Used: %d, Pages: %d", Manager::getInstance().dataManager->metadata.usedStoryPages, pagesWritten);
@@ -426,15 +426,15 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 					}
 				}
 			}
-		} else {
+		}/* else {
 			DEBUG("Timed Out");
-		}
+		}*/
 	} else {
 		Errors::setError(E_SERVER_CONNECTION_FAIL);
-		ERROR(Errors::errorString());
+		//ERROR(Errors::errorString());
 	}
 	Errors::setError(E_SERVER_SOCKET_DATA_FAIL);
-	ERROR(Errors::errorString());
+	//ERROR(Errors::errorString());
 	aClient->write(Errors::errorString());
 	return false;
 }

@@ -29,7 +29,7 @@ bool DataManager::initialize(StateController *aStateController) {
 	                               4 * Flashee::Devices::userFlash().pageSize());
 
 	if (_metaFlash == NULL) {
-		ERROR("Meta Flash is NULL!");
+		//ERROR("Meta Flash is NULL!");
 		return false;
 	}
 
@@ -58,7 +58,7 @@ bool DataManager::initStorage() {
 		                                128 * Flashee::Devices::userFlash().pageSize(),
 		                                384 * Flashee::Devices::userFlash().pageSize());
 		if (_storyFlash == NULL) {
-			ERROR("Story Flash is NULL!");
+			//ERROR("Story Flash is NULL!");
 			return false;
 		}
 #if HAS_SD == 1
@@ -277,7 +277,7 @@ bool DataManager::setVarAtIndex(uint8_t aIndex, int16_t aValue) {
 		return true;
 	}
 	Errors::setError(E_INVALID_VARIABLE);
-	ERROR(Errors::errorString());
+	//ERROR(Errors::errorString());
 	return false;
 }
 
@@ -464,14 +464,14 @@ bool DataManager::loadMetadata() {
 	if (_metaFlash->readByte(kMetadataBaseAddress) != kAsciiHeaderByte) {
 		//DEBUG("No SOH, write fresh metadata.");
 		if (!initializeMetadata(&this->metadata)) {
-			ERROR(Errors::errorString());
+			//ERROR(Errors::errorString());
 			return false;
 		}
 	} else {
 		// Data exists. Read it!
 		//DEBUG("SOH found, read metadata.");
 		if (!readMetadata(&this->metadata)) {
-			ERROR(Errors::errorString());
+			//ERROR(Errors::errorString());
 			return false;
 		}
 
@@ -479,7 +479,7 @@ bool DataManager::loadMetadata() {
 			// Update to the current standard (in memory)
 			if (!upgradeDataModels()) {
 				Errors::setError(E_DATA_MODEL_UPGRADE_FAIL);
-				ERROR(Errors::errorString());
+				//ERROR(Errors::errorString());
 				return false;
 			}
 		}
@@ -532,7 +532,7 @@ bool DataManager::readMetadata(Metadata *aMetadata) {
 		bool result = _metaFlash->read(aMetadata, kMetadataBaseAddress, kMetadataSize);
 		if (!result) {
 			Errors::setError(E_METADATA_READ_FAIL);
-			ERROR(Errors::errorString());
+			//ERROR(Errors::errorString());
 			return false;
 		}
 	}
@@ -563,63 +563,10 @@ bool DataManager::readStoryHeader(uint8_t aIndex, StoryHeader *aHeader) {
 	this->psgIndex = 0;
 	if (!result) {
 		Errors::setError(E_HEADER_READ_FAIL);
-		ERROR(Errors::errorString());
+		//ERROR(Errors::errorString());
 	}
 	return result;
 }
-
-/*bool DataManager::readVariables(uint8_t aIndex) {
-	bool result = true;
-	uint32_t offset = getStoryOffset(aIndex) + kStoryHeaderSize;
-	_smallVarCount = readByte(offset);
-	//DEBUG("Small Var Count: %d", _smallVarCount);
-	offset++;
-	if (_smallVarCount > 0) {
-		_smallVars = new int8_t[_smallVarCount];
-		for (int i = 0; i < _smallVarCount; ++i) {
-			result = readData(&_smallVars[i], offset, kSmallVarSize) && result ? true : false;
-			//DEBUG("Var #%d: %d", i, _smallVars[i]);
-			offset += kSmallVarSize; // Only 1 byte sized variables.
-		}
-	}
-	_bigVarCount = readByte(offset);
-	//DEBUG("Big Var Count: %d", _bigVarCount);
-	offset++;
-	if (_bigVarCount > 0) {
-		_bigVars = new int16_t[_bigVarCount];
-		for (int i = 0; i < _bigVarCount; ++i) {
-			result = readData(&_bigVars[i], offset, kBigVarSize) && result ? true : false;
-			//DEBUG("Var #%d: %d", i, _bigVars[i]);
-			offset += kBigVarSize; // 2 byte sized variables.
-		}
-	}
-
-	// Read the passage count.
-	//DEBUG("Offset: %d", offset);
-	result = readData(&this->psgCount, offset, kPassageCountSize) && result ? true : false;
-	//DEBUG("Passage Count: %d", this->psgCount);
-
-	offset += kPassageCountSize;
-	// Memory offset for where the passage memory offsets begin.
-	this->tocOffset = offset;
-	// Grab the offset of the second passage, which gives us the size of the first.
-	result = readData(&this->psgSize, offset + kPassageOffsetSize, kPassageOffsetSize) && result ? true : false;
-
-	//if (!result) {
-	//	Errors::setError(E_VARS_READ_FAIL);
-	//	ERROR(Errors::errorString());
-	//	return false;
-	//}
-
-	//DEBUG("Passage Size: %lu", this->psgSize);
-	//DEBUG("TOC Offset: %d", this->tocOffset);
-	offset += this->psgCount * kPassageOffsetSize;
-	this->startOffset = offset;
-	//DEBUG("Start Offset: %d", this->startOffset);
-	this->psgIndex = 0;
-
-	return true;
-}*/
 
 bool DataManager::writeMetadata(Metadata *aMetadata) {
 	//DEBUG("Size of Metadata: %d", sizeof(*aMetadata));
@@ -673,7 +620,7 @@ bool DataManager::upgradeDataModels() {
 	// Save the new metadata
 	if (writeMetadata(&this->metadata)) {
 		Errors::setError(E_METADATA_WRITE_FAIL);
-		ERROR(Errors::errorString());
+		//ERROR(Errors::errorString());
 		return false;
 	}
 	return true;

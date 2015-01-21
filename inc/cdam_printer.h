@@ -99,7 +99,7 @@ private:
 	void writePrintMode();
 	uint8_t read();
 	uint8_t peek();
-	
+
 	size_t write(const char *aBuffer, size_t aSize);
 	void writeBytes(uint8_t a);
 	void writeBytes(uint8_t a, uint8_t b);

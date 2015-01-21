@@ -235,7 +235,7 @@ ParseState Parser::parsePassage() {
 		_state = PARSE_IDLE;
 	} else if (_state == PARSE_ERROR) {
 		Errors::setError(E_STORY_PARSE_FAIL);
-		ERROR(Errors::errorString());
+		//ERROR(Errors::errorString());
 	}
 	return _state;
 }
@@ -271,7 +271,7 @@ uint32_t Parser::parseData(uint32_t aOffset, char* aBuffer, uint16_t aLength) {
 
 		if (commandLength > kPassageBufferReadSize) {
 			Errors::setError(E_DATA_TOO_LARGE_FAIL);
-			ERROR(Errors::errorString());
+			//ERROR(Errors::errorString());
 			return 0;
 		}
 
