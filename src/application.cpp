@@ -57,7 +57,7 @@ void setup()
 #ifdef DEBUG_BUILD
 	//Spark.function("dfu", doDFU);
 #endif
-
+	Serial.begin(19200);
 	stateController = new cdam::StateController();
 	stateController->initialize();
 }
