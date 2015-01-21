@@ -87,6 +87,37 @@ void DataManager::logMetadata() {
 	Serial.println("END");
 }
 
+void DataManager::handleSerialData() {
+	if (_serialElapsed >= kIntervalSerialMillis) {
+		if (Serial.available()) {
+			char c = Serial.read();
+
+			if (c == 'f') {
+				//Test Serial Firmware Update (uses YMODEM protocol)
+				//Use TeraTerm to upload the binary file via File->Transfer->YMODEM->Send...
+				//OR
+				//echo -n s > $DEV && sz -b -v --ymodem main.bin > $DEV < $DEV
+
+				System.serialFirmwareUpdate(&Serial);//Can also use &Serial1, &Serial2
+			} else if (c == 'u') { // Write to user flash space.
+				c = Serial.read();
+
+				if (c == 'r') { // Raw, don't write through Flashee (internal file system).
+					// An address is included to write to.
+					uint32_t address = Utils::bytesToLong(Serial.read(), Serial.read(), Serial.read(), Serial.read());
+					//Save User File sent via Ymodem tool to any address(preferrably multiple of 0x20000) in External Flash
+					//echo -n u > $DEV && sz -b -v --ymodem user.file > $DEV < $DEV
+					System.serialSaveFile(&Serial, address);//Can also use &Serial1, &Serial2
+				} else if (c == 'e') { // Write data through Flashee (internal file system).
+
+				}
+			} else if (c == 'c') { // Command
+
+			}
+		}
+	}
+}
+
 #if HAS_SD == 1
 bool DataManager::initSD() {
 	_card = new Sd2Card();
@@ -251,8 +282,9 @@ bool DataManager::setVarAtIndex(uint8_t aIndex, int16_t aValue) {
 }
 
 bool DataManager::addStoryMetadata(uint8_t aIndex, uint8_t aPages) {
-	// Get the current story count, see if adjustement is needed.
+	// Get the current story count, see if adjustment is needed.
 	uint8_t count = this->metadata.storyCount;
+	uint8_t totalCount = this->metadata.storyCount + this->metadata.deletedStoryCount;
 
 	// If the position requested is past the existing, just set it to the next.
 	if (aIndex >= count) {
@@ -265,13 +297,17 @@ bool DataManager::addStoryMetadata(uint8_t aIndex, uint8_t aPages) {
 		}
 	}
 
+	// Set the state of this story.
+	this->metadata.storyState[totalCount] = kStoryStateNormal;
 	// Set the offset for this story.
-	this->metadata.storyOffsets[this->metadata.storyCount] = this->metadata.usedStoryPages;
+	this->metadata.storyOffsets[totalCount] = this->metadata.usedStoryPages;
 	// Set the position for this story.
-	this->metadata.storyOrder[aIndex] = this->metadata.storyCount;
+	this->metadata.storyOrder[aIndex] = totalCount;
 	// Increase the story count.
 	this->metadata.storyCount++;
-	if (this->liveStoryCount < 10) { this->liveStoryCount++; }
+	if (this->liveStoryCount < 10) {
+		this->liveStoryCount++;
+	}
 	// Add the total story bytes to the total used.
 	this->metadata.usedStoryPages += aPages;
 
@@ -281,33 +317,44 @@ bool DataManager::addStoryMetadata(uint8_t aIndex, uint8_t aPages) {
 	return writeStoryCountData(&this->metadata);
 }
 
-/*bool DataManager::removeStoryMetadata(uint8_t aIndex) {
-	// Get the current story count, see if adjustement is needed.
-	uint8_t count = this->metadata.storyCount;
+bool DataManager::removeStoryMetadata(uint8_t aIndex) {
+	uint8_t totalCount = this->metadata.storyCount + this->metadata.deletedStoryCount;
+	uint8_t trueIndex = this->metadata.storyOrder[aIndex];
 
-	// If the position requested is past the existing, just set it to the next.
-	if (aIndex >= count) {
-		aIndex = count;
-	} else {
-		// Shift existing story indexes 'up', until the slot for the new story is free.
-		while (count > aIndex) {
-			this->metadata.storyOffsets[count] = this->metadata.storyOffsets[count - 1];
-			count--;
+	if (trueIndex < totalCount) {
+		if (aIndex < (this->metadata.storyCount - 1)) {
+			uint8_t count = this->metadata.storyCount;
+			while (count > aIndex) {
+				this->metadata.storyOrder[aIndex] = this->metadata.storyOrder[aIndex + 1];
+				aIndex++;
+			}
+			this->metadata.storyOrder[aIndex] = 0;
 		}
+
+		// If we happen to be deleting the last story, we can totally remove it.
+		if (trueIndex == (totalCount - 1)) {
+			// Calculate and subtract the size of the last story.
+			this->metadata.usedStoryPages = this->metadata.usedStoryPages - this->metadata.storyOffsets[trueIndex];
+			this->metadata.storyOffsets[trueIndex] = 0;
+			this->metadata.storyState[trueIndex] = kStoryStateEmpty;
+		} else { // Otherwise we need to mark it as deleted.
+			// Decrease the story count.
+			this->metadata.storyState[trueIndex] = kStoryStateDeleted;
+			this->metadata.deletedStoryCount++;
+		}
+		if (this->metadata.storyCount <= 10) {
+			this->liveStoryCount--;
+		}
+		this->metadata.storyCount--;
+		return writeStoryCountData(&this->metadata);
 	}
-
-	// Decrease the story count.
-	this->metadata.storyCount--;
-	if (this->metadata.storyCount <= 10) { this->liveStoryCount--; }
-	// Decrease used story bytes.
-	this->metadata.usedStoryBytes -= this->storyHeaders[aIndex].storySize;
-
-	return writeStoryCountData(&this->metadata);
-}*/
+	return false;
+}
 
 bool DataManager::removeAllStoryData() {
 	// Reset the story count.
 	this->metadata.storyCount = 0;
+	this->metadata.deletedStoryCount = 0;
 	this->liveStoryCount = 0;
 	// Add the total story bytes to the total used.
 	this->metadata.usedStoryPages = 0;
@@ -316,6 +363,8 @@ bool DataManager::removeAllStoryData() {
 
 	for (int i = 0; i < kMaxRandStoryCount; ++i) {
 		this->metadata.storyOffsets[i] = 0;
+		this->metadata.storyOrder[i] = 0;
+		this->metadata.storyState[i] = kStoryStateEmpty;
 	}
 
 	return writeStoryCountData(&this->metadata);

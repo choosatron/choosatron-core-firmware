@@ -21,16 +21,24 @@ const uint16_t kMetadataFirmwareSize = 3;
 const uint16_t kMetadataFlagsOffset = (kMetadataFirmwareOffset + kMetadataFirmwareSize);
 const uint16_t kMetadataFlagsSize = 8; // bytes
 const uint16_t kMetadataValuesOffset = (kMetadataFlagsOffset + kMetadataFlagsSize);
-const uint16_t kMetadataValuesSize = 16; // bytes
+const uint16_t kMetadataValuesSize = 32; // bytes
 const uint16_t kMetadataStoryCountOffset = (kMetadataValuesOffset + kMetadataValuesSize);
 const uint16_t kMetadataStoryCountSize = 1; // bytes
-const uint16_t kMetadataStoryUsedPagesOffset = (kMetadataStoryCountOffset + kMetadataStoryCountSize);
+const uint16_t kMetadataDeletedStoryCountOffset = (kMetadataStoryCountOffset + kMetadataStoryCountSize);
+const uint16_t kMetadataDeletedStoryCountSize = 1; // bytes
+const uint16_t kMetadataStoryUsedPagesOffset = (kMetadataDeletedStoryCountOffset + kMetadataDeletedStoryCountSize);
 const uint16_t kMetadataStoryUsedPagesSize = 1; // bytes
 const uint16_t kMetadataStoryOffsetsOffset = (kMetadataStoryUsedPagesOffset + kMetadataStoryUsedPagesSize);
 const uint16_t kMetadataStoryOffsetsSize = kMaxRandStoryCount * 2; // 2 bytes each (2 bytes needed for SD card file index)
 const uint16_t kMetadataStoryOrderOffset = (kMetadataStoryOffsetsOffset + kMetadataStoryOffsetsSize);
-const uint16_t kMetadataStoryOrderSize = kMaxRandStoryCount; // 1 bytes each.
-const uint16_t kMetadataSize = (kMetadataStoryOrderOffset + kMetadataStoryOrderSize);
+const uint16_t kMetadataStoryOrderSize = kMaxRandStoryCount; // 1 byte each.
+const uint16_t kMetadataStoryStateOffset = (kMetadataStoryOrderOffset + kMetadataStoryOrderSize);
+const uint16_t kMetadataStoryStateSize = kMaxRandStoryCount; // 1 byte each.
+const uint16_t kMetadataDeviceNameOffset = (kMetadataStoryStateOffset + kMetadataStoryStateSize);
+const uint16_t kMetadataDeviceNameSize = 22; // bytes
+const uint16_t kMetadataOwnerNameOffset = (kMetadataDeviceNameOffset + kMetadataDeviceNameSize);
+const uint16_t kMetadataOwnerNameSize = 40; // bytes
+const uint16_t kMetadataSize = (kMetadataOwnerNameOffset + kMetadataOwnerNameSize);
 
 //const uint16_t kStoryBaseAddress = (kMetadataStoryOffsetsOffset + kMetadataStoryOffsetsSize);
 
@@ -119,22 +127,22 @@ typedef struct MetaFlags_t {
 } MetaFlags;
 
 typedef struct MetaValues_t {
-	uint8_t coinsPerCredit;
-	uint8_t coinDenomination;
-	uint8_t coinsToContinue;
-	uint8_t value4;
-	uint8_t value5;
-	uint8_t value6;
-	uint8_t value7;
-	uint8_t value8;
-	uint8_t value9;
-	uint8_t value10;
-	uint8_t value11;
-	uint8_t value12;
-	uint8_t value13;
-	uint8_t value14;
-	uint8_t value15;
-	uint8_t value16;
+	uint16_t coinsPerCredit;
+	uint16_t coinDenomination;
+	uint16_t coinsToContinue;
+	uint16_t value4;
+	uint16_t value5;
+	uint16_t value6;
+	uint16_t value7;
+	uint16_t value8;
+	uint16_t value9;
+	uint16_t value10;
+	uint16_t value11;
+	uint16_t value12;
+	uint16_t value13;
+	uint16_t value14;
+	uint16_t value15;
+	uint16_t value16;
 } MetaValues;
 
 typedef struct Metadata_t {
@@ -143,10 +151,13 @@ typedef struct Metadata_t {
 	MetaFlags flags;
 	MetaValues values;
 	uint8_t storyCount;
+	uint8_t deletedStoryCount;
 	uint8_t usedStoryPages;
 	uint16_t storyOffsets[kMaxRandStoryCount];
 	uint8_t storyOrder[kMaxRandStoryCount];
-	//std::vector<uint32_t> storyOffsets;
+	uint8_t storyState[kMaxRandStoryCount]; // 0 = empty, 1 = normal, 2 = deleted
+	char deviceName[kMetadataDeviceNameSize];
+	char ownerName[kMetadataOwnerNameSize];
 } Metadata;
 
 

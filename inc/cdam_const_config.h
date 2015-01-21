@@ -8,6 +8,8 @@ namespace cdam
 
 // Seconds for timeout of Published Spark Events
 const uint8_t kServerTTLDefault = 60;
+// How often to check for serial communication.
+const uint16_t kIntervalSerialMillis = 250;
 // How often to update the Printer state.
 const uint16_t kIntervalPrinterMillis = 50;
 // How often to update the Keypad state.

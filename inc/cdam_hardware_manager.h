@@ -32,9 +32,6 @@
 namespace cdam
 {
 
-// class Keypad;
-// class Printer;
-// class CoinAcceptor;
 class StateController;
 
 class HardwareManager {

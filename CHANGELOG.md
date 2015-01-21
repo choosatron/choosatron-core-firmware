@@ -2,8 +2,12 @@
 
 Features:
 
+  - Removed cdam_main to use application.cpp in new HAL repo structure.
   - Added firmware binaries for all tagged versions.
   - Cleaned up debug comments.
+  - Ability to delete individual stories.
+  - Revamping Choosatron API to reduce the number of calls apps need to make to it.
+  - Added serial firmware update / flash writing, and initial structure for more serial commands.
 
 Bugfixes:
 

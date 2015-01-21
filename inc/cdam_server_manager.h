@@ -12,34 +12,31 @@ class StateController;
 
 class ServerManager
 {
-    public:
-        /* Public Methods */
-        ServerManager();
-        void initialize(StateController* aStatecontroller);
-        void handlePendingActions();
+	public:
+		/* Public Methods */
+		ServerManager();
+		void initialize(StateController* aStatecontroller);
+		void handlePendingActions();
 
-        /* Public Variables */
-        bool pendingAction;
-        //char lastCommand[64];
-        char* pendingArguments;
-        char* pendingCommand;
+		/* Public Variables */
+		bool pendingAction;
+		//char lastCommand[64];
+		char* pendingArguments;
+		char* pendingCommand;
 
-        byte serverIp[4];
-        uint16_t serverPort;
+		byte serverIp[4];
+		uint16_t serverPort;
 
-        //uint8_t newStoryIndex;
-        //uint32_t newStorySize;
+	private:
+		/* Private Methods */
+		static int serverCommand(String aCommand);
+		//TCPClient* connectToServer(byte aServer[4], uint16_t aPort);
+		bool getStoryData(TCPClient *aClient, uint32_t aStorySize);
+		void parseServerAddress(char* aAddress);
 
-    private:
-        /* Private Methods */
-        static int serverCommand(String aCommand);
-        //TCPClient* connectToServer(byte aServer[4], uint16_t aPort);
-        bool getStoryData(TCPClient *aClient, uint32_t aStorySize);
-        void parseServerAddress(char* aAddress);
-
-        /* Private Variables */
-        StateController* _stateController;
-        ElapsedMillis _actionsElapsed;
+		/* Private Variables */
+		StateController* _stateController;
+		ElapsedMillis _actionsElapsed;
 };
 
 }
