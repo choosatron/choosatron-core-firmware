@@ -64,7 +64,7 @@ void Printer::updateState() {
 			_lastStatus = _status;
 			_status = read();
 			_statusUpdated = true;
-			DEBUG("0x%c%c%c%c%c%c%c%c",
+			/*DEBUG("0x%c%c%c%c%c%c%c%c",
 				(IsBitSet(_status, 7) ? '1' : '0'),
 				(IsBitSet(_status, 6) ? '1' : '0'),
 				(IsBitSet(_status, 5) ? '1' : '0'),
@@ -72,7 +72,7 @@ void Printer::updateState() {
 				(IsBitSet(_status, 3) ? '1' : '0'),
 				(IsBitSet(_status, 2) ? '1' : '0'),
 				(IsBitSet(_status, 1) ? '1' : '0'),
-				(IsBitSet(_status, 0) ? '1' : '0'));
+				(IsBitSet(_status, 0) ? '1' : '0'));*/
 		}
 	} else {
 		_lastStatus = ASCII_NULL;
@@ -92,7 +92,7 @@ bool Printer::statusChanged(PrinterStatus aStatus) {
 }
 
 void Printer::logChangedStatus() {
-	if (_statusUpdated) {
+	/*if (_statusUpdated) {
 		_statusUpdated = false;
 		if (statusChanged(PS_ONLINE)) {
 			if (statusOf(PS_ONLINE)) {
@@ -153,7 +153,7 @@ void Printer::logChangedStatus() {
 				DEBUG("Unknown 3 OFF");
 			}
 		}
-	}
+	}*/
 }
 
 /* Hard Coded Printing */

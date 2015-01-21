@@ -28,6 +28,10 @@ const uint8_t kOperationOperandSize = 2;
 const uint8_t kDataLengthSize = 2;
 const uint8_t kPassageIndexSize = 2;
 
+const uint8_t kStoryStateEmpty = 0;
+const uint8_t kStoryStateNormal = 1;
+const uint8_t kStoryStateDeleted = 2;
+
 }
 
 #endif

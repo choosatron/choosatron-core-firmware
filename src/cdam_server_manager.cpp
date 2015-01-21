@@ -28,6 +28,8 @@ const char* kServerCmdRemoveStory = "remove_story";
 const char* kServerCmdRemoveAllStories = "remove_all_stories";
 const char* kServerCmdSwapStoryPositions = "swap_story_pos";
 const char* kServerCmdSetFlag = "set_flag";
+const char* kServerCmdSetValue = "set_value";
+const char* kServerCmdAddWifiCreds = "add_wifi_creds";
 
 // Admin commands.
 const char* kServerCmdAdminResetMetadata = "reset_metadata";
@@ -35,8 +37,14 @@ const char* kServerCmdAdminEraseFlash = "erase_flash";
 const char* kServerCmdAdminResetUnit = "reset_unit";
 
 // Data requests.
-const char* kServerCmdGetCurrentStory = "get_current_story";
-const char* kServerCmdGetStoryCount = "get_story_count";
+const char* kServerCmdGetVersion = "get_version"; // Get firmware version (device ID included in response).
+const char* kServerCmdGetFlag = "get_flag"; // Flag index 0 - 7, each has 8 bit flags.
+const char* kServerCmdGetValue = "get_value"; // Value index 0 - 15, each has 16 bit value.
+const char* kServerCmdGetNames = "get_names"; // Device name and owner name, colon separated.
+const char* kServerCmdGetStoryInfo = "get_story_info"; // Get the UUID, version of a story, whether or not it is deleted, and # of pages it uses.
+const char* kServerCmdGetCurrentStory = "get_current_story"; // Same as get_story_info, but on current playing story.
+const char* kServerCmdGetAllStoryInfo = "get_all_story_info"; // Series of bytes to report all storage.
+const char* kServerCmdGetStorageReport = "get_storage_report";
 const char* kServerCmdGetMillis = "get_millis";
 const char* kServerCmdGetSeconds = "get_seconds";
 const char* kServerCmdGetFreeSpace = "get_free_space";
@@ -98,7 +106,7 @@ void ServerManager::handlePendingActions() {
 				if (newStorySize > (kFlashMaxStoryBytes -
 				    (Manager::getInstance().dataManager->metadata.usedStoryPages * Flashee::Devices::userFlash().pageSize()))) {
 					Errors::setError(E_SERVER_ADD_STORY_NO_SPACE);
-					ERROR(Errors::errorString());
+					//ERROR(Errors::errorString());
 					client->write(Errors::errorString());
 				} else {
 					//serverMan->newStoryIndex = ((serverMan->pendingArguments[kServerStorySizeBytes] - '0') % 48) - 1;
@@ -124,7 +132,7 @@ void ServerManager::handlePendingActions() {
 			}
 	 	} else {
 			Errors::setError(E_SERVER_CONNECTION_FAIL);
-			ERROR(Errors::errorString());
+			//ERROR(Errors::errorString());
 		}
 	 	// Cleanup
  		client->stop();
@@ -153,7 +161,7 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	char commandAndArgs[cmdLen + 1];
 	memset(&commandAndArgs[0], 0, sizeof(commandAndArgs));
 	aCommandAndArgs.toCharArray(commandAndArgs, sizeof(commandAndArgs));
-	DEBUG("Command and Args: %s", commandAndArgs);
+	//DEBUG("Command and Args: %s", commandAndArgs);
 
 	if (delimiterPos > -1) {
 		int serverDelimPos = aCommandAndArgs.indexOf(kServerArgumentDelimiter, delimiterPos + 1);
@@ -224,11 +232,30 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		}
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdAdminResetUnit) == 0) {
 		dataMan->stateController()->changeState(STATE_INIT);
+	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetVersion) == 0) {
+		/* TODO */
+		returnVal = kServerReturnNotImplemented;
+	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetFlag) == 0) {
+		/* TODO */
+		returnVal = kServerReturnNotImplemented;
+	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetValue) == 0) {
+		/* TODO */
+		returnVal = kServerReturnNotImplemented;
+	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetNames) == 0) {
+		/* TODO */
+		returnVal = kServerReturnNotImplemented;
+	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetStoryInfo) == 0) {
+		/* TODO */
+		returnVal = kServerReturnNotImplemented;
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetCurrentStory) == 0) {
 		/* TODO */
 		returnVal = kServerReturnNotImplemented;
-	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetStoryCount) == 0) {
-		returnVal = dataMan->metadata.storyCount;
+	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetAllStoryInfo) == 0) {
+		/* TODO */
+		returnVal = kServerReturnNotImplemented;
+	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetStorageReport) == 0) {
+		/* TODO */
+		returnVal = kServerReturnNotImplemented;
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetMillis) == 0) {
 		returnVal = millis();
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetSeconds) == 0) {
@@ -302,21 +329,6 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	return returnVal;
 }
 
-/*TCPClient* ServerManager::connectToServer(byte server[4], uint16_t port) {
-	DEBUG("Connecting to client at %u.%u.%u.%u:%u", server[0], server[1], server[2], server[3], port);
-
-	TCPClient* client = new TCPClient();
-	if (client->connect(server, port)) {
-    	DEBUG("TCPClient connected");
-    	return client;
-  	} else {
-    	DEBUG("TCPClient connection failed");
-    	Errors::setError(E_SERVER_CONNECTION_FAIL);
-		ERROR(Errors::errorString());
-		return NULL;
- 	}
-}*/
-
 /* Private Methods */
 void ServerManager::parseServerAddress(char* aAddress) {
 	char buffer[6] = "";
@@ -386,7 +398,7 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 
 						if (!result) {
 							Errors::setError(E_SERVER_SOCKET_DATA_FAIL);
-							ERROR(Errors::errorString());
+							//ERROR(Errors::errorString());
 							aClient->write(Errors::errorString());
 							break;
 						}
@@ -400,7 +412,7 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 						aClient->write("COMPLETE");
 						if (aClient->available()) {
 							Errors::setError(E_SERVER_SOCKET_DATA_FAIL);
-							ERROR(Errors::errorString());
+							//ERROR(Errors::errorString());
 							aClient->write(Errors::errorString());
 						}
 						/*DEBUG("Used: %d, Pages: %d", Manager::getInstance().dataManager->metadata.usedStoryPages, pagesWritten);
@@ -414,15 +426,15 @@ bool ServerManager::getStoryData(TCPClient *aClient, uint32_t aStorySize) {
 					}
 				}
 			}
-		} else {
+		}/* else {
 			DEBUG("Timed Out");
-		}
+		}*/
 	} else {
 		Errors::setError(E_SERVER_CONNECTION_FAIL);
-		ERROR(Errors::errorString());
+		//ERROR(Errors::errorString());
 	}
 	Errors::setError(E_SERVER_SOCKET_DATA_FAIL);
-	ERROR(Errors::errorString());
+	//ERROR(Errors::errorString());
 	aClient->write(Errors::errorString());
 	return false;
 }

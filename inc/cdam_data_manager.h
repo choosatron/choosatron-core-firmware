@@ -26,6 +26,7 @@
 #include "cdam_constants.h"
 #include "cdam_state_controller.h"
 #include "flashee-eeprom.h"
+#include "elapsed_time.h"
 
 #if HAS_SD == 1
 #include "SdFat.h"
@@ -45,6 +46,7 @@ class DataManager
         bool initialize(StateController *aStateController);
         bool initStorage();
         void logMetadata();
+        void handleSerialData();
 
 #if HAS_SD == 1
         bool initSD();
@@ -66,8 +68,8 @@ class DataManager
         bool setVarAtIndex(uint8_t aIndex, int16_t aValue);
 
         // Add the metadata for a new story.
-        bool addStoryMetadata(uint8_t aPosition, uint8_t aPages);
-        //bool removeStoryMetadata(uint8_t aPosition);
+        bool addStoryMetadata(uint8_t aIndex, uint8_t aPages);
+        bool removeStoryMetadata(uint8_t aIndex);
         bool removeAllStoryData();
         // Set and write a flag.
         bool setFlag(uint8_t aFlagIndex, uint8_t aBitIndex, bool aValue);
@@ -150,6 +152,7 @@ class DataManager
 
 
         /* Private Variables */
+        ElapsedMillis _serialElapsed;
         StateController* _stateController;
         Flashee::FlashDevice* _metaFlash;
         Flashee::FlashDevice* _storyFlash;

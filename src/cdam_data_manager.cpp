@@ -29,7 +29,7 @@ bool DataManager::initialize(StateController *aStateController) {
 	                               4 * Flashee::Devices::userFlash().pageSize());
 
 	if (_metaFlash == NULL) {
-		ERROR("Meta Flash is NULL!");
+		//ERROR("Meta Flash is NULL!");
 		return false;
 	}
 
@@ -58,7 +58,7 @@ bool DataManager::initStorage() {
 		                                128 * Flashee::Devices::userFlash().pageSize(),
 		                                384 * Flashee::Devices::userFlash().pageSize());
 		if (_storyFlash == NULL) {
-			ERROR("Story Flash is NULL!");
+			//ERROR("Story Flash is NULL!");
 			return false;
 		}
 #if HAS_SD == 1
@@ -85,6 +85,37 @@ void DataManager::logMetadata() {
 			Serial.print(" ");
 	}
 	Serial.println("END");
+}
+
+void DataManager::handleSerialData() {
+	if (_serialElapsed >= kIntervalSerialMillis) {
+		if (Serial.available()) {
+			char c = Serial.read();
+
+			if (c == 'f') {
+				//Test Serial Firmware Update (uses YMODEM protocol)
+				//Use TeraTerm to upload the binary file via File->Transfer->YMODEM->Send...
+				//OR
+				//echo -n s > $DEV && sz -b -v --ymodem main.bin > $DEV < $DEV
+
+				System.serialFirmwareUpdate(&Serial);//Can also use &Serial1, &Serial2
+			} else if (c == 'u') { // Write to user flash space.
+				c = Serial.read();
+
+				if (c == 'r') { // Raw, don't write through Flashee (internal file system).
+					// An address is included to write to.
+					uint32_t address = Utils::bytesToLong(Serial.read(), Serial.read(), Serial.read(), Serial.read());
+					//Save User File sent via Ymodem tool to any address(preferrably multiple of 0x20000) in External Flash
+					//echo -n u > $DEV && sz -b -v --ymodem user.file > $DEV < $DEV
+					System.serialSaveFile(&Serial, address);//Can also use &Serial1, &Serial2
+				} else if (c == 'e') { // Write data through Flashee (internal file system).
+
+				}
+			} else if (c == 'c') { // Command
+
+			}
+		}
+	}
 }
 
 #if HAS_SD == 1
@@ -246,13 +277,14 @@ bool DataManager::setVarAtIndex(uint8_t aIndex, int16_t aValue) {
 		return true;
 	}
 	Errors::setError(E_INVALID_VARIABLE);
-	ERROR(Errors::errorString());
+	//ERROR(Errors::errorString());
 	return false;
 }
 
 bool DataManager::addStoryMetadata(uint8_t aIndex, uint8_t aPages) {
-	// Get the current story count, see if adjustement is needed.
+	// Get the current story count, see if adjustment is needed.
 	uint8_t count = this->metadata.storyCount;
+	uint8_t totalCount = this->metadata.storyCount + this->metadata.deletedStoryCount;
 
 	// If the position requested is past the existing, just set it to the next.
 	if (aIndex >= count) {
@@ -265,13 +297,17 @@ bool DataManager::addStoryMetadata(uint8_t aIndex, uint8_t aPages) {
 		}
 	}
 
+	// Set the state of this story.
+	this->metadata.storyState[totalCount] = kStoryStateNormal;
 	// Set the offset for this story.
-	this->metadata.storyOffsets[this->metadata.storyCount] = this->metadata.usedStoryPages;
+	this->metadata.storyOffsets[totalCount] = this->metadata.usedStoryPages;
 	// Set the position for this story.
-	this->metadata.storyOrder[aIndex] = this->metadata.storyCount;
+	this->metadata.storyOrder[aIndex] = totalCount;
 	// Increase the story count.
 	this->metadata.storyCount++;
-	if (this->liveStoryCount < 10) { this->liveStoryCount++; }
+	if (this->liveStoryCount < 10) {
+		this->liveStoryCount++;
+	}
 	// Add the total story bytes to the total used.
 	this->metadata.usedStoryPages += aPages;
 
@@ -281,33 +317,44 @@ bool DataManager::addStoryMetadata(uint8_t aIndex, uint8_t aPages) {
 	return writeStoryCountData(&this->metadata);
 }
 
-/*bool DataManager::removeStoryMetadata(uint8_t aIndex) {
-	// Get the current story count, see if adjustement is needed.
-	uint8_t count = this->metadata.storyCount;
+bool DataManager::removeStoryMetadata(uint8_t aIndex) {
+	uint8_t totalCount = this->metadata.storyCount + this->metadata.deletedStoryCount;
+	uint8_t trueIndex = this->metadata.storyOrder[aIndex];
 
-	// If the position requested is past the existing, just set it to the next.
-	if (aIndex >= count) {
-		aIndex = count;
-	} else {
-		// Shift existing story indexes 'up', until the slot for the new story is free.
-		while (count > aIndex) {
-			this->metadata.storyOffsets[count] = this->metadata.storyOffsets[count - 1];
-			count--;
+	if (trueIndex < totalCount) {
+		if (aIndex < (this->metadata.storyCount - 1)) {
+			uint8_t count = this->metadata.storyCount;
+			while (count > aIndex) {
+				this->metadata.storyOrder[aIndex] = this->metadata.storyOrder[aIndex + 1];
+				aIndex++;
+			}
+			this->metadata.storyOrder[aIndex] = 0;
 		}
+
+		// If we happen to be deleting the last story, we can totally remove it.
+		if (trueIndex == (totalCount - 1)) {
+			// Calculate and subtract the size of the last story.
+			this->metadata.usedStoryPages = this->metadata.usedStoryPages - this->metadata.storyOffsets[trueIndex];
+			this->metadata.storyOffsets[trueIndex] = 0;
+			this->metadata.storyState[trueIndex] = kStoryStateEmpty;
+		} else { // Otherwise we need to mark it as deleted.
+			// Decrease the story count.
+			this->metadata.storyState[trueIndex] = kStoryStateDeleted;
+			this->metadata.deletedStoryCount++;
+		}
+		if (this->metadata.storyCount <= 10) {
+			this->liveStoryCount--;
+		}
+		this->metadata.storyCount--;
+		return writeStoryCountData(&this->metadata);
 	}
-
-	// Decrease the story count.
-	this->metadata.storyCount--;
-	if (this->metadata.storyCount <= 10) { this->liveStoryCount--; }
-	// Decrease used story bytes.
-	this->metadata.usedStoryBytes -= this->storyHeaders[aIndex].storySize;
-
-	return writeStoryCountData(&this->metadata);
-}*/
+	return false;
+}
 
 bool DataManager::removeAllStoryData() {
 	// Reset the story count.
 	this->metadata.storyCount = 0;
+	this->metadata.deletedStoryCount = 0;
 	this->liveStoryCount = 0;
 	// Add the total story bytes to the total used.
 	this->metadata.usedStoryPages = 0;
@@ -316,6 +363,8 @@ bool DataManager::removeAllStoryData() {
 
 	for (int i = 0; i < kMaxRandStoryCount; ++i) {
 		this->metadata.storyOffsets[i] = 0;
+		this->metadata.storyOrder[i] = 0;
+		this->metadata.storyState[i] = kStoryStateEmpty;
 	}
 
 	return writeStoryCountData(&this->metadata);
@@ -415,14 +464,14 @@ bool DataManager::loadMetadata() {
 	if (_metaFlash->readByte(kMetadataBaseAddress) != kAsciiHeaderByte) {
 		//DEBUG("No SOH, write fresh metadata.");
 		if (!initializeMetadata(&this->metadata)) {
-			ERROR(Errors::errorString());
+			//ERROR(Errors::errorString());
 			return false;
 		}
 	} else {
 		// Data exists. Read it!
 		//DEBUG("SOH found, read metadata.");
 		if (!readMetadata(&this->metadata)) {
-			ERROR(Errors::errorString());
+			//ERROR(Errors::errorString());
 			return false;
 		}
 
@@ -430,7 +479,7 @@ bool DataManager::loadMetadata() {
 			// Update to the current standard (in memory)
 			if (!upgradeDataModels()) {
 				Errors::setError(E_DATA_MODEL_UPGRADE_FAIL);
-				ERROR(Errors::errorString());
+				//ERROR(Errors::errorString());
 				return false;
 			}
 		}
@@ -483,7 +532,7 @@ bool DataManager::readMetadata(Metadata *aMetadata) {
 		bool result = _metaFlash->read(aMetadata, kMetadataBaseAddress, kMetadataSize);
 		if (!result) {
 			Errors::setError(E_METADATA_READ_FAIL);
-			ERROR(Errors::errorString());
+			//ERROR(Errors::errorString());
 			return false;
 		}
 	}
@@ -514,63 +563,10 @@ bool DataManager::readStoryHeader(uint8_t aIndex, StoryHeader *aHeader) {
 	this->psgIndex = 0;
 	if (!result) {
 		Errors::setError(E_HEADER_READ_FAIL);
-		ERROR(Errors::errorString());
+		//ERROR(Errors::errorString());
 	}
 	return result;
 }
-
-/*bool DataManager::readVariables(uint8_t aIndex) {
-	bool result = true;
-	uint32_t offset = getStoryOffset(aIndex) + kStoryHeaderSize;
-	_smallVarCount = readByte(offset);
-	//DEBUG("Small Var Count: %d", _smallVarCount);
-	offset++;
-	if (_smallVarCount > 0) {
-		_smallVars = new int8_t[_smallVarCount];
-		for (int i = 0; i < _smallVarCount; ++i) {
-			result = readData(&_smallVars[i], offset, kSmallVarSize) && result ? true : false;
-			//DEBUG("Var #%d: %d", i, _smallVars[i]);
-			offset += kSmallVarSize; // Only 1 byte sized variables.
-		}
-	}
-	_bigVarCount = readByte(offset);
-	//DEBUG("Big Var Count: %d", _bigVarCount);
-	offset++;
-	if (_bigVarCount > 0) {
-		_bigVars = new int16_t[_bigVarCount];
-		for (int i = 0; i < _bigVarCount; ++i) {
-			result = readData(&_bigVars[i], offset, kBigVarSize) && result ? true : false;
-			//DEBUG("Var #%d: %d", i, _bigVars[i]);
-			offset += kBigVarSize; // 2 byte sized variables.
-		}
-	}
-
-	// Read the passage count.
-	//DEBUG("Offset: %d", offset);
-	result = readData(&this->psgCount, offset, kPassageCountSize) && result ? true : false;
-	//DEBUG("Passage Count: %d", this->psgCount);
-
-	offset += kPassageCountSize;
-	// Memory offset for where the passage memory offsets begin.
-	this->tocOffset = offset;
-	// Grab the offset of the second passage, which gives us the size of the first.
-	result = readData(&this->psgSize, offset + kPassageOffsetSize, kPassageOffsetSize) && result ? true : false;
-
-	//if (!result) {
-	//	Errors::setError(E_VARS_READ_FAIL);
-	//	ERROR(Errors::errorString());
-	//	return false;
-	//}
-
-	//DEBUG("Passage Size: %lu", this->psgSize);
-	//DEBUG("TOC Offset: %d", this->tocOffset);
-	offset += this->psgCount * kPassageOffsetSize;
-	this->startOffset = offset;
-	//DEBUG("Start Offset: %d", this->startOffset);
-	this->psgIndex = 0;
-
-	return true;
-}*/
 
 bool DataManager::writeMetadata(Metadata *aMetadata) {
 	//DEBUG("Size of Metadata: %d", sizeof(*aMetadata));
@@ -624,7 +620,7 @@ bool DataManager::upgradeDataModels() {
 	// Save the new metadata
 	if (writeMetadata(&this->metadata)) {
 		Errors::setError(E_METADATA_WRITE_FAIL);
-		ERROR(Errors::errorString());
+		//ERROR(Errors::errorString());
 		return false;
 	}
 	return true;

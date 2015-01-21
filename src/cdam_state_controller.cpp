@@ -155,7 +155,7 @@ void StateController::loopState(GameState aState) {
 	} else if (aState == STATE_READY) {
 		if (_dataManager->liveStoryCount > 0) {
 			uint8_t storyCount = _dataManager->liveStoryCount;
-			DEBUG("Story Count: %d", _dataManager->metadata.storyCount);
+			//DEBUG("Story Count: %d", _dataManager->metadata.storyCount);
 			if (_dataManager->metadata.flags.random && (_dataManager->metadata.storyCount > 4)) {
 				storyCount = 4;
 			}
@@ -171,7 +171,7 @@ void StateController::loopState(GameState aState) {
 				if (_dataManager->getNumberedTitle(titleBuffer, i)) {
 					_hardwareManager->printer()->wrapText(titleBuffer, kPrinterColumns);
 					_hardwareManager->printer()->println(titleBuffer);
-					DEBUG("%s", titleBuffer);
+					//DEBUG("%s", titleBuffer);
 				} else {
 					changeState(STATE_ERROR);
 					return;
