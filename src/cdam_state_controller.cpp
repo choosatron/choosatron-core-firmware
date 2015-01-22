@@ -143,7 +143,6 @@ void StateController::loopState(GameState aState) {
 			_dataManager->logPrint = true;
 		}*/
 		if (_hardwareManager->keypad()->buttonDown(3)) {
-			LOG("BTN 3");
 			_dataManager->metadata.flags.sdCard = !_dataManager->metadata.flags.sdCard;
 		}
 		// Override has had a chance to get set, now setup storage.

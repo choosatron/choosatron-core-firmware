@@ -482,7 +482,8 @@ uint8_t SdFile::open(SdFile* dirFile, const char* fileName, uint8_t oflag) {
  */
 uint8_t SdFile::open(SdFile* dirFile, uint16_t index, uint8_t oflag) {
   // error if already open
-  if (isOpen())return false;
+  // JDB - TODO: Why is this always returning false? So stupid!
+  //if (isOpen())return false;
 
   // don't open existing file if O_CREAT and O_EXCL - user call error
   if ((oflag & (O_CREAT | O_EXCL)) == (O_CREAT | O_EXCL)) return false;

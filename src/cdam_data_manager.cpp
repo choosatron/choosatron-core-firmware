@@ -16,7 +16,7 @@ bool DataManager::initialize(StateController *aStateController) {
 	this->runState = true;
 	this->timeSynced = false;
 	this->hasCredentials = false;
-	this->metadata = {};
+	this->metadata = {'\0'};
 
 	// Initialize story specific variables.
 	this->currentStory = -1;
@@ -123,14 +123,13 @@ void DataManager::handleSerialData() {
 
 #if HAS_SD == 1
 bool DataManager::initSD() {
-	DEBUG("initSD");
 	_card = new Sd2Card();
 	_volume = new SdVolume();
 	_root = new SdFile();
 	if (_card->init(PIN_SD_MOSI, PIN_SD_MISO, PIN_SD_SCK, PIN_SD_CS) &&//_card.init(SPI_FULL_SPEED, PIN_SD_CS) &&
 		_volume->init(_card) &&
 		_root->openRoot(_volume)) {
-		DEBUG("SD Init");
+		//DEBUG("SD Init");
 
 		_storyFile = new SdFile();
 
@@ -145,22 +144,21 @@ bool DataManager::initSD() {
 			fileName[8] = '.';
 			DEBUG("%s", fileName);
 			if (strncmp(fileName + 9, "DAM", 3) == 0) {
-				DEBUG("MATCH!");
 				if (_storyFile->open(_root, fileIndex, O_READ)) {
 					if (_storyFile->read() == kAsciiHeaderByte) {
 						this->metadata.storyOffsets[index] = fileIndex;
 						this->metadata.storyOrder[index] = index;
 						index++;
-						char title[65] = {'\0'};
-						_storyFile->seekSet(20); // seekCur moves forward given # of bytes
+						/*char title[65] = {'\0'};
+						_storyFile->seekSet(36); // seekCur moves forward given # of bytes
 						_storyFile->read(title, 64);
-						DEBUG("Title: %s", title);
+						DEBUG("Title: %s", title);*/
 					} else {
-						DEBUG("Not header byte");
+						//DEBUG("Not header byte");
 					}
 					_storyFile->close();
 				} else {
-					DEBUG("Failed to open");
+					//DEBUG("Failed to open");
 				}
 			}
 			//memset(&fileName[0], 0, sizeof(fileName));
@@ -169,7 +167,7 @@ bool DataManager::initSD() {
 			fileIndex++;
 		}
 		if (index > 0) {
-			DEBUG("Story Count: %d", index);
+			//DEBUG("Story Count: %d", index);
 			this->metadata.storyCount = index;
 			this->liveStoryCount = (index > 10) ? 10 : index;
 			return true;
@@ -276,7 +274,7 @@ void DataManager::unloadStory() {
 		delete[] _variables;
 		_variables = NULL;
 	}
-	this->storyHeader = {};
+	this->storyHeader = {'\0'};
 }
 
 int16_t DataManager::varAtIndex(uint8_t aIndex) {
@@ -501,7 +499,7 @@ bool DataManager::loadMetadata() {
 
 bool DataManager::initializeMetadata(Metadata *aMetadata) {
 	// Set the default values for a fresh Choosatron.
-	*aMetadata = {};
+	*aMetadata = {'\0'};
 
 	aMetadata->soh = kAsciiHeaderByte;
 	aMetadata->firmwareVer.major = this->firmwareVersion.major;
