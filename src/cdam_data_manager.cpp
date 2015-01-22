@@ -138,11 +138,13 @@ bool DataManager::initSD() {
 		uint16_t fileIndex = 0;
 		uint8_t index = 0;
 		//char title[65] = {'\0'};
-		while (_root->readDir(&filePntr) && (index < kMaxRandStoryCount)) {
+		int8_t dirBytes = 0;
+		while ((dirBytes = _root->readDir(&filePntr)) && (index < kMaxRandStoryCount)) {
+			//DEBUG("ReadDir: %d", dirBytes);
 			memcpy(fileName, filePntr.name, 8);
 			memcpy(fileName + 9, filePntr.name + 8, 3);
 			fileName[8] = '.';
-			DEBUG("%s", fileName);
+			//DEBUG("FN: %s", fileName);
 			if (strncmp(fileName + 9, "DAM", 3) == 0) {
 				if (_storyFile->open(_root, fileIndex, O_READ)) {
 					if (_storyFile->read() == kAsciiHeaderByte) {
