@@ -91,6 +91,10 @@ class DataManager
         bool logPrint;
         // Whether or not the state machine should execute it's update loop.
         bool runState;
+        // Real time has been synced, available for use.
+        bool timeSynced;
+        // Did we start with WiFi credentials?
+        bool hasCredentials;
         // Live story order.
         uint8_t liveStoryOrder[kMaxRandStoryCount];
         // Live story count. If not in random mode, can be max of 10.

@@ -20,7 +20,7 @@ namespace cdam
 // 0, 3, or 6 are cutoffs for rerouted buttons pins.
 #define BOARD_DOT_VERSION 6
 
-#define BAUD_RATE 19200
+#define BAUD_RATE 9600
 
 const uint8_t kFirmwareVersionMajor = 2;
 const uint8_t kFirmwareVersionMinor = 0;

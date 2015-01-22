@@ -57,7 +57,8 @@ void setup()
 #ifdef DEBUG_BUILD
 	//Spark.function("dfu", doDFU);
 #endif
-	Serial.begin(9600);
+	Serial.begin(BAUD_RATE);
+	//while(!Serial.available()) SPARK_WLAN_Loop();
 	stateController = new cdam::StateController();
 	stateController->initialize();
 }

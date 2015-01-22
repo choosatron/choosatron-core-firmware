@@ -29,7 +29,9 @@ StateController::StateController() {
 }
 
 void StateController::initialize() {
-	changeState(STATE_BOOTING);
+	//changeState(STATE_BOOTING);
+	_state = STATE_BOOTING;
+	initState(_state);
 }
 
 GameState StateController::getState() {
@@ -67,7 +69,12 @@ void StateController::initState(GameState aState) {
 		_hardwareManager->keypad()->active = true;
 		_resetElapsed = kIntervalPressAnyButton;
 	} else if (aState == STATE_INIT) {
-
+		if (Spark.connected()) {
+			DEBUG("Syncing time - how do we verify?");
+			// TODO: Verify time sync, set booleon on dataManager
+			Spark.syncTime();
+			_dataManager->timeSynced = true; // ???
+		}
 	} else if (aState == STATE_CREDITS) {
 		_hardwareManager->coinAcceptor()->active = true;
 		_hardwareManager->printer()->printInsertCoin(_hardwareManager->coinAcceptor()->coins,
@@ -99,17 +106,33 @@ void StateController::initState(GameState aState) {
 }
 
 void StateController::loopState(GameState aState) {
+	// Handle special case where user sets up WiFi credentials
+	// while firmware is running, so gameplay isn't disrupted.
+	if (!_dataManager->metadata.flags.offline &&
+	    !_dataManager->hasCredentials &&
+	    WiFi.hasCredentials() &&
+	    (aState != STATE_BOOTING)) {
+		_dataManager->hasCredentials = true;
+		if (!Spark.connected()) {
+			Spark.connect();
+		}
+	}
+
 	if (aState == STATE_BOOTING) {
 		// If button 1 held (or hardset to Offline), disable WiFi.
 		if (_hardwareManager->keypad()->buttonDown(1)) {
 			_dataManager->metadata.flags.offline = !_dataManager->metadata.flags.offline;
 		}
 		if (!_dataManager->metadata.flags.offline) {
-			if (Spark.connected() == false) {
-				//WiFi.on();
-				//WiFi.connect();
-				Spark.connect();
-				//Spark.syncTime();
+			WiFi.on();
+			if (WiFi.hasCredentials()) {
+				_dataManager->hasCredentials = true;
+				if (!Spark.connected()) {
+					Spark.connect();
+				}
+			} else {
+				// Can use this if we handle WiFi setup ourselves!
+				//WiFi.off();
 			}
 		}
 		// If button 3 held, don't print, just serial output.
@@ -120,6 +143,7 @@ void StateController::loopState(GameState aState) {
 			_dataManager->logPrint = true;
 		}*/
 		if (_hardwareManager->keypad()->buttonDown(3)) {
+			LOG("BTN 3");
 			_dataManager->metadata.flags.sdCard = !_dataManager->metadata.flags.sdCard;
 		}
 		// Override has had a chance to get set, now setup storage.

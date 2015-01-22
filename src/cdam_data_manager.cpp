@@ -14,6 +14,8 @@ bool DataManager::initialize(StateController *aStateController) {
 	_stateController = aStateController;
 	this->logPrint = false;
 	this->runState = true;
+	this->timeSynced = false;
+	this->hasCredentials = false;
 	this->metadata = {};
 
 	// Initialize story specific variables.
@@ -45,6 +47,7 @@ bool DataManager::initialize(StateController *aStateController) {
 bool DataManager::initStorage() {
 #if HAS_SD == 1
 	if (this->metadata.flags.sdCard && !initSD()) {
+		DEBUG("SD Failed");
 		this->metadata.flags.sdCard = 0;
 	}
 #endif
@@ -120,12 +123,14 @@ void DataManager::handleSerialData() {
 
 #if HAS_SD == 1
 bool DataManager::initSD() {
+	DEBUG("initSD");
 	_card = new Sd2Card();
 	_volume = new SdVolume();
 	_root = new SdFile();
 	if (_card->init(PIN_SD_MOSI, PIN_SD_MISO, PIN_SD_SCK, PIN_SD_CS) &&//_card.init(SPI_FULL_SPEED, PIN_SD_CS) &&
 		_volume->init(_card) &&
 		_root->openRoot(_volume)) {
+		DEBUG("SD Init");
 
 		_storyFile = new SdFile();
 
@@ -138,18 +143,24 @@ bool DataManager::initSD() {
 			memcpy(fileName, filePntr.name, 8);
 			memcpy(fileName + 9, filePntr.name + 8, 3);
 			fileName[8] = '.';
+			DEBUG("%s", fileName);
 			if (strncmp(fileName + 9, "DAM", 3) == 0) {
+				DEBUG("MATCH!");
 				if (_storyFile->open(_root, fileIndex, O_READ)) {
 					if (_storyFile->read() == kAsciiHeaderByte) {
 						this->metadata.storyOffsets[index] = fileIndex;
 						this->metadata.storyOrder[index] = index;
 						index++;
-						/*char title[65] = {'\0'};
+						char title[65] = {'\0'};
 						_storyFile->seekSet(20); // seekCur moves forward given # of bytes
 						_storyFile->read(title, 64);
-						DEBUG("Title: %s", title);*/
+						DEBUG("Title: %s", title);
+					} else {
+						DEBUG("Not header byte");
 					}
 					_storyFile->close();
+				} else {
+					DEBUG("Failed to open");
 				}
 			}
 			//memset(&fileName[0], 0, sizeof(fileName));
@@ -158,11 +169,12 @@ bool DataManager::initSD() {
 			fileIndex++;
 		}
 		if (index > 0) {
+			DEBUG("Story Count: %d", index);
 			this->metadata.storyCount = index;
 			this->liveStoryCount = (index > 10) ? 10 : index;
+			return true;
 		}
 		//DEBUG("SD: %s", (this->metadata.flags.sdCard ? "on" : "off"));
-		return true;
 	}
 	delete _card;
 	delete _volume;
