@@ -100,8 +100,7 @@ void DataManager::handleSerialData() {
 				//Use TeraTerm to upload the binary file via File->Transfer->YMODEM->Send...
 				//OR
 				//echo -n s > $DEV && sz -b -v --ymodem main.bin > $DEV < $DEV
-
-				System.serialFirmwareUpdate(&Serial);//Can also use &Serial1, &Serial2
+				System.serialFirmwareUpdate(&Serial); // Can also use &Serial1, &Serial2
 			} else if (c == 'u') { // Write to user flash space.
 				c = Serial.read();
 
@@ -110,12 +109,18 @@ void DataManager::handleSerialData() {
 					uint32_t address = Utils::bytesToLong(Serial.read(), Serial.read(), Serial.read(), Serial.read());
 					//Save User File sent via Ymodem tool to any address(preferrably multiple of 0x20000) in External Flash
 					//echo -n u > $DEV && sz -b -v --ymodem user.file > $DEV < $DEV
-					System.serialSaveFile(&Serial, address);//Can also use &Serial1, &Serial2
+					System.serialSaveFile(&Serial, address); // Can also use &Serial1, &Serial2
 				} else if (c == 'e') { // Write data through Flashee (internal file system).
 
 				}
 			} else if (c == 'c') { // Command
+				c = Serial.read();
 
+				switch (c)
+				{
+					case 'd':
+					break;
+				}
 			}
 		}
 	}
@@ -193,12 +198,7 @@ uint32_t DataManager::getStoryOffset(uint8_t aIndex) {
 uint32_t DataManager::getPassageOffset(uint16_t aIndex) {
 	uint32_t offset = 0;
 	if (this->currentStory != -1) {
-		//bool result =
 		readData(&offset, this->tocOffset + (kPassageOffsetSize * aIndex), kPassageOffsetSize);
-		/*if (!result) {
-			Errors::setError(E_HEADER_READ_FAIL);
-			ERROR(Errors::errorString());
-		}*/
 	}
 	return offset;
 }
@@ -208,7 +208,6 @@ bool DataManager::getNumberedTitle(char* aBuffer, uint8_t aIndex) {
 	uint32_t offset = kStoryTitleOffset;
 #if HAS_SD == 1
 	if (this->metadata.flags.sdCard) {
-		//_storyFile = new SdFile();
 		if (!_storyFile->open(_root, this->metadata.storyOffsets[this->liveStoryOrder[aIndex]], O_READ)) {
 			return false;
 		}
@@ -223,8 +222,6 @@ bool DataManager::getNumberedTitle(char* aBuffer, uint8_t aIndex) {
 		if (_storyFile->isOpen()) {
 			_storyFile->close();
 		}
-		//delete _storyFile;
-		//_storyFile = NULL;
 	}
 #endif
 	/*if (!result) {
@@ -239,7 +236,6 @@ bool DataManager::loadStory(uint8_t aIndex) {
 
 #if HAS_SD == 1
 	if (this->metadata.flags.sdCard) {
-		//_storyFile = new SdFile();
 		if (!_storyFile->open(_root, this->metadata.storyOffsets[this->liveStoryOrder[aIndex]], O_READ)) {
 			return false;
 		}
@@ -249,10 +245,6 @@ bool DataManager::loadStory(uint8_t aIndex) {
 	if (!readStoryHeader(this->currentStory, &this->storyHeader)) {
 		return false;
 	}
-	/*if (!readVariables(this->currentStory)) {
-		return false;
-	}*/
-
 	return true;
 }
 
@@ -260,8 +252,6 @@ void DataManager::unloadStory() {
 #if HAS_SD == 1
 	if (this->metadata.flags.sdCard) {
 		_storyFile->close();
-		//delete _storyFile;
-		//_storyFile = NULL;
 	}
 #endif
 	this->currentStory = -1;

@@ -378,7 +378,7 @@ uint32_t Parser::parseOperation(uint32_t aOffset, int16_t &aResult) {
 		}
 	}
 
-	switch(op.operationType)
+	switch (op.operationType)
 	{
 		case kOpEqualTo:
 			result = (op.leftOperand == op.rightOperand) ? 1 : 0;

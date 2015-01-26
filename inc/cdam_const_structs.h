@@ -289,68 +289,6 @@ const uint8_t kOpRandom = 20; // Returns int16_t - takes min & max (inclusive)
 const uint8_t kOpDiceRoll = 21; // Returns int16_t - take # of dice & # of sides per die
 const uint8_t kOpIfStatement = 22; // Returns 0 if false, result of right operand if true
 
-/*typedef enum {
-	OP_TYPE_RAW = 1,
-	OP_TYPE_VAR,
-	OP_TYPE_OPERATION
-} OperandType;
-
-typedef enum {
-	OP_CMD_EQUAL_TO = 1,
-	OP_CMD_NOT_EQUAL_TO,
-	OP_CMD_GREATER_THAN,
-	OP_CMD_LESS_THAN,
-	OP_CMD_EQUAL_GREATER,
-	OP_CMD_EQUAL_LESS,
-	OP_CMD_AND,
-	OP_CMD_OR,
-	OP_CMD_XOR,
-	OP_CMD_NAND,
-	OP_CMD_XNOR,
-	OP_CMD_CHOICE_VISIBLE,
-	OP_CMD_MODULUS,
-	OP_CMD_SET,
-	OP_CMD_PLUS,
-	OP_CMD_MINUS,
-	OP_CMD_MULTIPLY,
-	OP_CMD_DIVIDE,
-	OP_CMD_RANDOM,
-	OP_CMD_DICE_ROLL,
-	OP_CMD_IF_STATEMENT
-} OperationCmd;*/
-
-/*const uint8_t kValueTypeRaw = 0;
-const uint8_t kValueTypeBool = 1;
-const uint8_t kValueTypeSmall = 2;
-const uint8_t kValueTypeBig = 3;
-
-const uint8_t kOperatorEquals = 0;
-const uint8_t kOperatorPlus = 1;
-const uint8_t kOperatorMinus = 2;
-const uint8_t kOperatorMultiply = 3;
-const uint8_t kOperatorDivide = 4;
-const uint8_t kOperatorModulus = 5;
-
-const uint8_t kCompareEqual = 0;
-const uint8_t kCompareGreater = 1;
-const uint8_t kCompareLess = 2;
-const uint8_t kCompareEqualGreater = 3;
-const uint8_t kCompareEqualLess = 4;
-const uint8_t kCompareModulus = 5;*/
-
-/*typedef struct ValueSet_t {
-	union {
-		uint8_t varTypes;
-		struct {
-			uint8_t operatorType :4;
-			uint8_t varTwoType   :2;
-			uint8_t varOneType   :2;
-		};
-	};
-	uint16_t varOne;
-	uint16_t varTwo;
-} ValueSet;*/
-
 typedef struct Operation_t {
 	union {
 		uint8_t operandTypes;
