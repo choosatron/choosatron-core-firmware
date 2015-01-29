@@ -2,6 +2,8 @@
 #include "cdam_constants.h"
 #include "cdam_state_controller.h"
 #include "spark_wiring_time.h"
+#include "Ymodem/Ymodem.h"
+#include "cdam_flash_hal.h"
 
 namespace cdam
 {
@@ -93,33 +95,61 @@ void DataManager::logMetadata() {
 void DataManager::handleSerialData() {
 	if (_serialElapsed >= kIntervalSerialMillis) {
 		if (Serial.available()) {
-			char c = Serial.read();
+			uint8_t cmd = Serial.read();
 
-			if (c == 'f') {
-				//Test Serial Firmware Update (uses YMODEM protocol)
-				//Use TeraTerm to upload the binary file via File->Transfer->YMODEM->Send...
-				//OR
-				//echo -n s > $DEV && sz -b -v --ymodem main.bin > $DEV < $DEV
-				System.serialFirmwareUpdate(&Serial); // Can also use &Serial1, &Serial2
-			} else if (c == 'u') { // Write to user flash space.
-				c = Serial.read();
+			if (cmd == 'z') {
+				System.serialSaveFile(&Serial, 0x00080000);
+				return;
+			}
 
-				if (c == 'r') { // Raw, don't write through Flashee (internal file system).
-					// An address is included to write to.
-					uint32_t address = Utils::bytesToLong(Serial.read(), Serial.read(), Serial.read(), Serial.read());
-					//Save User File sent via Ymodem tool to any address(preferrably multiple of 0x20000) in External Flash
-					//echo -n u > $DEV && sz -b -v --ymodem user.file > $DEV < $DEV
-					System.serialSaveFile(&Serial, address); // Can also use &Serial1, &Serial2
-				} else if (c == 'e') { // Write data through Flashee (internal file system).
+			if ((cmd == 0x01) || (cmd == 'y')) {
+				DEBUG("Listening");
+						this->hasCredentials = WiFi.hasCredentials();
+						WiFi.listen();
+						if (this->hasCredentials != WiFi.hasCredentials()) {
+							this->hasCredentials = WiFi.hasCredentials();
+							this->metadata.flags.offline = this->hasCredentials ? 0 : 1;
+						}
+				return;
+			}
 
-				}
-			} else if (c == 'c') { // Command
-				c = Serial.read();
+			if (cmd == 'c') {
+				DEBUG("Ready");
+				//_serialTimeout = 0;
+				while (!Serial.available()) {}
+				cmd = Serial.read();
 
-				switch (c)
+				switch (cmd)
 				{
-					case 'd':
-					break;
+					case kSerialCmdListeningMode: {
+						DEBUG("Listening");
+						this->hasCredentials = WiFi.hasCredentials();
+						WiFi.listen();
+						if (this->hasCredentials != WiFi.hasCredentials()) {
+							this->hasCredentials = WiFi.hasCredentials();
+							this->metadata.flags.offline = this->hasCredentials ? 0 : 1;
+						}
+						break;
+					}
+					case kSerialCmdWriteFlashRaw: {
+						DEBUG("Flash Write");
+						// An address is included to write to.
+						uint32_t address = (Serial.read() << 24) | (Serial.read() << 16) | (Serial.read() << 8) | Serial.read();
+						//Save User File sent via Ymodem tool to any address(preferrably multiple of 0x20000) in External Flash
+						//echo -n u > $DEV && sz -b -v --ymodem user.file > $DEV < $DEV
+						System.serialSaveFile(&Serial, address); // Can also use &Serial1, &Serial2
+						break;
+					}
+					case kSerialCmdClearWiFi: {
+						WiFi.disconnect();
+						WiFi.clearCredentials();
+						WiFi.off();
+						break;
+					}
+					case kSerialCmdAddStory: {
+
+						break;
+					}
 				}
 			}
 		}
@@ -498,13 +528,13 @@ bool DataManager::initializeMetadata(Metadata *aMetadata) {
 	aMetadata->firmwareVer.minor = this->firmwareVersion.minor;
 	aMetadata->firmwareVer.revision = this->firmwareVersion.revision;
 
-	/*aMetadata->flags.auth = 0;
+	aMetadata->flags.auth = 0;
 	aMetadata->flags.offline = 0;
-	aMetadata->flags.demo = 0;*/
+	aMetadata->flags.demo = 0;
 	aMetadata->flags.sdCard = 0;
-	/*aMetadata->flags.multiplayer = 0;
+	aMetadata->flags.multiplayer = 0;
 	aMetadata->flags.arcade = 0;
-	aMetadata->flags.continues = 0;*/
+	aMetadata->flags.continues = 0;
 	aMetadata->flags.random = 1;
 
 	//aMetadata->flags.rsvd2 = 0;

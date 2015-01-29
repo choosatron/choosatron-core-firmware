@@ -75,7 +75,9 @@ make clean all PRODUCT_ID=7 PRODUCT_FIRMWARE_VERSION=1
 \outl0\strokewidth0 \strokec6 yModem Protocol
 \b0 \
 DEV=/dev/cu.usbmodem621 \'a0 \'a0 # <------ or whatever\
-sz -b -v --ymodem\'a0core-firmware.bin > $DEV < $DEV\cb1 \expnd0\expndtw0\kerning0
+sz -b -v --ymodem\'a0core-firmware.bin > $DEV < $DEV\
+\
+echo -n $'\\x01' for binary bytes\cb1 \expnd0\expndtw0\kerning0
 \outl0\strokewidth0 \
 \
 \cb7 \expnd0\expndtw0\kerning0
@@ -113,8 +115,8 @@ cd ~/Code/MwaM/Choosatron/cdam-core-firmware/build/\
 Tab Three\
 cd ~/Code/MwaM/Choosatron/cdam-twine/\
 python send_binary.py story_bins/\
-curl https://api.spark.io/v1/devices/48ff70065067555020101587/command -d access_token=3cbce66f21cd4e0ede781cbe95d558464515ef3c -d "args=remove_all_stories"\
-curl https://api.spark.io/v1/devices/48ff70065067555020101587/command -d access_token=3cbce66f21cd4e0ede781cbe95d558464515ef3c -d "args=set_flag|000"\
+curl https://api.spark.io/v1/devices/53ff6c065067544835590687/command -d access_token=3cbce66f21cd4e0ede781cbe95d558464515ef3c -d "args=remove_all_stories"\
+curl https://api.spark.io/v1/devices/53ff6c065067544835590687/command -d access_token=3cbce66f21cd4e0ede781cbe95d558464515ef3c -d "args=set_flag|000"\
 \
 Tab Four\
 cd ~/Code/MwaM/Choosatron/cdam-twine/\

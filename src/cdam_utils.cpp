@@ -57,17 +57,13 @@ void Utils::uuidToString(const Uuid *uuid, char *str, size_t strsz)
 	     (unsigned char)uuid->node[5]);
 }
 
-uint32_t Utils::bytesToLong(uint8_t c0, uint8_t c1, uint8_t c2, uint8_t c3) {
-    return (c0 << 24) | (c1 << 16) | (c2 << 8) | c3;
-}
-
 /*uint32_t bytesToLong(sint8_t c0, sint8_t c1, sint8_t c2, sint8_t c3) {
     return Utils::bytesToLong((uint8_t)c0, (uint8_t)c1, (uint8_t)c2, (uint8_t)c3);
 }*/
 
 
 // base 64 - Convert from a binary blob to a string.
-const char Utils::kEncodingTable[64] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+/*const char Utils::kEncodingTable[64] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
 										'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
 										'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
 										'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
@@ -101,4 +97,6 @@ void Utils::base64Encode(char *aData, size_t aInputLength, char *aEncodedData) {
 	for (int i = 0; i < Utils::kModTable[aInputLength % 3]; i++)
 		aEncodedData[outputLength - 1 - i] = '=';
 	}
+}*/
+
 }

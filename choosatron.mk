@@ -7,6 +7,7 @@ INCLUDE_DIRS += applications/choosatron/lib/elapsed_time/inc
 INCLUDE_DIRS += applications/choosatron/lib/memory_free/inc
 INCLUDE_DIRS += applications/choosatron/lib/sd/inc
 INCLUDE_DIRS += applications/choosatron/lib/flashee/inc
+INCLUDE_DIRS += applications/choosatron/lib/ymodem/inc
 
 # C source files included in this build.
 CSRC +=
