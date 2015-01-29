@@ -5,6 +5,8 @@
 #include "Ymodem/Ymodem.h"
 #include "cdam_flash_hal.h"
 
+#include "cdam_manager.h"
+
 namespace cdam
 {
 
@@ -26,6 +28,12 @@ bool DataManager::initialize(StateController *aStateController) {
 	this->psgSize = 0;
 	this->tocOffset = 0;
 	this->startOffset = 0;
+
+	this->writeToFlashee = false;
+	this->writeIndex = 0;
+	_writeInProgress = false;
+	_currentAddress = 0;
+	_binarySize = 0;
 
 	//DEBUG("Page Size: %d", Flashee::Devices::userFlash().pageSize());
 	//DEBUG("Page Count: %d", Flashee::Devices::userFlash().pageCount());
@@ -95,7 +103,18 @@ void DataManager::logMetadata() {
 void DataManager::handleSerialData() {
 	if (_serialElapsed >= kIntervalSerialMillis) {
 		if (Serial.available()) {
+			this->writeToFlashee = false;
 			uint8_t cmd = Serial.read();
+
+			if (cmd == 'w') {
+				this->hasCredentials = WiFi.hasCredentials();
+				WiFi.listen();
+				if (this->hasCredentials != WiFi.hasCredentials()) {
+					this->hasCredentials = WiFi.hasCredentials();
+					this->metadata.flags.offline = this->hasCredentials ? 0 : 1;
+				}
+				return;
+			}
 
 			if (cmd == 'z') {
 				System.serialSaveFile(&Serial, 0x00080000);
@@ -104,12 +123,44 @@ void DataManager::handleSerialData() {
 
 			if ((cmd == 0x01) || (cmd == 'y')) {
 				DEBUG("Listening");
-						this->hasCredentials = WiFi.hasCredentials();
-						WiFi.listen();
-						if (this->hasCredentials != WiFi.hasCredentials()) {
-							this->hasCredentials = WiFi.hasCredentials();
-							this->metadata.flags.offline = this->hasCredentials ? 0 : 1;
-						}
+
+				LED_SetSignalingColor(10 << 16 | 200 << 8 | 30);
+				this->hasCredentials = WiFi.hasCredentials();
+				WiFi.listen();
+				if (this->hasCredentials != WiFi.hasCredentials()) {
+					this->hasCredentials = WiFi.hasCredentials();
+					this->metadata.flags.offline = this->hasCredentials ? 0 : 1;
+				}
+				return;
+			}
+
+			if ((cmd == 0x02) || (cmd == 'z')) {
+				//LED_SetSignalingColor(200 << 16 | 200 << 8 | 30);
+				this->writeToFlashee = true;
+				uint32_t storySize = (Serial.read() << 24) | (Serial.read() << 16) | (Serial.read() << 8) | Serial.read();
+				uint8_t pages = storySize / Flashee::Devices::userFlash().pageSize();
+				if (storySize % Flashee::Devices::userFlash().pageSize()) {
+					pages++;
+				}
+				uint32_t address = this->metadata.usedStoryPages * Flashee::Devices::userFlash().pageSize();
+				uint8_t storyIndex = Serial.read();
+				//delay(6000);
+				Manager::getInstance().hardwareManager->printer()->print("Size:");
+				Manager::getInstance().hardwareManager->printer()->println(storySize);
+				//DEBUG("Size: %lu, Index: %d, Address: %lu", storySize, storyIndex, address);
+
+				bool status = false;
+
+				status = Ymodem_Serial_Flash_Update(&Serial, address);
+				if (status) {
+					DEBUG("True");
+				} else {
+					DEBUG("False");
+				}
+				SPARK_FLASH_UPDATE = 0;
+    			TimingFlashUpdateTimeout = 0;
+
+				addStoryMetadata(storyIndex, pages);
 				return;
 			}
 
@@ -138,6 +189,15 @@ void DataManager::handleSerialData() {
 						//Save User File sent via Ymodem tool to any address(preferrably multiple of 0x20000) in External Flash
 						//echo -n u > $DEV && sz -b -v --ymodem user.file > $DEV < $DEV
 						System.serialSaveFile(&Serial, address); // Can also use &Serial1, &Serial2
+						break;
+					}
+					case kSerialCmdWriteFlashee: {
+						DEBUG("Flashee Write");
+						// An address is included to write to.
+						//uint32_t address = (Serial.read() << 24) | (Serial.read() << 16) | (Serial.read() << 8) | Serial.read();
+						//Save User File sent via Ymodem tool to any address(preferrably multiple of 0x20000) in External Flash
+						//echo -n u > $DEV && sz -b -v --ymodem user.file > $DEV < $DEV
+						//System.serialSaveFile(&Serial, address); // Can also use &Serial1, &Serial2
 						break;
 					}
 					case kSerialCmdClearWiFi: {
@@ -444,7 +504,7 @@ uint8_t DataManager::readByte(uint32_t aAddress) {
 	return byte;
 }
 
-bool DataManager::readData(void* aBuffer, uint32_t aAddress, uint16_t aLength) {
+bool DataManager::readData(void* aBuffer, uint32_t aAddress, uint32_t aLength) {
 #if HAS_SD == 1
 	if (this->metadata.flags.sdCard) {
 		if (_storyFile->seekSet(aAddress)) {
@@ -459,7 +519,34 @@ bool DataManager::readData(void* aBuffer, uint32_t aAddress, uint16_t aLength) {
 	return false;
 }
 
-bool DataManager::writeData(void* aBuffer, uint32_t aAddress, uint16_t aLength) {
+void DataManager::writeBegin(uint32_t aAddress, uint32_t aBinarySize) {
+	_writeInProgress = true;
+	_currentAddress = aAddress;
+	_binarySize = aBinarySize;
+	this->writeIndex = 0;
+}
+
+void DataManager::writeEnd() {
+	_writeInProgress = false;
+	_currentAddress = 0;
+	_binarySize = 0;
+	this->writeIndex = 0;
+}
+
+uint16_t DataManager::writeData(void* aBuffer, uint32_t aLength) {
+	_storyFlash->write(aBuffer, _currentAddress, aLength);
+	_currentAddress += aLength;
+	// TODO: Read back data and compare with data just written
+	// If it is the same, increment writeIndex.
+	// Otherwise, erase sector and don't increment.
+
+	if (1) { // Successfully verified written data.
+		this->writeIndex += 1;
+	}
+	return this->writeIndex;
+}
+
+bool DataManager::writeData(void* aBuffer, uint32_t aAddress, uint32_t aLength) {
 #if HAS_SD == 1
 	if (this->metadata.flags.sdCard) {
 		/* Currently not writing. */

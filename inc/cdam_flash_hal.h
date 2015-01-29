@@ -37,8 +37,8 @@ extern "C" {
 // A C++ MemoryDeviceRegion will be used so that callers can incrementally
 // write to that. This decouples writing to memory
 
-uint32_t CDAM_OTA_FlashAddress();
-uint32_t CDAM_OTA_FlashLength();
+//uint32_t CDAM_OTA_FlashAddress();
+//uint32_t CDAM_OTA_FlashLength();
 
 void CDAM_FLASH_Begin(uint32_t sFLASH_Address, uint32_t fileSize);
 uint16_t CDAM_FLASH_Update(uint8_t *pBuffer, uint32_t bufferSize);

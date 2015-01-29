@@ -25,38 +25,52 @@
 
 #include "cdam_flash_hal.h"
 #include "cdam_constants.h"
+#include "cdam_manager.h"
 #include "hw_config.h"
 #include <string.h>
 
-uint32_t CDAM_OTA_FlashAddress()
+/*uint32_t CDAM_OTA_FlashAddress()
 {
-    return EXTERNAL_FLASH_OTA_ADDRESS;
+	return EXTERNAL_FLASH_OTA_ADDRESS;
 }
 
 #define FLASH_MAX_SIZE          (int32_t)(INTERNAL_FLASH_END_ADDRESS - CORE_FW_ADDRESS)
 
 uint32_t CDAM_OTA_FlashLength()
 {
-    return FLASH_MAX_SIZE;
-}
+	return FLASH_MAX_SIZE;
+}*/
 
 
 void CDAM_FLASH_Begin(uint32_t sFLASH_Address, uint32_t fileSize)
 {
-	DEBUG("FLASH_Begin");
-    //FLASH_Begin(sFLASH_Address, fileSize);
+	//bool flashee = cdam::Manager::getInstance().dataManager->writeToFlashee;
+	//if (flashee) {
+		cdam::Manager::getInstance().dataManager->writeBegin(sFLASH_Address, fileSize);
+	//} else {
+	//	FLASH_Begin(sFLASH_Address, fileSize);
+	//}
 }
 
 uint16_t CDAM_FLASH_Update(uint8_t *pBuffer, uint32_t bufferSize)
 {
-	DEBUG("FLASH_Update");
-    return FLASH_Update(pBuffer, bufferSize);
+	//bool flashee = cdam::Manager::getInstance().dataManager->writeToFlashee;
+	//if (flashee) {
+	uint16_t status = cdam::Manager::getInstance().dataManager->writeData(pBuffer, bufferSize);
+	//} else {
+	//	status = FLASH_Update(pBuffer, bufferSize);
+	//}
+	return status;
 }
 
 void CDAM_FLASH_End(void)
 {
-	DEBUG("FLASH_End");
-    FLASH_End();
+	//bool flashee = cdam::Manager::getInstance().dataManager->writeToFlashee;
+	//if (flashee) {
+		cdam::Manager::getInstance().dataManager->writeEnd();
+	//} else {
+	//	FLASH_End();
+	//}
 }
 
 
@@ -69,55 +83,55 @@ void CDAM_FLASH_End(void)
 
   switch (buf[0])
   {
-    case IP_ADDRESS:
-      server_addr->addr_type = IP_ADDRESS;
-      server_addr->ip = (buf[2] << 24) | (buf[3] << 16) |
-                        (buf[4] << 8)  |  buf[5];
-      break;
+	case IP_ADDRESS:
+	  server_addr->addr_type = IP_ADDRESS;
+	  server_addr->ip = (buf[2] << 24) | (buf[3] << 16) |
+						(buf[4] << 8)  |  buf[5];
+	  break;
 
-    case DOMAIN_NAME:
-      if (buf[1] <= EXTERNAL_FLASH_SERVER_DOMAIN_LENGTH - 2)
-      {
-        server_addr->addr_type = DOMAIN_NAME;
-        memcpy(server_addr->domain, buf + 2, buf[1]);
+	case DOMAIN_NAME:
+	  if (buf[1] <= EXTERNAL_FLASH_SERVER_DOMAIN_LENGTH - 2)
+	  {
+		server_addr->addr_type = DOMAIN_NAME;
+		memcpy(server_addr->domain, buf + 2, buf[1]);
 
-        // null terminate string
-        char *p = server_addr->domain + buf[1];
-        *p = 0;
-        break;
-      }
-      // else fall through to default
+		// null terminate string
+		char *p = server_addr->domain + buf[1];
+		*p = 0;
+		break;
+	  }
+	  // else fall through to default
 
-    default:
-      server_addr->addr_type = INVALID_INTERNET_ADDRESS;
+	default:
+	  server_addr->addr_type = INVALID_INTERNET_ADDRESS;
   }
 
 }
 
 void HAL_FLASH_Read_ServerAddress(ServerAddress* server_addr)
 {
-    uint8_t buf[EXTERNAL_FLASH_SERVER_DOMAIN_LENGTH];
-    FLASH_Read_ServerAddress_Data(buf);
-    parseServerAddressData(server_addr, buf);
+	uint8_t buf[EXTERNAL_FLASH_SERVER_DOMAIN_LENGTH];
+	FLASH_Read_ServerAddress_Data(buf);
+	parseServerAddressData(server_addr, buf);
 }
 
 
 bool HAL_OTA_Flashed_GetStatus(void)
 {
-    return OTA_Flashed_GetStatus();
+	return OTA_Flashed_GetStatus();
 }
 
 void HAL_OTA_Flashed_ResetStatus(void)
 {
-    OTA_Flashed_ResetStatus();
+	OTA_Flashed_ResetStatus();
 }
 
 void HAL_FLASH_Read_ServerPublicKey(uint8_t *keyBuffer)
 {
-    FLASH_Read_ServerPublicKey(keyBuffer);
+	FLASH_Read_ServerPublicKey(keyBuffer);
 }
 
 void HAL_FLASH_Read_CorePrivateKey(uint8_t *keyBuffer)
 {
-    FLASH_Read_CorePrivateKey(keyBuffer);
+	FLASH_Read_CorePrivateKey(keyBuffer);
 }*/

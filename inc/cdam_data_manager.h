@@ -83,14 +83,22 @@ class DataManager
 		bool eraseFlash();
 
 		uint8_t readByte(uint32_t aAddress);
-		bool readData(void* aBuffer, uint32_t aAddress, uint16_t aLength);
-		bool writeData(void* aBuffer, uint32_t aAddress, uint16_t aLength);
+		bool readData(void* aBuffer, uint32_t aAddress, uint32_t aLength);
+
+		void writeBegin(uint32_t aAddress, uint32_t aBinarySize);
+		void writeEnd();
+		uint16_t writeData(void* aBuffer, uint32_t aLength);
+		bool writeData(void* aBuffer, uint32_t aAddress, uint32_t aLength);
 
 		StateController* stateController();
 		//Flashee::FlashDevice* storyFlash();
 
 		/* Public Variables */
 
+		// For YModem data writes, go through Flashee filesystem or raw?
+		bool writeToFlashee;
+		// For YModem writes to track successful writes.
+		uint16_t writeIndex;
 		// Send all printer data to serial instead.
 		bool logPrint;
 		// Whether or not the state machine should execute it's update loop.
@@ -165,6 +173,9 @@ class DataManager
 		StateController* _stateController;
 		Flashee::FlashDevice* _metaFlash;
 		Flashee::FlashDevice* _storyFlash;
+		bool _writeInProgress;
+		uint32_t _currentAddress;
+		uint32_t _binarySize;
 #if HAS_SD == 1
 		SdFile* _storyFile;
 		Sd2Card* _card;
