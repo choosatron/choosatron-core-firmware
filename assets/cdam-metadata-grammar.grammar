@@ -2,7 +2,7 @@
 <ufwb version="1.9">
     <grammar name="Choosatron Metadata" start="id:17" author="Jerry Belich" email="jerry@monkeytheater.com" fileextension="mcdam" uti="com.choosatron">
         <description>Metadata for Choosatron settings and story table of contents.</description>
-        <structure name="Metadata" id="17" encoding="ISO_8859-1:1987" endian="little" signed="no">
+        <structure name="Metadata" id="17" length="0" encoding="ISO_8859-1:1987" endian="little" signed="no">
             <binary name="StartHeader" mustmatch="yes" id="18" fillcolor="FF9688" length="1">
                 <fixedvalues>
                     <fixedvalue name="SOH" value="01"/>
@@ -103,15 +103,17 @@ Random: If there are more than 4 stories, randomize a menu of 4 choices.</descri
                 <number name="Value15" id="49" type="integer" length="2"/>
                 <number name="Value16" id="50" type="integer" length="2"/>
             </structure>
-            <number name="VisibleStoryCount" id="52" fillcolor="FF6CEE" type="integer" length="1" minval="0" maxval="20"/>
-            <number name="TotalStoryCount" id="60" type="integer" length="1" minval="0" maxval="20"/>
+            <string name="DeviceName" id="58" type="fixed-length" length="30"/>
+            <string name="OwnerProfile" id="59" type="fixed-length" length="30"/>
+            <string name="OwnerCloud" id="60" type="fixed-length" length="63"/>
+            <number name="StoryCount" id="52" fillcolor="FF6CEE" type="integer" length="1" minval="0" maxval="20"/>
+            <number name="DeletedStoryCount" id="62" type="integer" length="1" minval="0" maxval="20"/>
             <number name="UsedStoryPages" id="53" type="integer" length="1" minval="0" maxval="255">
                 <description>Total bytes used.</description>
             </number>
             <number name="StoryOffset" id="54" fillcolor="4CCDFF" repeatmin="20" repeatmax="20" type="integer" length="2" minval="0" maxval="255"/>
             <number name="StoryOrder" id="55" repeatmin="20" repeatmax="20" type="integer" length="1" minval="0" maxval="255"/>
-            <string name="DeviceName" id="57" type="fixed-length" length="22"/>
-            <string name="OwnerName" id="58" type="fixed-length" length="40"/>
+            <number name="StoryState" id="61" repeatmin="20" repeatmax="20" type="integer" length="1" minval="0" maxval="255"/>
         </structure>
     </grammar>
 </ufwb>
