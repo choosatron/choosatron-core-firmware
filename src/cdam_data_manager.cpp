@@ -90,12 +90,14 @@ bool DataManager::initStorage() {
 }
 
 void DataManager::logMetadata() {
+	//DEBUG("Metadata size: %d", kMetadataSize);
+	//DEBUG("Metadata size: %d", sizeof(this->metadata));
 	char data[kMetadataSize] = "";
 	_metaFlash->read(data, 0, kMetadataSize);
 	for (int i = 0; i < kMetadataSize; ++i) {
 		if (data[i]<0x10) {Serial.print("0");}
 			Serial.print(data[i],HEX);
-			Serial.print(" ");
+			//Serial.print(" ");
 	}
 	Serial.println("END");
 }
@@ -114,17 +116,12 @@ void DataManager::handleSerialData() {
 					this->metadata.flags.offline = this->hasCredentials ? 0 : 1;
 				}
 				return;
-			}
-
-			if (cmd == 'z') {
+			} else if (cmd == 'x') {
 				System.serialSaveFile(&Serial, 0x00080000);
 				return;
-			}
-
-			if ((cmd == 0x01) || (cmd == 'y')) {
+			} else if ((cmd == 0x01) || (cmd == 'y')) {
 				DEBUG("Listening");
 
-				LED_SetSignalingColor(10 << 16 | 200 << 8 | 30);
 				this->hasCredentials = WiFi.hasCredentials();
 				WiFi.listen();
 				if (this->hasCredentials != WiFi.hasCredentials()) {
@@ -132,9 +129,7 @@ void DataManager::handleSerialData() {
 					this->metadata.flags.offline = this->hasCredentials ? 0 : 1;
 				}
 				return;
-			}
-
-			if ((cmd == 0x02) || (cmd == 'z')) {
+			} else if ((cmd == 0x02) || (cmd == 'z')) {
 				//LED_SetSignalingColor(200 << 16 | 200 << 8 | 30);
 				this->writeToFlashee = true;
 				uint32_t storySize = (Serial.read() << 24) | (Serial.read() << 16) | (Serial.read() << 8) | Serial.read();
@@ -142,16 +137,15 @@ void DataManager::handleSerialData() {
 				if (storySize % Flashee::Devices::userFlash().pageSize()) {
 					pages++;
 				}
+				DEBUG("Pages: %d", pages);
 				uint32_t address = this->metadata.usedStoryPages * Flashee::Devices::userFlash().pageSize();
 				uint8_t storyIndex = Serial.read();
 				//delay(6000);
-				Manager::getInstance().hardwareManager->printer()->print("Size:");
-				Manager::getInstance().hardwareManager->printer()->println(storySize);
-				//DEBUG("Size: %lu, Index: %d, Address: %lu", storySize, storyIndex, address);
+				DEBUG("Size: %lu, Index: %d, Address: %lu", storySize, storyIndex, address);
 
 				bool status = false;
 
-				status = Ymodem_Serial_Flash_Update(&Serial, address);
+				//status = Ymodem_Serial_Flash_Update(&Serial, address);
 				if (status) {
 					DEBUG("True");
 				} else {
@@ -164,7 +158,7 @@ void DataManager::handleSerialData() {
 				return;
 			}
 
-			if (cmd == 'c') {
+			/*if (cmd == 'c') {
 				DEBUG("Ready");
 				//_serialTimeout = 0;
 				while (!Serial.available()) {}
@@ -211,7 +205,7 @@ void DataManager::handleSerialData() {
 						break;
 					}
 				}
-			}
+			}*/
 		}
 	}
 }
@@ -401,12 +395,14 @@ bool DataManager::addStoryMetadata(uint8_t aIndex, uint8_t aPages) {
 		this->liveStoryCount++;
 	}
 	// Add the total story bytes to the total used.
+	DEBUG("Add Pages: %d", aPages);
 	this->metadata.usedStoryPages += aPages;
 
 	// Reinitialize Choosatron.
 	//_stateController->changeState(STATE_INIT);
 
 	return writeStoryCountData(&this->metadata);
+	//return writeMetadata(&this->metadata);
 }
 
 bool DataManager::removeStoryMetadata(uint8_t aIndex) {
@@ -639,6 +635,10 @@ bool DataManager::initializeMetadata(Metadata *aMetadata) {
 	//aMetadata->storyCount = 0;
 	//aMetadata->usedStoryPages = 0;
 
+	strncpy(aMetadata->deviceName, "Choosatron", kMetadataDeviceNameSize);
+	strncpy(aMetadata->ownerProfile, "Jerry Belich", kMetadataOwnerProfileSize);
+	strncpy(aMetadata->ownerCloud, "jerry@monkeytheater.com", kMetadataOwnerCloudSize);
+
 	if (!writeMetadata(aMetadata)) {
 		return false;
 	}
@@ -705,9 +705,11 @@ bool DataManager::writeStoryCountData(Metadata *aMetadata) {
 		                 kMetadataStoryOffsetsSize + kMetadataStoryOrderSize);*/
 	bool result = true;
 	result = _metaFlash->write(&aMetadata->storyCount, kMetadataStoryCountOffset, kMetadataStoryCountSize) && result ? true : false;
+	result = _metaFlash->write(&aMetadata->deletedStoryCount, kMetadataDeletedStoryCountOffset, kMetadataDeletedStoryCountSize) && result ? true : false;
 	result = _metaFlash->write(&aMetadata->usedStoryPages, kMetadataStoryUsedPagesOffset, kMetadataStoryUsedPagesSize) && result ? true : false;
 	result = _metaFlash->write(&aMetadata->storyOffsets, kMetadataStoryOffsetsOffset, kMetadataStoryOffsetsSize) && result ? true : false;
 	result = _metaFlash->write(&aMetadata->storyOrder, kMetadataStoryOrderOffset, kMetadataStoryOrderSize) && result ? true : false;
+	result = _metaFlash->write(&aMetadata->storyState, kMetadataStoryStateOffset, kMetadataStoryStateSize) && result ? true : false;
 	/*if (!result) {
 		Errors::setError(E_METADATA_WRITE_FAIL);
 		ERROR(Errors::errorString());

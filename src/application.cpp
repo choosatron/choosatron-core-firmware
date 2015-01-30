@@ -67,9 +67,10 @@ void setup()
 /* This function loops forever --------------------------------------------*/
 void loop()
 {
+	//CAN'T BE DOIN SERIAL AND TCP STUFF WHEN IN BLINKY BLUE MODE!!
 	cdam::Manager::getInstance().dataManager->handleSerialData();
 	cdam::Manager::getInstance().hardwareManager->updateIntervalTimers();
-	cdam::Manager::getInstance().serverManager->handlePendingActions();
+	//cdam::Manager::getInstance().serverManager->handlePendingActions();
 	//Spark.process();
 	if (cdam::Manager::getInstance().dataManager->runState) {
 		stateController->updateState();

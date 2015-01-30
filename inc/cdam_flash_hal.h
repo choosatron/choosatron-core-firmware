@@ -40,14 +40,15 @@ extern "C" {
 //uint32_t CDAM_OTA_FlashAddress();
 //uint32_t CDAM_OTA_FlashLength();
 
+bool CDAM_Write_To_Flashee();
 void CDAM_FLASH_Begin(uint32_t sFLASH_Address, uint32_t fileSize);
 uint16_t CDAM_FLASH_Update(uint8_t *pBuffer, uint32_t bufferSize);
 void CDAM_FLASH_End(void);
 
 // todo - the status is not hardware dependent. It's just the current code has
 // status updates and flash writing intermixed. No time to refactor into something cleaner.
-bool CDAM_OTA_Flashed_GetStatus(void);
-void CDAM_OTA_Flashed_ResetStatus(void);
+//bool CDAM_OTA_Flashed_GetStatus(void);
+//void CDAM_OTA_Flashed_ResetStatus(void);
 
 
 
@@ -65,9 +66,9 @@ typedef struct ServerAddress {
 } ServerAddress;*/
 
 /* Length in bytes of DER-encoded 2048-bit RSA public key */
-#define EXTERNAL_FLASH_SERVER_PUBLIC_KEY_LENGTH   (294)
+//#define EXTERNAL_FLASH_SERVER_PUBLIC_KEY_LENGTH   (294)
 /* Length in bytes of DER-encoded 1024-bit RSA private key */
-#define EXTERNAL_FLASH_CORE_PRIVATE_KEY_LENGTH    (612)
+//#define EXTERNAL_FLASH_CORE_PRIVATE_KEY_LENGTH    (612)
 
 //void HAL_FLASH_Read_ServerAddress(ServerAddress *server_addr);
 //void HAL_FLASH_Read_ServerPublicKey(uint8_t *keyBuffer);

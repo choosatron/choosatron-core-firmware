@@ -24,7 +24,6 @@
  */
 
 #include "cdam_flash_hal.h"
-#include "cdam_constants.h"
 #include "cdam_manager.h"
 #include "hw_config.h"
 #include <string.h>
@@ -41,6 +40,9 @@ uint32_t CDAM_OTA_FlashLength()
 	return FLASH_MAX_SIZE;
 }*/
 
+bool CDAM_Write_To_Flashee() {
+	return cdam::Manager::getInstance().dataManager->writeToFlashee;
+}
 
 void CDAM_FLASH_Begin(uint32_t sFLASH_Address, uint32_t fileSize)
 {

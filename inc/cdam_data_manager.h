@@ -96,7 +96,7 @@ class DataManager
 		/* Public Variables */
 
 		// For YModem data writes, go through Flashee filesystem or raw?
-		bool writeToFlashee;
+		volatile bool writeToFlashee;
 		// For YModem writes to track successful writes.
 		uint16_t writeIndex;
 		// Send all printer data to serial instead.

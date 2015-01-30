@@ -22,7 +22,13 @@ const uint16_t kMetadataFlagsOffset = (kMetadataFirmwareOffset + kMetadataFirmwa
 const uint16_t kMetadataFlagsSize = 8; // bytes
 const uint16_t kMetadataValuesOffset = (kMetadataFlagsOffset + kMetadataFlagsSize);
 const uint16_t kMetadataValuesSize = 32; // bytes
-const uint16_t kMetadataStoryCountOffset = (kMetadataValuesOffset + kMetadataValuesSize);
+const uint16_t kMetadataDeviceNameOffset = (kMetadataValuesOffset + kMetadataValuesSize);
+const uint16_t kMetadataDeviceNameSize = 30; // bytes
+const uint16_t kMetadataOwnerProfileOffset = (kMetadataDeviceNameOffset + kMetadataDeviceNameSize);
+const uint16_t kMetadataOwnerProfileSize = 30; // bytes
+const uint16_t kMetadataOwnerCloudOffset = (kMetadataOwnerProfileOffset + kMetadataOwnerProfileSize);
+const uint16_t kMetadataOwnerCloudSize = 63; // bytes
+const uint16_t kMetadataStoryCountOffset = (kMetadataOwnerCloudOffset + kMetadataOwnerCloudSize);
 const uint16_t kMetadataStoryCountSize = 1; // bytes
 const uint16_t kMetadataDeletedStoryCountOffset = (kMetadataStoryCountOffset + kMetadataStoryCountSize);
 const uint16_t kMetadataDeletedStoryCountSize = 1; // bytes
@@ -34,11 +40,8 @@ const uint16_t kMetadataStoryOrderOffset = (kMetadataStoryOffsetsOffset + kMetad
 const uint16_t kMetadataStoryOrderSize = kMaxRandStoryCount; // 1 byte each.
 const uint16_t kMetadataStoryStateOffset = (kMetadataStoryOrderOffset + kMetadataStoryOrderSize);
 const uint16_t kMetadataStoryStateSize = kMaxRandStoryCount; // 1 byte each.
-const uint16_t kMetadataDeviceNameOffset = (kMetadataStoryStateOffset + kMetadataStoryStateSize);
-const uint16_t kMetadataDeviceNameSize = 22; // bytes
-const uint16_t kMetadataOwnerNameOffset = (kMetadataDeviceNameOffset + kMetadataDeviceNameSize);
-const uint16_t kMetadataOwnerNameSize = 40; // bytes
-const uint16_t kMetadataSize = (kMetadataOwnerNameOffset + kMetadataOwnerNameSize);
+
+const uint16_t kMetadataSize = (kMetadataStoryStateOffset + kMetadataStoryStateSize);
 
 //const uint16_t kStoryBaseAddress = (kMetadataStoryOffsetsOffset + kMetadataStoryOffsetsSize);
 
@@ -150,14 +153,15 @@ typedef struct Metadata_t {
 	Version firmwareVer;
 	MetaFlags flags;
 	MetaValues values;
+	char deviceName[kMetadataDeviceNameSize];
+	char ownerProfile[kMetadataOwnerProfileSize];
+	char ownerCloud[kMetadataOwnerCloudSize];
 	uint8_t storyCount;
 	uint8_t deletedStoryCount;
 	uint8_t usedStoryPages;
 	uint16_t storyOffsets[kMaxRandStoryCount];
 	uint8_t storyOrder[kMaxRandStoryCount];
 	uint8_t storyState[kMaxRandStoryCount]; // 0 = empty, 1 = normal, 2 = deleted
-	char deviceName[kMetadataDeviceNameSize];
-	char ownerName[kMetadataOwnerNameSize];
 } Metadata;
 
 
