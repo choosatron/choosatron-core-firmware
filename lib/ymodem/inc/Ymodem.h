@@ -371,10 +371,9 @@ bool Ymodem_Serial_Flash_Update(Stream *serialObj, uint32_t sFlashAddress)
     serialObj->println(" bytes");
 
     if (CDAM_Write_To_Flashee()) {
-      delay(100);
       CDAM_FLASH_End();
       //Send_Byte(serialObj, EOT);
-      Send_Byte(serialObj, ACK);
+      //Send_Byte(serialObj, ACK);
     }
     return true;
   }

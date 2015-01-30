@@ -89,7 +89,7 @@ void ServerManager::initialize(StateController *aStateController) {
 }
 
 void ServerManager::handlePendingActions() {
-	if (this->pendingAction) {
+	if (!SPARK_FLASH_UPDATE && this->pendingAction) {
 		// Attempt TCP connection.
 		TCPClient *client = new TCPClient();
 		//DEBUG("Connecting to client at %u.%u.%u.%u:%u", this->serverIp[0], this->serverIp[1], this->serverIp[2], this->serverIp[3], this->serverPort);

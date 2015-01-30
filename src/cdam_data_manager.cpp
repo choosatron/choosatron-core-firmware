@@ -92,6 +92,7 @@ bool DataManager::initStorage() {
 void DataManager::logMetadata() {
 	//DEBUG("Metadata size: %d", kMetadataSize);
 	//DEBUG("Metadata size: %d", sizeof(this->metadata));
+	DEBUG(CDAM_SUBTITLE);
 	char data[kMetadataSize] = "";
 	_metaFlash->read(data, 0, kMetadataSize);
 	for (int i = 0; i < kMetadataSize; ++i) {
@@ -103,7 +104,7 @@ void DataManager::logMetadata() {
 }
 
 void DataManager::handleSerialData() {
-	if (_serialElapsed >= kIntervalSerialMillis) {
+	if (!SPARK_FLASH_UPDATE && (_serialElapsed >= kIntervalSerialMillis)) {
 		if (Serial.available()) {
 			this->writeToFlashee = false;
 			uint8_t cmd = Serial.read();
@@ -117,7 +118,7 @@ void DataManager::handleSerialData() {
 				}
 				return;
 			} else if (cmd == 'x') {
-				System.serialSaveFile(&Serial, 0x00080000);
+				System.serialSaveFile(&Serial, 0x80000);
 				return;
 			} else if ((cmd == 0x01) || (cmd == 'y')) {
 				DEBUG("Listening");
@@ -145,15 +146,15 @@ void DataManager::handleSerialData() {
 
 				bool status = false;
 
-				//status = Ymodem_Serial_Flash_Update(&Serial, address);
+				status = Ymodem_Serial_Flash_Update(&Serial, address);
 				if (status) {
-					DEBUG("True");
+					//DEBUG("True");
 				} else {
-					DEBUG("False");
+					//DEBUG("False");
 				}
 				SPARK_FLASH_UPDATE = 0;
     			TimingFlashUpdateTimeout = 0;
-
+    			DEBUG("Pages2: %d", pages);
 				addStoryMetadata(storyIndex, pages);
 				return;
 			}
@@ -397,6 +398,7 @@ bool DataManager::addStoryMetadata(uint8_t aIndex, uint8_t aPages) {
 	// Add the total story bytes to the total used.
 	DEBUG("Add Pages: %d", aPages);
 	this->metadata.usedStoryPages += aPages;
+	DEBUG("Pages: %d", this->metadata.usedStoryPages);
 
 	// Reinitialize Choosatron.
 	//_stateController->changeState(STATE_INIT);
@@ -632,8 +634,9 @@ bool DataManager::initializeMetadata(Metadata *aMetadata) {
 	aMetadata->values.coinsPerCredit = 2;
 	aMetadata->values.coinDenomination = 25;
 
-	//aMetadata->storyCount = 0;
-	//aMetadata->usedStoryPages = 0;
+	aMetadata->storyCount = 0;
+	aMetadata->deletedStoryCount = 0;
+	aMetadata->usedStoryPages = 0;
 
 	strncpy(aMetadata->deviceName, "Choosatron", kMetadataDeviceNameSize);
 	strncpy(aMetadata->ownerProfile, "Jerry Belich", kMetadataOwnerProfileSize);
