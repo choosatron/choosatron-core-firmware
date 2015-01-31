@@ -6,6 +6,13 @@ namespace cdam
 
 #define HAS_SD 1
 
+// Flash metadata page count - 384 total
+const uint16_t kFlashMetadataPageCount = 4; // 380 pages remaining
+// Flash stories page count.
+const uint16_t kFlashStoriesPageCount = 256; // 124 pages remaining
+// Flash saves page count.
+//const uint16_t kFlashSavesPageCount = 64; // 60 pages remaining
+
 // Seconds for timeout of Published Spark Events
 const uint8_t kServerTTLDefault = 60;
 // How often to check for serial communication.

@@ -30,6 +30,7 @@ bool DataManager::initialize(StateController *aStateController) {
 	this->startOffset = 0;
 
 	this->writeToFlashee = false;
+	this->flashTarget = 0;
 	this->writeIndex = 0;
 	_writeInProgress = false;
 	_currentAddress = 0;
@@ -166,6 +167,7 @@ void DataManager::handleSerialData() {
 					}
 					case kSerialCmdAddStory: {
 						this->writeToFlashee = true;
+						this->flashTarget = kFlashStoriesType;
 						uint32_t storySize = (Serial.read() << 24) | (Serial.read() << 16) | (Serial.read() << 8) | Serial.read();
 						uint8_t pages = storySize / Flashee::Devices::userFlash().pageSize();
 						if (storySize % Flashee::Devices::userFlash().pageSize()) {
@@ -288,6 +290,16 @@ bool DataManager::initSD() {
 	return false;
 }
 #endif
+
+// Getters
+Flashee::FlashDevice* DataManager::flashMetadata() {
+	return _metaFlash;
+}
+
+Flashee::FlashDevice* DataManager::flashStories() {
+	return _storyFlash;
+}
+//
 
 uint32_t DataManager::getStoryOffset(uint8_t aIndex) {
 #if HAS_SD == 1
@@ -537,14 +549,16 @@ void DataManager::writeBegin(uint32_t aAddress, uint32_t aBinarySize) {
 	_writeInProgress = true;
 	_currentAddress = aAddress;
 	_binarySize = aBinarySize;
-	this->writeIndex = 0;
 }
 
-void DataManager::writeEnd() {
+void DataManager::writeEnd(bool aResult) {
+	// if aResult == true, success!
 	_writeInProgress = false;
 	_currentAddress = 0;
 	_binarySize = 0;
+	this->writeToFlashee = false;
 	this->writeIndex = 0;
+	this->flashTarget = 0;
 }
 
 uint16_t DataManager::writeData(void* aBuffer, uint32_t aLength) {

@@ -39,6 +39,7 @@ const uint8_t kStoryStateDeleted = 2;
 const uint8_t kSerialCmdListeningMode = 0x77; // 'w'
 const uint8_t kSerialCmdClearWiFi = 0x78; // 'x'
 
+// TODO: Start at 'a' or 0x61
 const uint8_t kSerialCmdWriteFlashee = 0x02; // 0x79; // 'y'
 const uint8_t kSerialCmdWriteFlashRaw = 0x03; // 0x7A; // 'z'
 
@@ -56,6 +57,11 @@ const uint8_t kSerialCmdSetValue = 0x0D;
 const uint8_t kSerialCmdResetMetadata = 0x0E;
 const uint8_t kSerialCmdEraseFlash = 0x0F;
 const uint8_t kSerialCmdResetUnit = 0x10;
+
+// Flashee storage types.
+const uint8_t kFlashMetadataType = 1;
+const uint8_t kFlashStoriesType = 2;
+const uint8_t kFlashSavesType = 3;
 
 
 /*const uint8_t kSerialCmdResetMetadata

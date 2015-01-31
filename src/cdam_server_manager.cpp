@@ -309,7 +309,6 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdAddStory) == 0) {
 #if HAS_SD == 1
 		if (dataMan->metadata.flags.sdCard) {
-			WARN("Adding stories in SD mode not supported.");
 			returnVal = kServerReturnFail;
 		}
 #endif

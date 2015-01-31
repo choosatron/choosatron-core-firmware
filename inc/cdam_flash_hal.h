@@ -39,11 +39,11 @@ extern "C" {
 
 //uint32_t CDAM_OTA_FlashAddress();
 //uint32_t CDAM_OTA_FlashLength();
-
 bool CDAM_Write_To_Flashee();
+bool CDAM_FLASH_CheckValidAddressRange(uint32_t sFLASH_Address, uint32_t fileSize);
 void CDAM_FLASH_Begin(uint32_t sFLASH_Address, uint32_t fileSize);
 uint16_t CDAM_FLASH_Update(uint8_t *pBuffer, uint32_t bufferSize);
-void CDAM_FLASH_End(void);
+void CDAM_FLASH_End(bool aResult);
 
 // todo - the status is not hardware dependent. It's just the current code has
 // status updates and flash writing intermixed. No time to refactor into something cleaner.

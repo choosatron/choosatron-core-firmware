@@ -249,8 +249,14 @@ static int32_t Ymodem_Receive(Stream *serialObj, uint32_t sFlashAddress, uint8_t
                     size = strtoul((const char *)file_size, NULL, 10);
 
                     /* Test the size of the image to be sent */
-                    /* Image size is greater than Flash max size */
-                    if (size > HAL_OTA_FlashLength())
+                    /* Image size is greater than max OTA firmware size or max USER size */
+                    bool valid = false;
+                    if (CDAM_Write_To_Flashee()) {
+                      valid = CDAM_FLASH_CheckValidAddressRange(sFlashAddress, size);
+                    } else {
+                      valid = HAL_FLASH_CheckValidAddressRange(sFlashAddress, size);
+                    }
+                    if (valid != true)
                     {
                       /* End session */
                       Send_Byte(serialObj, CA);
@@ -371,9 +377,7 @@ bool Ymodem_Serial_Flash_Update(Stream *serialObj, uint32_t sFlashAddress)
     serialObj->println(" bytes");
 
     if (CDAM_Write_To_Flashee()) {
-      CDAM_FLASH_End();
-      //Send_Byte(serialObj, EOT);
-      //Send_Byte(serialObj, ACK);
+      CDAM_FLASH_End(true);
     }
     return true;
   }
@@ -392,6 +396,9 @@ bool Ymodem_Serial_Flash_Update(Stream *serialObj, uint32_t sFlashAddress)
   else
   {
     serialObj->println("Failed to receive the file!");
+  }
+  if (CDAM_Write_To_Flashee()) {
+    CDAM_FLASH_End(false);
   }
   return false;
 }

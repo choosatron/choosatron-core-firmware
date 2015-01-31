@@ -56,6 +56,10 @@ class DataManager
 		bool initSD();
 #endif
 
+		// Getters for Flashee filesystems.
+		Flashee::FlashDevice* flashMetadata();
+		Flashee::FlashDevice* flashStories();
+
 		// Get the page offset the story begins at.
 		uint32_t getStoryOffset(uint8_t aIndex);
 		// Get the byte offset for the given passage index (in current story).
@@ -86,7 +90,7 @@ class DataManager
 		bool readData(void* aBuffer, uint32_t aAddress, uint32_t aLength);
 
 		void writeBegin(uint32_t aAddress, uint32_t aBinarySize);
-		void writeEnd();
+		void writeEnd(bool aResult);
 		uint16_t writeData(void* aBuffer, uint32_t aLength);
 		bool writeData(void* aBuffer, uint32_t aAddress, uint32_t aLength);
 
@@ -96,7 +100,9 @@ class DataManager
 		/* Public Variables */
 
 		// For YModem data writes, go through Flashee filesystem or raw?
-		volatile bool writeToFlashee;
+		bool writeToFlashee;
+		// Set which flash space target to write to / read from.
+		uint8_t flashTarget; // 1 = metadata, 2 = stories, 3 = saves
 		// For YModem writes to track successful writes.
 		uint16_t writeIndex;
 		// Send all printer data to serial instead.

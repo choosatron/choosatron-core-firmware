@@ -23,8 +23,10 @@
  ******************************************************************************
  */
 
+#include "cdam_const_config.h"
 #include "cdam_flash_hal.h"
 #include "cdam_manager.h"
+#include "flashee-eeprom.h"
 #include "hw_config.h"
 #include <string.h>
 
@@ -40,8 +42,35 @@ uint32_t CDAM_OTA_FlashLength()
 	return FLASH_MAX_SIZE;
 }*/
 
-bool CDAM_Write_To_Flashee() {
+
+bool CDAM_Write_To_Flashee()
+{
 	return cdam::Manager::getInstance().dataManager->writeToFlashee;
+}
+
+bool CDAM_FLASH_CheckValidAddressRange(uint32_t sFLASH_Address, uint32_t fileSize)
+{
+	uint32_t endAddress = sFLASH_Address + fileSize - 1;
+	uint8_t flashTarget = cdam::Manager::getInstance().dataManager->flashTarget;
+
+	if (flashTarget == kFlashMetadataType) {
+		uint32_t totalBytes = kFlashMetadataPageCount * Flashee::Devices::userFlash().pageSize();
+		if (endAddress < totalBytes) {
+			return true;
+		}
+	} else if (flashTarget == kFlashStoriesType) {
+		uint32_t totalBytes = kFlashStoriesPageCount * Flashee::Devices::userFlash().pageSize();
+		if (endAddress < totalBytes) {
+			return true;
+		}
+	} else if (flashTarget == kFlashSavesType) {
+		// TODO: For save states, not implemented yet.
+		//uint32_t totalBytes = kFlashSavesPageCount * Flashee::Devices::userFlash().pageSize();
+		//if (endAddress < totalBytes) {
+		//	return true;
+		//}
+	}
+	return false;
 }
 
 void CDAM_FLASH_Begin(uint32_t sFLASH_Address, uint32_t fileSize)
@@ -65,11 +94,11 @@ uint16_t CDAM_FLASH_Update(uint8_t *pBuffer, uint32_t bufferSize)
 	return status;
 }
 
-void CDAM_FLASH_End(void)
+void CDAM_FLASH_End(bool aResult)
 {
 	//bool flashee = cdam::Manager::getInstance().dataManager->writeToFlashee;
 	//if (flashee) {
-		cdam::Manager::getInstance().dataManager->writeEnd();
+		cdam::Manager::getInstance().dataManager->writeEnd(aResult);
 	//} else {
 	//	FLASH_End();
 	//}
