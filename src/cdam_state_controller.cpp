@@ -69,6 +69,7 @@ void StateController::initState(GameState aState) {
 		_hardwareManager->keypad()->active = true;
 		_resetElapsed = kIntervalPressAnyButton;
 	} else if (aState == STATE_INIT) {
+		_dataManager->unloadStory();
 		if (Spark.connected()) {
 			DEBUG("Syncing time - how do we verify?");
 			// TODO: Verify time sync, set booleon on dataManager

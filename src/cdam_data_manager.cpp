@@ -183,20 +183,24 @@ void DataManager::handleSerialData() {
 
 						if (status) {
 							addStoryMetadata(storyIndex, pages);
-							if ((stateController().getState() != STATE_PLAY) &&
-								(stateController().getState() != STATE_WAITING)) {
+							if (stateController()->getState() == STATE_SELECT) {
 								stateController()->changeState(STATE_INIT);
 							}
 						}
 						break;
 					}
 					case kSerialCmdRemoveStory: {
-						uint8_t index = Serial.read();
+						int8_t index = Serial.read();
 						removeStoryMetadata(index);
+						if ((stateController()->getState() == STATE_SELECT) ||
+							(this->currentStory == index)) {
+							stateController()->changeState(STATE_INIT);
+						}
 						break;
 					}
 					case kSerialCmdRemoveAllStories: {
 						removeAllStoryData();
+						stateController()->changeState(STATE_INIT);
 						break;
 					}
 					case kSerialCmdMoveStory: {
@@ -322,7 +326,6 @@ uint32_t DataManager::getPassageOffset(uint16_t aIndex) {
 bool DataManager::getNumberedTitle(char* aBuffer, uint8_t aIndex) {
 	sprintf(aBuffer, "%d. ", aIndex + 1);
 	uint32_t offset = kStoryTitleOffset;
-	logMetadata();
 #if HAS_SD == 1
 	if (this->metadata.flags.sdCard) {
 		if (!_storyFile->open(_root, this->metadata.storyOffsets[this->liveStoryOrder[aIndex]], O_READ)) {
@@ -402,7 +405,7 @@ bool DataManager::setVarAtIndex(uint8_t aIndex, int16_t aValue) {
 
 bool DataManager::addStoryMetadata(uint8_t aIndex, uint8_t aPages) {
 	// Get the current story count, see if adjustment is needed.
-	uint8_t count = this->metadata.storyCount;
+	int8_t count = this->metadata.storyCount;
 	uint8_t totalCount = this->metadata.storyCount + this->metadata.deletedStoryCount;
 
 	// If the position requested is past the existing, just set it to the next.
@@ -413,6 +416,10 @@ bool DataManager::addStoryMetadata(uint8_t aIndex, uint8_t aPages) {
 		while (count > aIndex) {
 			this->metadata.storyOrder[count] = this->metadata.storyOrder[count - 1];
 			count--;
+			// Need to update the current story if there is one.
+			if (count == this->currentStory) {
+				this->currentStory++;
+			}
 		}
 	}
 
@@ -430,9 +437,7 @@ bool DataManager::addStoryMetadata(uint8_t aIndex, uint8_t aPages) {
 		this->liveStoryCount++;
 	}
 	// Add the total story bytes to the total used.
-	DEBUG("Add Pages: %d", aPages);
 	this->metadata.usedStoryPages += aPages;
-	DEBUG("Pages: %d", this->metadata.usedStoryPages);
 
 	// Reinitialize Choosatron.
 	//_stateController->changeState(STATE_INIT);
@@ -451,6 +456,10 @@ bool DataManager::removeStoryMetadata(uint8_t aIndex) {
 			while (count > aIndex) {
 				this->metadata.storyOrder[aIndex] = this->metadata.storyOrder[aIndex + 1];
 				aIndex++;
+				// Need to update the current story if there is one.
+				if (aIndex == this->currentStory) {
+					this->currentStory++;
+				}
 			}
 			this->metadata.storyOrder[aIndex] = 0;
 		}
