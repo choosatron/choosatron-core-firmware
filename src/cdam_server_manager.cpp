@@ -32,9 +32,9 @@ const char* kServerCmdSetValue = "set_value";
 const char* kServerCmdAddWifiCreds = "add_wifi_creds";
 
 // Admin commands.
-const char* kServerCmdAdminResetMetadata = "reset_metadata";
-const char* kServerCmdAdminEraseFlash = "erase_flash";
-const char* kServerCmdAdminResetUnit = "reset_unit";
+const char* kServerCmdResetMetadata = "reset_metadata";
+const char* kServerCmdEraseFlash = "erase_flash";
+const char* kServerCmdResetUnit = "reset_unit";
 
 // Data requests.
 const char* kServerCmdGetVersion = "get_version"; // Get firmware version (device ID included in response).
@@ -208,6 +208,9 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 			return kServerReturnSuccess;
 		}
 		return kServerReturnInvalidIndex;*/
+	} else if (strcmp(serverMan->pendingCommand, kServerCmdRemoveStory) == 0) {
+		int8_t index = serverMan->pendingArguments[0] - '0';
+		dataMan->removeStoryMetadata(index);
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdRemoveAllStories) == 0) {
 		dataMan->removeAllStoryData();
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdMoveStory) == 0) {
@@ -222,15 +225,18 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		if (!dataMan->setFlag(flagIndex, bitIndex, value)) {
 			returnVal = kServerReturnFail;
 		}
-	} else if (strcmp(serverMan->pendingCommand, kServerCmdAdminResetMetadata) == 0) {
+	} else if (strcmp(serverMan->pendingCommand, kServerCmdSetValue) == 0) {
+		/* TODO */
+		returnVal = kServerReturnNotImplemented;
+	} else if (strcmp(serverMan->pendingCommand, kServerCmdResetMetadata) == 0) {
 		if (!dataMan->resetMetadata()) {
 			returnVal = kServerReturnFail;
 		}
-	} else if (strcmp(serverMan->pendingCommand, kServerCmdAdminEraseFlash) == 0) {
+	} else if (strcmp(serverMan->pendingCommand, kServerCmdEraseFlash) == 0) {
 		if (!dataMan->eraseFlash()) {
 			returnVal = kServerReturnFail;
 		}
-	} else if (strcmp(serverMan->pendingCommand, kServerCmdAdminResetUnit) == 0) {
+	} else if (strcmp(serverMan->pendingCommand, kServerCmdResetUnit) == 0) {
 		dataMan->stateController()->changeState(STATE_INIT);
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetVersion) == 0) {
 		/* TODO */

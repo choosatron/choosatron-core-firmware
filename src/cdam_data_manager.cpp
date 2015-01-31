@@ -186,11 +186,12 @@ void DataManager::handleSerialData() {
 						break;
 					}
 					case kSerialCmdRemoveStory: {
-
+						uint8_t index = Serial.read();
+						removeStoryMetadata(index);
 						break;
 					}
 					case kSerialCmdRemoveAllStories: {
-
+						removeAllStoryData();
 						break;
 					}
 					case kSerialCmdMoveStory: {
@@ -198,11 +199,26 @@ void DataManager::handleSerialData() {
 						break;
 					}
 					case kSerialCmdSetFlag: {
-
+						uint8_t flagIndex = Serial.read();
+						uint8_t bitIndex = Serial.read();
+						bool value = Serial.read();
+						setFlag(flagIndex, bitIndex, value);
 						break;
 					}
 					case kSerialCmdSetValue: {
 
+						break;
+					}
+					case kSerialCmdResetMetadata: {
+						resetMetadata();
+						break;
+					}
+					case kSerialCmdEraseFlash: {
+						eraseFlash();
+						break;
+					}
+					case kSerialCmdResetUnit: {
+						stateController()->changeState(STATE_INIT);
 						break;
 					}
 				}
