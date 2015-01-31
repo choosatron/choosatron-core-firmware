@@ -2,10 +2,7 @@
 #include "cdam_constants.h"
 #include "cdam_state_controller.h"
 #include "spark_wiring_time.h"
-#include "Ymodem/Ymodem.h"
-#include "cdam_flash_hal.h"
-
-#include "cdam_manager.h"
+#include "Ymodem.h"
 
 namespace cdam
 {
@@ -143,10 +140,13 @@ void DataManager::handleSerialData() {
 						uint32_t address = (Serial.read() << 24) | (Serial.read() << 16) | (Serial.read() << 8) | Serial.read();
 						//Save User File sent via Ymodem tool to any address(preferrably multiple of 0x20000) in External Flash
 						//echo -n u > $DEV && sz -b -v --ymodem user.file > $DEV < $DEV
-						//System.serialSaveFile(&Serial, address); // Can also use &Serial1, &Serial2
-						Ymodem_Serial_Flash_Update(&Serial, address);
-						SPARK_FLASH_UPDATE = 0;
-						TimingFlashUpdateTimeout = 0;
+						bool status = System.serialSaveFile(&Serial, address); // Can also use &Serial1, &Serial2
+						//Ymodem_Serial_Flash_Update(&Serial, address);
+						//SPARK_FLASH_UPDATE = 0;
+						//TimingFlashUpdateTimeout = 0;
+						if (status) {
+							System.reset();
+						}
 						break;
 					}
 					case kSerialCmdKeypadInput: {
@@ -176,14 +176,17 @@ void DataManager::handleSerialData() {
 						uint32_t address = this->metadata.usedStoryPages * Flashee::Devices::userFlash().pageSize();
 						uint8_t storyIndex = Serial.read();
 
-						bool status = false;
-
-						status = Ymodem_Serial_Flash_Update(&Serial, address);
-						SPARK_FLASH_UPDATE = 0;
-		    			TimingFlashUpdateTimeout = 0;
+						bool status = System.serialSaveFile(&Serial, address);
+						//status = Ymodem_Serial_Flash_Update(&Serial, address);
+						//SPARK_FLASH_UPDATE = 0;
+		    			//TimingFlashUpdateTimeout = 0;
 
 						if (status) {
 							addStoryMetadata(storyIndex, pages);
+							if ((stateController().getState() != STATE_PLAY) &&
+								(stateController().getState() != STATE_WAITING)) {
+								stateController()->changeState(STATE_INIT);
+							}
 						}
 						break;
 					}
@@ -319,6 +322,7 @@ uint32_t DataManager::getPassageOffset(uint16_t aIndex) {
 bool DataManager::getNumberedTitle(char* aBuffer, uint8_t aIndex) {
 	sprintf(aBuffer, "%d. ", aIndex + 1);
 	uint32_t offset = kStoryTitleOffset;
+	logMetadata();
 #if HAS_SD == 1
 	if (this->metadata.flags.sdCard) {
 		if (!_storyFile->open(_root, this->metadata.storyOffsets[this->liveStoryOrder[aIndex]], O_READ)) {
@@ -418,6 +422,8 @@ bool DataManager::addStoryMetadata(uint8_t aIndex, uint8_t aPages) {
 	this->metadata.storyOffsets[totalCount] = this->metadata.usedStoryPages;
 	// Set the position for this story.
 	this->metadata.storyOrder[aIndex] = totalCount;
+	// Setup story order.
+	memcpy(&this->liveStoryOrder, &this->metadata.storyOrder, sizeof(this->metadata.storyOrder));
 	// Increase the story count.
 	this->metadata.storyCount++;
 	if (this->liveStoryCount < 10) {
@@ -464,6 +470,10 @@ bool DataManager::removeStoryMetadata(uint8_t aIndex) {
 			this->liveStoryCount--;
 		}
 		this->metadata.storyCount--;
+
+		// Setup story order.
+		memcpy(&this->liveStoryOrder, &this->metadata.storyOrder, sizeof(this->metadata.storyOrder));
+		
 		return writeStoryCountData(&this->metadata);
 	}
 	return false;

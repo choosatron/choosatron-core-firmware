@@ -62,6 +62,7 @@ const uint8_t kPrinterDensity = 14; // 120% (? can go higher, text is darker but
 const uint8_t kPrinterBreakTime = 4; // 1000uS
 // Columns available for printing.
 const uint8_t kPrinterColumns = 32;
+// Baud rate to run the printer at.
 const uint16_t kPrinterBaudRate = 19200;
 
 }

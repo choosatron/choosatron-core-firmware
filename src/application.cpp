@@ -28,8 +28,6 @@
 #include "cdam_constants.h"
 #include "cdam_manager.h"
 #include "cdam_state_controller.h"
-#include "Ymodem.h"
-//#include "Ymodem/Ymodem.h"
 
 SYSTEM_MODE(SEMI_AUTOMATIC);
 

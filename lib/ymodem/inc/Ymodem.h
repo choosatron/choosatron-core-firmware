@@ -269,12 +269,9 @@ static int32_t Ymodem_Receive(Stream *serialObj, uint32_t sFlashAddress, uint8_t
                     SPARK_FLASH_UPDATE = 1;
                     TimingFlashUpdateTimeout = 0;
                     if (CDAM_Write_To_Flashee()) {
-                      //cdam::Manager::getInstance().hardwareManager->printer()->println("flashee begin");
                       CDAM_FLASH_Begin(sFlashAddress, size);
                     } else {
-                      //cdam::Manager::getInstance().hardwareManager->printer()->println("hal flash begin");
                       HAL_FLASH_Begin(sFlashAddress, size);
-                      //FLASH_Begin(sFlashAddress, size);
                     }
 
                     Send_Byte(serialObj, ACK);
@@ -295,12 +292,9 @@ static int32_t Ymodem_Receive(Stream *serialObj, uint32_t sFlashAddress, uint8_t
                   memcpy(buf_ptr, packet_data + PACKET_HEADER, packet_length);
                   TimingFlashUpdateTimeout = 0;
                   if (CDAM_Write_To_Flashee()) {
-                    //cdam::Manager::getInstance().hardwareManager->printer()->println("flashee update");
                     saved_index = CDAM_FLASH_Update(buf, packet_length);
                   } else {
-                    //cdam::Manager::getInstance().hardwareManager->printer()->println("hal flash update");
                     saved_index = HAL_FLASH_Update(buf, packet_length);
-                    //saved_index = FLASH_Update(buf, packet_length);
                   }
                   LED_Toggle(LED_RGB);
                   if(saved_index > current_index)

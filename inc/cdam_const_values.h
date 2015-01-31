@@ -58,18 +58,16 @@ const uint8_t kSerialCmdResetMetadata = 0x0E;
 const uint8_t kSerialCmdEraseFlash = 0x0F;
 const uint8_t kSerialCmdResetUnit = 0x10;
 
-// Flashee storage types.
-const uint8_t kFlashMetadataType = 1;
-const uint8_t kFlashStoriesType = 2;
-const uint8_t kFlashSavesType = 3;
-
-
 /*const uint8_t kSerialCmdResetMetadata
 const uint8_t kSerialCmdEraseFlash
 const uint8_t kSerialCmdResetUnit
 
 const uint8_t kSerialCmdGetVersion*/
 
+// Flashee storage types.
+const uint8_t kFlashMetadataType = 1;
+const uint8_t kFlashStoriesType = 2;
+const uint8_t kFlashSavesType = 3;
 
 }
 
