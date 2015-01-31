@@ -26,7 +26,7 @@ const char* kServerCmdAdjustCredits = "adjust_credits";
 const char* kServerCmdSetCredits = "set_credits";
 const char* kServerCmdRemoveStory = "remove_story";
 const char* kServerCmdRemoveAllStories = "remove_all_stories";
-const char* kServerCmdSwapStoryPositions = "swap_story_pos";
+const char* kServerCmdMoveStory = "move_story";
 const char* kServerCmdSetFlag = "set_flag";
 const char* kServerCmdSetValue = "set_value";
 const char* kServerCmdAddWifiCreds = "add_wifi_creds";
@@ -210,7 +210,7 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		return kServerReturnInvalidIndex;*/
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdRemoveAllStories) == 0) {
 		dataMan->removeAllStoryData();
-	} else if (strcmp(serverMan->pendingCommand, kServerCmdSwapStoryPositions) == 0) {
+	} else if (strcmp(serverMan->pendingCommand, kServerCmdMoveStory) == 0) {
 		/* TODO */
 		returnVal = kServerReturnNotImplemented;
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdSetFlag) == 0) {
