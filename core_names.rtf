@@ -102,11 +102,15 @@ $'\\x00\\x00\\x1a\\xa6\\\\x14'\
 
 \f3\fs26 \cf8 \expnd0\expndtw0\kerning0
 \
-printf '%b%b%b%b%b%b' '\\x02\\x00\\x00\\x1a\\xa6\\x14' > $DEV && sz -b -v --ymodem slugfest_BIN.dam > $DEV < $DEV\
+printf '%b%b%b%b%b%b' '\\x63\\x0d\\x00\\x00\\x1a\\xa6\\x14' > $DEV && sz -b -v --ymodem slugfest_BIN.dam > $DEV < $DEV\
 \pard\pardeftab720
 \cf8 \expnd0\expndtw0\kerning0
-printf '%b%b%b%b%b%b' '\\x02\\x00\\x00\\x63\\xec\\x14' > $DEV && sz -b -v --ymodem john_stamos_BIN.dam > $DEV < $DEV\
-printf '%b%b%b%b%b%b' '\\x02\\x00\\x00\\x05\\xa5\\x14' > $DEV && sz -b -v --ymodem revolver_BIN.dam > $DEV < $DEV\cf8 \expnd0\expndtw0\kerning0
+printf '%b%b%b%b%b%b' '\\x63\\x0d\\x00\\x00\\x63\\xec\\x14' > $DEV && sz -b -v --ymodem john_stamos_BIN.dam > $DEV < $DEV\
+printf '%b%b%b%b%b%b' '\\x63\\x0d\\x00\\x00\\x05\\xa5\\x14' > $DEV && sz -b -v --ymodem revolver_BIN.dam > $DEV < $DEV\
+\
+Flash Raw\
+630300080000\
+printf '%b%b%b%b%b%b' '\\x63\\x03\\x00\\x08\\x00\\x00' > $DEV && sz -b -v --ymodem flash_backup.bin > $DEV < $DEV\cf8 \expnd0\expndtw0\kerning0
 \
 \
 \cf8 \expnd0\expndtw0\kerning0

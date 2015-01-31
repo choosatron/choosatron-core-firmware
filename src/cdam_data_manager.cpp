@@ -109,66 +109,18 @@ void DataManager::handleSerialData() {
 			this->writeToFlashee = false;
 			uint8_t cmd = Serial.read();
 
-			if (cmd == 'w') {
-				this->hasCredentials = WiFi.hasCredentials();
-				WiFi.listen();
-				if (this->hasCredentials != WiFi.hasCredentials()) {
-					this->hasCredentials = WiFi.hasCredentials();
-					this->metadata.flags.offline = this->hasCredentials ? 0 : 1;
+			if (cmd == 'c') {
+				_serialTimeout = 0;
+				while (!Serial.available()) {
+					if (_serialTimeout >= kTimeoutSerialMillis) {
+						return;
+					}
 				}
-				return;
-			} else if (cmd == 'x') {
-				System.serialSaveFile(&Serial, 0x80000);
-				return;
-			} else if ((cmd == 0x01) || (cmd == 'y')) {
-				DEBUG("Listening");
-
-				this->hasCredentials = WiFi.hasCredentials();
-				WiFi.listen();
-				if (this->hasCredentials != WiFi.hasCredentials()) {
-					this->hasCredentials = WiFi.hasCredentials();
-					this->metadata.flags.offline = this->hasCredentials ? 0 : 1;
-				}
-				return;
-			} else if ((cmd == 0x02) || (cmd == 'z')) {
-				//LED_SetSignalingColor(200 << 16 | 200 << 8 | 30);
-				this->writeToFlashee = true;
-				uint32_t storySize = (Serial.read() << 24) | (Serial.read() << 16) | (Serial.read() << 8) | Serial.read();
-				uint8_t pages = storySize / Flashee::Devices::userFlash().pageSize();
-				if (storySize % Flashee::Devices::userFlash().pageSize()) {
-					pages++;
-				}
-				DEBUG("Pages: %d", pages);
-				uint32_t address = this->metadata.usedStoryPages * Flashee::Devices::userFlash().pageSize();
-				uint8_t storyIndex = Serial.read();
-				//delay(6000);
-				DEBUG("Size: %lu, Index: %d, Address: %lu", storySize, storyIndex, address);
-
-				bool status = false;
-
-				status = Ymodem_Serial_Flash_Update(&Serial, address);
-				if (status) {
-					//DEBUG("True");
-				} else {
-					//DEBUG("False");
-				}
-				SPARK_FLASH_UPDATE = 0;
-    			TimingFlashUpdateTimeout = 0;
-    			DEBUG("Pages2: %d", pages);
-				addStoryMetadata(storyIndex, pages);
-				return;
-			}
-
-			/*if (cmd == 'c') {
-				DEBUG("Ready");
-				//_serialTimeout = 0;
-				while (!Serial.available()) {}
 				cmd = Serial.read();
 
 				switch (cmd)
 				{
 					case kSerialCmdListeningMode: {
-						DEBUG("Listening");
 						this->hasCredentials = WiFi.hasCredentials();
 						WiFi.listen();
 						if (this->hasCredentials != WiFi.hasCredentials()) {
@@ -177,36 +129,84 @@ void DataManager::handleSerialData() {
 						}
 						break;
 					}
-					case kSerialCmdWriteFlashRaw: {
-						DEBUG("Flash Write");
-						// An address is included to write to.
-						uint32_t address = (Serial.read() << 24) | (Serial.read() << 16) | (Serial.read() << 8) | Serial.read();
-						//Save User File sent via Ymodem tool to any address(preferrably multiple of 0x20000) in External Flash
-						//echo -n u > $DEV && sz -b -v --ymodem user.file > $DEV < $DEV
-						System.serialSaveFile(&Serial, address); // Can also use &Serial1, &Serial2
-						break;
-					}
-					case kSerialCmdWriteFlashee: {
-						DEBUG("Flashee Write");
-						// An address is included to write to.
-						//uint32_t address = (Serial.read() << 24) | (Serial.read() << 16) | (Serial.read() << 8) | Serial.read();
-						//Save User File sent via Ymodem tool to any address(preferrably multiple of 0x20000) in External Flash
-						//echo -n u > $DEV && sz -b -v --ymodem user.file > $DEV < $DEV
-						//System.serialSaveFile(&Serial, address); // Can also use &Serial1, &Serial2
-						break;
-					}
 					case kSerialCmdClearWiFi: {
 						WiFi.disconnect();
 						WiFi.clearCredentials();
 						WiFi.off();
 						break;
 					}
+					case kSerialCmdWriteFlashee: {
+						this->writeToFlashee = true;
+					case kSerialCmdWriteFlashRaw:
+						// An address is included to write to.
+						uint32_t address = (Serial.read() << 24) | (Serial.read() << 16) | (Serial.read() << 8) | Serial.read();
+						//Save User File sent via Ymodem tool to any address(preferrably multiple of 0x20000) in External Flash
+						//echo -n u > $DEV && sz -b -v --ymodem user.file > $DEV < $DEV
+						//System.serialSaveFile(&Serial, address); // Can also use &Serial1, &Serial2
+						Ymodem_Serial_Flash_Update(&Serial, address);
+						SPARK_FLASH_UPDATE = 0;
+						TimingFlashUpdateTimeout = 0;
+						break;
+					}
+					case kSerialCmdKeypadInput: {
+
+						break;
+					}
+					case kSerialCmdButtonInput: {
+
+						break;
+					}
+					case kSerialCmdAdjustCredits: {
+
+						break;
+					}
+					case kSerialCmdSetCredits: {
+
+						break;
+					}
 					case kSerialCmdAddStory: {
+						this->writeToFlashee = true;
+						uint32_t storySize = (Serial.read() << 24) | (Serial.read() << 16) | (Serial.read() << 8) | Serial.read();
+						uint8_t pages = storySize / Flashee::Devices::userFlash().pageSize();
+						if (storySize % Flashee::Devices::userFlash().pageSize()) {
+							pages++;
+						}
+						uint32_t address = this->metadata.usedStoryPages * Flashee::Devices::userFlash().pageSize();
+						uint8_t storyIndex = Serial.read();
+
+						bool status = false;
+
+						status = Ymodem_Serial_Flash_Update(&Serial, address);
+						SPARK_FLASH_UPDATE = 0;
+		    			TimingFlashUpdateTimeout = 0;
+
+						if (status) {
+							addStoryMetadata(storyIndex, pages);
+						}
+						break;
+					}
+					case kSerialCmdRemoveStory: {
+
+						break;
+					}
+					case kSerialCmdRemoveAllStories: {
+
+						break;
+					}
+					case kSerialCmdMoveStory: {
+
+						break;
+					}
+					case kSerialCmdSetFlag: {
+
+						break;
+					}
+					case kSerialCmdSetValue: {
 
 						break;
 					}
 				}
-			}*/
+			}
 		}
 	}
 }
