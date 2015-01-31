@@ -32,6 +32,7 @@ bool DataManager::initialize(StateController *aStateController) {
 	_writeInProgress = false;
 	_currentAddress = 0;
 	_binarySize = 0;
+	_variables = NULL;
 
 	//DEBUG("Page Size: %d", Flashee::Devices::userFlash().pageSize());
 	//DEBUG("Page Count: %d", Flashee::Devices::userFlash().pageCount());
@@ -382,10 +383,11 @@ void DataManager::unloadStory() {
 	this->psgIndex = 0;
 	this->psgSize = 0;
 
-	if (this->storyHeader.variableCount > 0) {
+	if ((_variables != NULL) && (this->storyHeader.variableCount > 0)) {
 		delete[] _variables;
 		_variables = NULL;
 	}
+	//memset(&this->storyHeader, 0, sizeof(this->storyHeader));
 	this->storyHeader = {'\0'};
 }
 
@@ -467,7 +469,10 @@ bool DataManager::removeStoryMetadata(uint8_t aIndex) {
 		// If we happen to be deleting the last story, we can totally remove it.
 		if (trueIndex == (totalCount - 1)) {
 			// Calculate and subtract the size of the last story.
-			this->metadata.usedStoryPages = this->metadata.usedStoryPages - this->metadata.storyOffsets[trueIndex];
+			DEBUG("current used pages: %d", this->metadata.usedStoryPages);
+			DEBUG("Minus offset: %d", this->metadata.storyOffsets[trueIndex]);
+			this->metadata.usedStoryPages = this->metadata.storyOffsets[trueIndex];
+			DEBUG("Del last story, used pages: %d", this->metadata.usedStoryPages);
 			this->metadata.storyOffsets[trueIndex] = 0;
 			this->metadata.storyState[trueIndex] = kStoryStateEmpty;
 		} else { // Otherwise we need to mark it as deleted.
