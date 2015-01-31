@@ -23,8 +23,8 @@
  ******************************************************************************
  */
 
-#include "cdam_const_config.h"
 #include "cdam_flash_hal.h"
+#include "cdam_constants.h"
 #include "cdam_manager.h"
 #include "flashee-eeprom.h"
 #include "hw_config.h"
@@ -53,19 +53,19 @@ bool CDAM_FLASH_CheckValidAddressRange(uint32_t sFLASH_Address, uint32_t fileSiz
 	uint32_t endAddress = sFLASH_Address + fileSize - 1;
 	uint8_t flashTarget = cdam::Manager::getInstance().dataManager->flashTarget;
 
-	if (flashTarget == kFlashMetadataType) {
-		uint32_t totalBytes = kFlashMetadataPageCount * Flashee::Devices::userFlash().pageSize();
+	if (flashTarget == cdam::kFlashMetadataType) {
+		uint32_t totalBytes = cdam::kFlashMetadataPageCount * Flashee::Devices::userFlash().pageSize();
 		if (endAddress < totalBytes) {
 			return true;
 		}
-	} else if (flashTarget == kFlashStoriesType) {
-		uint32_t totalBytes = kFlashStoriesPageCount * Flashee::Devices::userFlash().pageSize();
+	} else if (flashTarget == cdam::kFlashStoriesType) {
+		uint32_t totalBytes = cdam::kFlashStoriesPageCount * Flashee::Devices::userFlash().pageSize();
 		if (endAddress < totalBytes) {
 			return true;
 		}
-	} else if (flashTarget == kFlashSavesType) {
+	} else if (flashTarget == cdam::kFlashSavesType) {
 		// TODO: For save states, not implemented yet.
-		//uint32_t totalBytes = kFlashSavesPageCount * Flashee::Devices::userFlash().pageSize();
+		//uint32_t totalBytes = cdam::kFlashSavesPageCount * Flashee::Devices::userFlash().pageSize();
 		//if (endAddress < totalBytes) {
 		//	return true;
 		//}
