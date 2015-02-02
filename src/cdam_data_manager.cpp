@@ -137,14 +137,20 @@ void DataManager::handleSerialData() {
 					case kSerialCmdWriteFlashee: {
 						this->writeToFlashee = true;
 					case kSerialCmdWriteFlashRaw:
-						// An address is included to write to.
-						uint32_t address = (Serial.read() << 24) | (Serial.read() << 16) | (Serial.read() << 8) | Serial.read();
+						// First byte determines default address or not - ascii '0' for no, '1' for address.
+						uint8_t useDefault = Serial.read();
+						uint32_t address = 0x80000; // Default for flash.
+						if (useDefault == '1') {
+							if (this->writeToFlashee) {
+								address = 0;
+							}
+						} else {
+							// An address is included to write to.
+							address = (Serial.read() << 24) | (Serial.read() << 16) | (Serial.read() << 8) | Serial.read();
+						}
 						//Save User File sent via Ymodem tool to any address(preferrably multiple of 0x20000) in External Flash
 						//echo -n u > $DEV && sz -b -v --ymodem user.file > $DEV < $DEV
 						bool status = System.serialSaveFile(&Serial, address); // Can also use &Serial1, &Serial2
-						//Ymodem_Serial_Flash_Update(&Serial, address);
-						//SPARK_FLASH_UPDATE = 0;
-						//TimingFlashUpdateTimeout = 0;
 						if (status) {
 							System.reset();
 						}
@@ -178,24 +184,24 @@ void DataManager::handleSerialData() {
 						uint8_t storyIndex = Serial.read();
 
 						bool status = System.serialSaveFile(&Serial, address);
-						//status = Ymodem_Serial_Flash_Update(&Serial, address);
-						//SPARK_FLASH_UPDATE = 0;
-		    			//TimingFlashUpdateTimeout = 0;
-
 						if (status) {
-							addStoryMetadata(storyIndex, pages);
-							if (stateController()->getState() == STATE_SELECT) {
-								stateController()->changeState(STATE_INIT);
+							if (addStoryMetadata(storyIndex, pages)) {
+								if (stateController()->getState() == STATE_SELECT) {
+									stateController()->changeState(STATE_INIT);
+								}
 							}
 						}
 						break;
 					}
 					case kSerialCmdRemoveStory: {
 						int8_t index = Serial.read();
-						removeStoryMetadata(index);
-						if ((stateController()->getState() == STATE_SELECT) ||
-							(this->currentStory == index)) {
-							stateController()->changeState(STATE_INIT);
+						DEBUG("Remove story: %d", index);
+						if (removeStoryMetadata(index)) {
+							if ((stateController()->getState() == STATE_SELECT) ||
+								(this->currentStory == index)) {
+								DEBUG("Deleted story being playz: %d", this->currentStory);
+								stateController()->changeState(STATE_INIT);
+							}
 						}
 						break;
 					}
@@ -221,10 +227,12 @@ void DataManager::handleSerialData() {
 					}
 					case kSerialCmdResetMetadata: {
 						resetMetadata();
+						stateController()->changeState(STATE_INIT);
 						break;
 					}
 					case kSerialCmdEraseFlash: {
 						eraseFlash();
+						stateController()->changeState(STATE_INIT);
 						break;
 					}
 					case kSerialCmdResetUnit: {
@@ -410,6 +418,14 @@ bool DataManager::addStoryMetadata(uint8_t aIndex, uint8_t aPages) {
 	int8_t count = this->metadata.storyCount;
 	uint8_t totalCount = this->metadata.storyCount + this->metadata.deletedStoryCount;
 
+	if (totalCount == 20) {
+		DEBUG("Full of stories!");
+		if (this->metadata.deletedStoryCount > 0) {
+			DEBUG("Including deleted: %d", this->metadata.deletedStoryCount);
+		}
+		return false;
+	}
+
 	// If the position requested is past the existing, just set it to the next.
 	if (aIndex >= count) {
 		aIndex = count;
@@ -449,10 +465,14 @@ bool DataManager::addStoryMetadata(uint8_t aIndex, uint8_t aPages) {
 }
 
 bool DataManager::removeStoryMetadata(uint8_t aIndex) {
-	uint8_t totalCount = this->metadata.storyCount + this->metadata.deletedStoryCount;
-	uint8_t trueIndex = this->metadata.storyOrder[aIndex];
-
-	if (trueIndex < totalCount) {
+	if (aIndex < this->metadata.storyCount) {
+		uint8_t totalCount = this->metadata.storyCount + this->metadata.deletedStoryCount;
+		uint8_t trueIndex = this->metadata.storyOrder[aIndex];
+		DEBUG("TC: %d, TI: %d", totalCount, trueIndex);
+		if (totalCount == 1) {
+			DEBUG("DELETE ALL STORIES!");
+			return removeAllStoryData();
+		}
 		if (aIndex < (this->metadata.storyCount - 1)) {
 			uint8_t count = this->metadata.storyCount;
 			while (count > aIndex) {
@@ -460,24 +480,30 @@ bool DataManager::removeStoryMetadata(uint8_t aIndex) {
 				aIndex++;
 				// Need to update the current story if there is one.
 				if (aIndex == this->currentStory) {
-					this->currentStory++;
+					DEBUG("Decrease currentStory");
+					this->currentStory--;
 				}
 			}
 			this->metadata.storyOrder[aIndex] = 0;
 		}
 
+		// Mark the story index as deleted.
+		this->metadata.storyState[trueIndex] = kStoryStateDeleted;
+
 		// If we happen to be deleting the last story, we can totally remove it.
 		if (trueIndex == (totalCount - 1)) {
 			// Calculate and subtract the size of the last story.
-			DEBUG("current used pages: %d", this->metadata.usedStoryPages);
-			DEBUG("Minus offset: %d", this->metadata.storyOffsets[trueIndex]);
-			this->metadata.usedStoryPages = this->metadata.storyOffsets[trueIndex];
-			DEBUG("Del last story, used pages: %d", this->metadata.usedStoryPages);
-			this->metadata.storyOffsets[trueIndex] = 0;
-			this->metadata.storyState[trueIndex] = kStoryStateEmpty;
+			for (uint8_t i = trueIndex; this->metadata.storyState[i] == kStoryStateDeleted; --i) {
+				DEBUG("current used pages: %d", this->metadata.usedStoryPages);
+				DEBUG("Minus offset: %d", this->metadata.storyOffsets[i]);
+				this->metadata.usedStoryPages = this->metadata.storyOffsets[i];
+				DEBUG("Del last story, used pages: %d", this->metadata.usedStoryPages);
+				this->metadata.storyOffsets[i] = 0;
+				this->metadata.storyState[i] = kStoryStateEmpty;
+			}
 		} else { // Otherwise we need to mark it as deleted.
 			// Decrease the story count.
-			this->metadata.storyState[trueIndex] = kStoryStateDeleted;
+			DEBUG("Marked Deleted: %d", trueIndex);
 			this->metadata.deletedStoryCount++;
 		}
 		if (this->metadata.storyCount <= 10) {
@@ -489,6 +515,8 @@ bool DataManager::removeStoryMetadata(uint8_t aIndex) {
 		memcpy(&this->liveStoryOrder, &this->metadata.storyOrder, sizeof(this->metadata.storyOrder));
 		
 		return writeStoryCountData(&this->metadata);
+	} else {
+		DEBUG("Index out of bounds: %d", aIndex);
 	}
 	return false;
 }

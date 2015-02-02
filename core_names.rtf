@@ -110,9 +110,15 @@ printf '%b%b%b%b%b%b' '\\x63\\x08\\x00\\x00\\x05\\xa5\\x14' > $DEV && sz -b -v -
 \
 Flash Raw\
 630300080000\
-printf '%b%b%b%b%b%b' '\\x63\\x03\\x00\\x08\\x00\\x00' > $DEV && sz -b -v --ymodem flash_backup.bin > $DEV < $DEV\cf8 \expnd0\expndtw0\kerning0
+printf '%b%b%b%b%b%b' '\\x63\\x03\\x00\\x08\\x00\\x00' > $DEV && sz -b -v --ymodem flash_backup.bin > $DEV < $DEV\
+\pard\pardeftab720
+
+\f0\fs24 \cf0 \kerning1\expnd0\expndtw0 echo -n $'\\x63\\x03\\x31' > 
+\f3\fs26 \cf8 \expnd0\expndtw0\kerning0
+$DEV && sz -b -v --ymodem flash_backup.bin > $DEV < $DEV\cf8 \expnd0\expndtw0\kerning0
 \
 \
+\pard\pardeftab720
 \cf8 \expnd0\expndtw0\kerning0
 echo -n $'\\x77\\x66' > $DEV && sz -b -v --ymodem choosatron.bin > $DEV < $DEV\cf8 \expnd0\expndtw0\kerning0
 \
