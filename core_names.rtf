@@ -115,8 +115,12 @@ printf '%b%b%b%b%b%b' '\\x63\\x03\\x00\\x08\\x00\\x00' > $DEV && sz -b -v --ymod
 
 \f0\fs24 \cf0 \kerning1\expnd0\expndtw0 echo -n $'\\x63\\x03\\x31' > 
 \f3\fs26 \cf8 \expnd0\expndtw0\kerning0
-$DEV && sz -b -v --ymodem flash_backup.bin > $DEV < $DEV\cf8 \expnd0\expndtw0\kerning0
-\
+$DEV && sz -b -v --ymodem flash_backup.bin > $DEV < $DEV\
+\pard\pardeftab720
+\cf8 \expnd0\expndtw0\kerning0
+echo -n cf1 > $DEV && sz -b -v --ymodem\'a0\cf8 \expnd0\expndtw0\kerning0
+flash_backup.bin\cf8 \expnd0\expndtw0\kerning0
+ > $DEV < $DEV\
 \
 \pard\pardeftab720
 \cf8 \expnd0\expndtw0\kerning0

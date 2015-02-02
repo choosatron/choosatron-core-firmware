@@ -138,6 +138,12 @@ void DataManager::handleSerialData() {
 						this->writeToFlashee = true;
 					case kSerialCmdWriteFlashRaw:
 						// First byte determines default address or not - ascii '0' for no, '1' for address.
+						_serialTimeout = 0;
+						while (!Serial.available()) {
+							if (_serialTimeout >= kTimeoutSerialMillis) {
+								return;
+							}
+						}
 						uint8_t useDefault = Serial.read();
 						uint32_t address = 0x80000; // Default for flash.
 						if (useDefault == '1') {
