@@ -760,7 +760,6 @@ size_t Printer::write(uint8_t c) {
 }
 
 size_t Printer::write(const char *aBuffer, size_t aSize) {
-	DEBUG("S: %s", aBuffer);
 	this->writing = true;
 	size_t n = 0;
 	if (Manager::getInstance().dataManager->logPrint) {

@@ -28,7 +28,7 @@ const uint16_t kIntervalCoinAcceptorMillis = 5;
 // How often to allow printing Insert Coin message.
 const uint16_t kIntervalCoinInsertMessage = 10000;
 // Delay until printing out 'press any button' message.
-const uint16_t kIntervalPressAnyButton = 30000;
+const uint16_t kIntervalPressAnyButton = 40000;
 // Min value for coin sensing.
 const uint8_t kCoinAcceptorSenseMin = 15;
 // Max value for coin sensing.

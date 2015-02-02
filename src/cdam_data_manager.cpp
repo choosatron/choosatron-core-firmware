@@ -20,6 +20,7 @@ bool DataManager::initialize(StateController *aStateController) {
 	this->metadata = {'\0'};
 
 	// Initialize story specific variables.
+	this->randomPlay = false;
 	this->currentStory = -1;
 	this->psgCount = 0;
 	this->psgSize = 0;
@@ -179,6 +180,9 @@ void DataManager::handleSerialData() {
 						break;
 					}
 					case kSerialCmdAddStory: {
+						if ((this->metadata.storyCount + this->metadata.deletedStoryCount) >= 20) {
+							return;
+						}
 						this->writeToFlashee = true;
 						this->flashTarget = kFlashStoriesType;
 						uint32_t storySize = (Serial.read() << 24) | (Serial.read() << 16) | (Serial.read() << 8) | Serial.read();
@@ -389,6 +393,7 @@ void DataManager::unloadStory() {
 		_storyFile->close();
 	}
 #endif
+	this->randomPlay = false;
 	this->currentStory = -1;
 	this->points = 0;
 	this->psgCount = 0;
@@ -424,7 +429,7 @@ bool DataManager::addStoryMetadata(uint8_t aIndex, uint8_t aPages) {
 	int8_t count = this->metadata.storyCount;
 	uint8_t totalCount = this->metadata.storyCount + this->metadata.deletedStoryCount;
 
-	if (totalCount == 20) {
+	if (totalCount >= 20) {
 		DEBUG("Full of stories!");
 		if (this->metadata.deletedStoryCount > 0) {
 			DEBUG("Including deleted: %d", this->metadata.deletedStoryCount);
@@ -495,22 +500,25 @@ bool DataManager::removeStoryMetadata(uint8_t aIndex) {
 
 		// Mark the story index as deleted.
 		this->metadata.storyState[trueIndex] = kStoryStateDeleted;
+		DEBUG("Marked Deleted: %d", trueIndex);
+		this->metadata.deletedStoryCount++;
 
 		// If we happen to be deleting the last story, we can totally remove it.
 		if (trueIndex == (totalCount - 1)) {
 			// Calculate and subtract the size of the last story.
-			for (uint8_t i = trueIndex; this->metadata.storyState[i] == kStoryStateDeleted; --i) {
-				DEBUG("current used pages: %d", this->metadata.usedStoryPages);
-				DEBUG("Minus offset: %d", this->metadata.storyOffsets[i]);
-				this->metadata.usedStoryPages = this->metadata.storyOffsets[i];
-				DEBUG("Del last story, used pages: %d", this->metadata.usedStoryPages);
-				this->metadata.storyOffsets[i] = 0;
-				this->metadata.storyState[i] = kStoryStateEmpty;
+			for (uint8_t i = trueIndex; i >= 0; --i) {
+				if (this->metadata.storyState[i] == kStoryStateDeleted) {
+					DEBUG("current used pages: %d", this->metadata.usedStoryPages);
+					DEBUG("Minus offset: %d", this->metadata.storyOffsets[i]);
+					this->metadata.usedStoryPages = this->metadata.storyOffsets[i];
+					DEBUG("Del last story, used pages: %d", this->metadata.usedStoryPages);
+					this->metadata.storyOffsets[i] = 0;
+					this->metadata.storyState[i] = kStoryStateEmpty;
+					this->metadata.deletedStoryCount--;
+				} else {
+					break;
+				}
 			}
-		} else { // Otherwise we need to mark it as deleted.
-			// Decrease the story count.
-			DEBUG("Marked Deleted: %d", trueIndex);
-			this->metadata.deletedStoryCount++;
 		}
 		if (this->metadata.storyCount <= 10) {
 			this->liveStoryCount--;

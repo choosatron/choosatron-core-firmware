@@ -76,6 +76,8 @@ void StateController::initState(GameState aState) {
 			Spark.syncTime();
 			_dataManager->timeSynced = true; // ???
 		}
+		_seed = millis();
+		randomSeed(_seed);
 	} else if (aState == STATE_CREDITS) {
 		_hardwareManager->coinAcceptor()->active = true;
 		_hardwareManager->printer()->printInsertCoin(_hardwareManager->coinAcceptor()->coins,
@@ -83,8 +85,6 @@ void StateController::initState(GameState aState) {
 	} else if (aState == STATE_WAITING) {
 		_hardwareManager->printer()->printPressButton();
 	} else if (aState == STATE_READY) {
-		_seed = millis();
-		randomSeed(_seed);
 		_hardwareManager->printer()->printTitle();
 		if (_dataManager->metadata.storyCount > 4) {
 			if (_dataManager->metadata.flags.random) {
@@ -143,13 +143,13 @@ void StateController::loopState(GameState aState) {
 			// TODO - doesn't work
 			_dataManager->logPrint = true;
 		}*/
-		if (_hardwareManager->keypad()->buttonDown(3)) {
+		if (_hardwareManager->keypad()->buttonDown(2)) {
 			_dataManager->metadata.flags.sdCard = !_dataManager->metadata.flags.sdCard;
 		}
 		// Override has had a chance to get set, now setup storage.
 		_dataManager->initStorage();
 		// Admin mode, if pass required change to STATE_AUTH
-		if (_hardwareManager->keypad()->buttonDown(2)) {
+		if (_hardwareManager->keypad()->buttonDown(4)) {
 			if (_dataManager->metadata.flags.auth) {
 				changeState(STATE_AUTH);
 			} else {
@@ -173,8 +173,16 @@ void StateController::loopState(GameState aState) {
 			}
 		}
 	} else if (aState == STATE_WAITING) {
-		if (_hardwareManager->keypad()->buttonEvent(BTN_UP_EVENT)) {
-			changeState(STATE_READY);
+		uint8_t total = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, _dataManager->liveStoryCount);
+		if (total) {
+			if (_dataManager->liveStoryCount && (total == 10)) {
+				_dataManager->randomPlay = true;
+				uint8_t value = random(1, _dataManager->liveStoryCount + 1);
+				_hardwareManager->keypad()->setKeypadEvent(KEYPAD_MULTI_UP_EVENT, value);
+				changeState(STATE_SELECT);
+			} else {
+				changeState(STATE_READY);
+			}
 		}
 	} else if (aState == STATE_READY) {
 		if (_dataManager->liveStoryCount > 0) {
@@ -230,17 +238,25 @@ void StateController::loopState(GameState aState) {
 		if (state == PARSE_ENDING) {
 			_resetElapsed = 0;
 		} else if (state == PARSE_IDLE) {
+			uint8_t total = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, _dataManager->liveStoryCount);
 			if (_resetElapsed > kIntervalPressAnyButton) {
 				if (_dataManager->metadata.flags.arcade) {
 					changeState(STATE_CREDITS);
 				} else {
 					changeState(STATE_WAITING);
 				}
-			} else if (_hardwareManager->keypad()->buttonEvent(BTN_UP_EVENT)) {
+			} else if (total) {
 				if (_dataManager->metadata.flags.arcade) {
 					changeState(STATE_CREDITS);
 				} else {
-					changeState(STATE_READY);
+					if (_dataManager->liveStoryCount && (total == 10)) {
+						_dataManager->randomPlay = true;
+						uint8_t value = random(1, _dataManager->liveStoryCount + 1);
+						_hardwareManager->keypad()->setKeypadEvent(KEYPAD_MULTI_UP_EVENT, value);
+						changeState(STATE_SELECT);
+					} else {
+						changeState(STATE_READY);
+					}
 				}
 			}
 		} else if (state == PARSE_ERROR) {

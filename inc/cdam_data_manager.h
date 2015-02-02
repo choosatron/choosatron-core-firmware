@@ -122,6 +122,8 @@ class DataManager
 		Metadata metadata;
 		StoryHeader storyHeader;
 
+		// Current story is being played randomly.
+		bool randomPlay;
 		// The index of the story currently in play.
 		int8_t currentStory;
 		// The number of points accumulated in the current story.

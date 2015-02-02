@@ -207,6 +207,10 @@ ParseState Parser::parsePassage() {
 			}
 		}
 	} else if (_state == PARSE_USER_INPUT) {
+		if (_dataManager->randomPlay) {  
+			uint8_t value = random(1, _visibleCount + 1);
+			_hardwareManager->keypad()->setKeypadEvent(KEYPAD_MULTI_UP_EVENT, value);
+		}
 		// Once we have a valid choice, execute it's value updates and setup for the next passage.
 		// Wait for multi button up event for story selection.
 		_choiceSelected = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, _visibleCount);

@@ -8,6 +8,8 @@ Features:
   - Ability to delete individual stories.
   - Revamping Choosatron API to reduce the number of calls apps need to make to it.
   - Added serial firmware update / flash writing, and initial structure for more serial commands.
+  - Added random play mode - release all four buttons together on the 'Press any button to start!'
+  - Increase 'Press any...' message delay from 30 secs to 40 (after a game ends)
 
 Bugfixes:
 
