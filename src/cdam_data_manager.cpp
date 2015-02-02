@@ -205,11 +205,9 @@ void DataManager::handleSerialData() {
 					}
 					case kSerialCmdRemoveStory: {
 						int8_t index = Serial.read();
-						DEBUG("Remove story: %d", index);
 						if (removeStoryMetadata(index)) {
 							if ((stateController()->getState() == STATE_SELECT) ||
 								(this->currentStory == index)) {
-								DEBUG("Deleted story being playz: %d", this->currentStory);
 								stateController()->changeState(STATE_INIT);
 							}
 						}
@@ -430,10 +428,6 @@ bool DataManager::addStoryMetadata(uint8_t aIndex, uint8_t aPages) {
 	uint8_t totalCount = this->metadata.storyCount + this->metadata.deletedStoryCount;
 
 	if (totalCount >= 20) {
-		DEBUG("Full of stories!");
-		if (this->metadata.deletedStoryCount > 0) {
-			DEBUG("Including deleted: %d", this->metadata.deletedStoryCount);
-		}
 		return false;
 	}
 
@@ -479,45 +473,37 @@ bool DataManager::removeStoryMetadata(uint8_t aIndex) {
 	if (aIndex < this->metadata.storyCount) {
 		uint8_t totalCount = this->metadata.storyCount + this->metadata.deletedStoryCount;
 		uint8_t trueIndex = this->metadata.storyOrder[aIndex];
-		DEBUG("TC: %d, TI: %d", totalCount, trueIndex);
-		if (totalCount == 1) {
-			DEBUG("DELETE ALL STORIES!");
+		if (this->metadata.storyCount == 1) {
 			return removeAllStoryData();
 		}
-		if (aIndex < (this->metadata.storyCount - 1)) {
+		if (aIndex < this->metadata.storyCount) {
 			uint8_t count = this->metadata.storyCount;
 			while (count > aIndex) {
 				this->metadata.storyOrder[aIndex] = this->metadata.storyOrder[aIndex + 1];
 				aIndex++;
 				// Need to update the current story if there is one.
 				if (aIndex == this->currentStory) {
-					DEBUG("Decrease currentStory");
 					this->currentStory--;
 				}
 			}
-			this->metadata.storyOrder[aIndex] = 0;
+			// Final increment puts aIndex out of bounds for the story count.
+			this->metadata.storyOrder[aIndex - 1] = 0;
 		}
 
 		// Mark the story index as deleted.
 		this->metadata.storyState[trueIndex] = kStoryStateDeleted;
-		DEBUG("Marked Deleted: %d", trueIndex);
 		this->metadata.deletedStoryCount++;
 
 		// If we happen to be deleting the last story, we can totally remove it.
 		if (trueIndex == (totalCount - 1)) {
 			// Calculate and subtract the size of the last story.
-			for (uint8_t i = trueIndex; i >= 0; --i) {
-				if (this->metadata.storyState[i] == kStoryStateDeleted) {
-					DEBUG("current used pages: %d", this->metadata.usedStoryPages);
-					DEBUG("Minus offset: %d", this->metadata.storyOffsets[i]);
-					this->metadata.usedStoryPages = this->metadata.storyOffsets[i];
-					DEBUG("Del last story, used pages: %d", this->metadata.usedStoryPages);
-					this->metadata.storyOffsets[i] = 0;
-					this->metadata.storyState[i] = kStoryStateEmpty;
-					this->metadata.deletedStoryCount--;
-				} else {
-					break;
-				}
+			uint8_t i = trueIndex;
+			while (this->metadata.storyState[i] == kStoryStateDeleted) {
+				this->metadata.usedStoryPages = this->metadata.storyOffsets[i];
+				this->metadata.storyOffsets[i] = 0;
+				this->metadata.storyState[i] = kStoryStateEmpty;
+				this->metadata.deletedStoryCount--;
+				i--;
 			}
 		}
 		if (this->metadata.storyCount <= 10) {
@@ -527,10 +513,7 @@ bool DataManager::removeStoryMetadata(uint8_t aIndex) {
 
 		// Setup story order.
 		memcpy(&this->liveStoryOrder, &this->metadata.storyOrder, sizeof(this->metadata.storyOrder));
-		
 		return writeStoryCountData(&this->metadata);
-	} else {
-		DEBUG("Index out of bounds: %d", aIndex);
 	}
 	return false;
 }
