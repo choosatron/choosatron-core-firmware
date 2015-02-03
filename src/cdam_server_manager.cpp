@@ -19,6 +19,7 @@ const char* kServerVarLastCmd = "last_command";
 
 // Commands.
 const char* kServerCmd = "command";
+const char* kServerCmdAddWifiCreds = "add_wifi_creds";
 const char* kServerCmdKeypadInput = "keypad_input";
 const char* kServerCmdButtonInput = "button_input";
 const char* kServerCmdAdjustCredits = "adjust_credits";
@@ -28,12 +29,11 @@ const char* kServerCmdRemoveAllStories = "remove_all_stories";
 const char* kServerCmdMoveStory = "move_story";
 const char* kServerCmdSetFlag = "set_flag";
 const char* kServerCmdSetValue = "set_value";
-const char* kServerCmdAddWifiCreds = "add_wifi_creds";
 
 // Admin commands.
 const char* kServerCmdResetMetadata = "reset_metadata";
 const char* kServerCmdEraseFlash = "erase_flash";
-const char* kServerCmdResetUnit = "reset_unit";
+const char* kServerCmdRebootUnit = "reboot_unit";
 
 // Data requests.
 const char* kServerCmdGetVersion = "get_version"; // Get firmware version (device ID included in response).
@@ -62,7 +62,7 @@ const char* kServerCmdAddStory = "add_story";
 
 const uint16_t kServerDataBufferSize = 128; // Must evening devide in Flashee pagesize (4096 currently)
 const uint16_t kStoryDataBufferSize = 1024; // Flashee::Devices::userFlash().pageSize()
-const uint16_t kServerTimeout = 30000;	// ms
+const uint16_t kServerTimeout = 10000;	// ms
 const char kServerArgumentDelimiter = '|';
 
 const uint8_t kServerStoryPositionBytes = 2;
@@ -167,7 +167,7 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 			memcpy(serverAddress, commandAndArgs + serverDelimPos + 1, cmdLen - serverDelimPos - 1);
 			serverMan->parseServerAddress(serverAddress);
 			cmdLen = serverDelimPos;
-	}
+		}
 		serverMan->pendingArguments = new char[cmdLen - delimiterPos]();
 		memcpy(serverMan->pendingArguments, commandAndArgs + delimiterPos + 1, cmdLen - delimiterPos - 1);
 		cmdLen = delimiterPos;
@@ -176,15 +176,16 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	serverMan->pendingCommand = new char[cmdLen + 1]();
 	memcpy(serverMan->pendingCommand, commandAndArgs, cmdLen);
 
-	if (strcmp(serverMan->pendingCommand, kServerCmdKeypadInput) == 0) {
+	if (strcmp(serverMan->pendingCommand, kServerCmdAddWifiCreds) == 0) {
+		/* TODO */
+		returnVal = kServerReturnNotImplemented;
+	} else if (strcmp(serverMan->pendingCommand, kServerCmdKeypadInput) == 0) {
 		KeypadEvent event = (KeypadEvent)(serverMan->pendingArguments[0] - '0');
 		uint8_t value = serverMan->pendingArguments[1] - '0';
-		//DEBUG("Event: %d, Val: %d", event, value);
 		hardMan->keypad()->setKeypadEvent(event, value);
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdButtonInput) == 0) {
 		ButtonEvent event = (ButtonEvent)(serverMan->pendingArguments[0] - '0');
 		uint8_t btnNum = serverMan->pendingArguments[1] - '0';
-		//DEBUG("Event: %d, BtnNum: %d", event, btnNum);
 		hardMan->keypad()->setButtonEvent(event, btnNum);
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdAdjustCredits) == 0) {
 		int8_t credits = serverMan->pendingArguments[0] - '0';
@@ -196,18 +197,15 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdSetCredits) == 0) {
 		hardMan->coinAcceptor()->setCredits(atoi(serverMan->pendingArguments));
 		returnVal = hardMan->coinAcceptor()->getCredits();
-	/*} else if (strcmp(serverMan->pendingCommand, kServerCmdRemoveStory) == 0) {
-		uint8_t storyIndex = ((aCommandAndArgs.charAt(delimiterPos + 1) - '0') % 48) - 1;
-		if (storyIndex < (Manager::getInstance().dataManager->metadata.storyCount)) {
-			Manager::getInstance().dataManager->removeStoryMetadata(storyIndex);
-			return kServerReturnSuccess;
-		}
-		return kServerReturnInvalidIndex;*/
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdRemoveStory) == 0) {
 		int8_t index = serverMan->pendingArguments[0] - '0';
-		dataMan->removeStoryMetadata(index);
+		if (!dataMan->removeStoryMetadata(index)) {
+			returnVal = kServerReturnFail;
+		}
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdRemoveAllStories) == 0) {
-		dataMan->removeAllStoryData();
+		if (!dataMan->removeAllStoryData()) {
+			returnVal = kServerReturnFail;
+		}
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdMoveStory) == 0) {
 		/* TODO */
 		returnVal = kServerReturnNotImplemented;
@@ -234,11 +232,11 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		if (!dataMan->eraseFlash()) {
 			returnVal = kServerReturnFail;
 		}
-	} else if (strcmp(serverMan->pendingCommand, kServerCmdResetUnit) == 0) {
+	} else if (strcmp(serverMan->pendingCommand, kServerCmdRebootUnit) == 0) {
 		dataMan->stateController()->changeState(STATE_INIT);
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetVersion) == 0) {
 		/* TODO */
-		returnVal = kServerReturnNotImplemented;
+		returnVal = (kFirmwareVersionMajor * 100) + (kFirmwareVersionMinor * 10) + kFirmwareVersionRevision;
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetFlag) == 0) {
 		uint8_t index = serverMan->pendingArguments[0] - '0';
 		char* flags = (char*)&dataMan->metadata.flags;
@@ -248,14 +246,37 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		uint16_t* values = (uint16_t*)&dataMan->metadata.values;
 		returnVal = values[index];
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetNames) == 0) {
-		/* TODO */
-		returnVal = kServerReturnNotImplemented;
+		char names[126] = "";
+		snprintf(names, 126, "%s:%s:%s", dataMan->metadata.deviceName, dataMan->metadata.ownerProfile, dataMan->metadata.ownerCloud);
+		Spark.publish(kServerCmdGetNames, names, kServerTTLDefault, PRIVATE);
+		returnVal = kServerReturnEventIncoming;
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetStoryInfo) == 0) {
-		/* TODO */
-		returnVal = kServerReturnNotImplemented;
+		bool visibleOnly = (serverMan->pendingArguments[0] - '0') ? true : false;
+		uint8_t index = atoi(&serverMan->pendingArguments[1]);
+		if (visibleOnly && (index >= dataMan->metadata.storyCount)) {
+			returnVal = kServerReturnInvalidIndex;
+		} else if (!visibleOnly && index >= (dataMan->metadata.storyCount + dataMan->metadata.deletedStoryCount)) {
+			returnVal = kServerReturnInvalidIndex;
+		} else {
+			StoryHeader storyHeader;
+			uint32_t offset = dataMan->getStoryOffset(index, visibleOnly);
+			bool result = dataMan->readData((uint8_t*)&storyHeader, offset, kStoryHeaderSize);
+			if (!result) {
+				returnVal = kServerReturnFail;
+			} else {
+				char storyInfo[161] = "";
+				dataMan->getStoryInfo(storyInfo, 161, index, &storyHeader);
+				Spark.publish(kServerCmdGetStoryInfo, storyInfo, kServerTTLDefault, PRIVATE);
+			}
+		}
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetCurrentStory) == 0) {
-		/* TODO */
-		returnVal = kServerReturnNotImplemented;
+		if (dataMan->currentStory > -1) {
+			char storyInfo[161] = "";
+			dataMan->getStoryInfo(storyInfo, 161, dataMan->metadata.storyOrder[dataMan->currentStory], &dataMan->storyHeader);
+			Spark.publish(kServerCmdGetCurrentStory, storyInfo, kServerTTLDefault, PRIVATE);
+		} else {
+			returnVal = kServerReturnFail;
+		}
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetAllStoryInfo) == 0) {
 		/* TODO */
 		returnVal = kServerReturnNotImplemented;
@@ -275,8 +296,6 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetRSSI) == 0) {
 		returnVal = WiFi.RSSI();
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetState) == 0) {
-		//Spark.publish(kServerCmdGetState, dataMan->stateController()->stateString(), kServerTTLDefault, PRIVATE);
-		//returnVal = kServerReturnEventIncoming;
 		returnVal = dataMan->stateController()->getState();
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetSSID) == 0) {
 		Spark.publish(kServerCmdGetSSID, WiFi.SSID(), kServerTTLDefault, PRIVATE);

@@ -219,7 +219,7 @@ void DataManager::handleSerialData() {
 						break;
 					}
 					case kSerialCmdMoveStory: {
-
+						/* TODO */
 						break;
 					}
 					case kSerialCmdSetFlag: {
@@ -245,8 +245,21 @@ void DataManager::handleSerialData() {
 						stateController()->changeState(STATE_INIT);
 						break;
 					}
-					case kSerialCmdResetUnit: {
+					case kSerialCmdRebootUnit: {
 						stateController()->changeState(STATE_INIT);
+						break;
+					}
+					case kSerialCmdGetFlag: {
+						uint8_t index = Serial.read();
+						char* flags = (char*)&this->metadata.flags;
+						Serial.write(flags[index]);
+						break;
+					}
+					case kSerialCmdGetValue: {
+						uint8_t index = Serial.read();
+						uint8_t* values = (uint8_t*)&this->metadata.values;
+						Serial.write(values[index * 2]);
+						Serial.write(values[(index * 2) + 1]);
 						break;
 					}
 				}
@@ -310,11 +323,14 @@ Flashee::FlashDevice* DataManager::flashStories() {
 }
 //
 
-uint32_t DataManager::getStoryOffset(uint8_t aIndex) {
+uint32_t DataManager::getStoryOffset(uint8_t aIndex, bool aVisibleOnly = true) {
 #if HAS_SD == 1
 	if (this->metadata.flags.sdCard) { return 0; }
 #endif
-	return this->metadata.storyOffsets[this->liveStoryOrder[aIndex]] * Flashee::Devices::userFlash().pageSize();
+	if (aVisibleOnly) {
+		aIndex = this->liveStoryOrder[aIndex];
+	}
+	return this->metadata.storyOffsets[aIndex] * Flashee::Devices::userFlash().pageSize();
 }
 
 uint32_t DataManager::getPassageOffset(uint16_t aIndex) {
@@ -399,6 +415,20 @@ bool DataManager::setVarAtIndex(uint8_t aIndex, int16_t aValue) {
 	}
 	Errors::setError(E_INVALID_VARIABLE);
 	return false;
+}
+
+/* API Calls */
+
+void DataManager::getStoryInfo(char* aBuffer, uint32_t aLength, uint8_t aIndex, StoryHeader *aHeader) {
+	uint8_t pages = aHeader->storySize / Flashee::Devices::userFlash().pageSize();
+	if (aHeader->storySize % Flashee::Devices::userFlash().pageSize()) {
+		pages++;
+	}
+	Utils::uuidToString(&aHeader->uuid, aBuffer, 37);
+	snprintf(&aBuffer[36], aLength - 37, ":%s:%s:%d.%d.%d:%d:%d", aHeader->title,
+	         aHeader->author, aHeader->storyVer.major,
+	         aHeader->storyVer.minor, aHeader->storyVer.revision,
+	         this->metadata.storyState[aIndex], pages);
 }
 
 bool DataManager::addStoryMetadata(uint8_t aIndex, uint8_t aPages) {
@@ -674,16 +704,16 @@ bool DataManager::initializeMetadata(Metadata *aMetadata) {
 	aMetadata->flags.random = 1;
 
 	//aMetadata->flags.rsvd2 = 0;
-	aMetadata->flags.logging = 1;
-	aMetadata->flags.logLocal = 1;
+	aMetadata->flags.logging = 0;
+	aMetadata->flags.logLocal = 0;
 	//aMetadata->flags.logLive = 0;
 	//aMetadata->flags.logPrint = 0;
 
 	//aMetadata->flags.rsvd3 = 0;
 	//aMetadata->flags.dictOffsetBytes = 0;
 
-	aMetadata->values.coinsPerCredit = 2;
-	aMetadata->values.coinDenomination = 25;
+	aMetadata->values.coinsPerCredit = 0;
+	aMetadata->values.coinDenomination = 0;
 
 	aMetadata->storyCount = 0;
 	aMetadata->deletedStoryCount = 0;

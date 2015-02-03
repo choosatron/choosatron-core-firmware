@@ -18,7 +18,7 @@ namespace cdam
 #define IsBitSet(val, bit) ((val) & (1 << (bit)) ? true : false)
 
 // 0, 3, or 6 are cutoffs for rerouted buttons pins.
-#define BOARD_DOT_VERSION 6
+#define BOARD_DOT_VERSION 7
 
 #define BAUD_RATE 9600
 

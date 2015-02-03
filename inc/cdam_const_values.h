@@ -52,18 +52,15 @@ const uint8_t kSerialCmdRemoveAllStories = 0x0A;
 const uint8_t kSerialCmdMoveStory = 0x0B;
 const uint8_t kSerialCmdSetFlag = 0x0C;
 const uint8_t kSerialCmdSetValue = 0x0D;
-const uint8_t kSerialCmdGetFlag = 0x0E;
-const uint8_t kSerialCmdGetValue = 0x0F;
-
 const uint8_t kSerialCmdResetMetadata = 0x0E;
 const uint8_t kSerialCmdEraseFlash = 0x0F;
-const uint8_t kSerialCmdResetUnit = 0x10;
+const uint8_t kSerialCmdRebootUnit = 0x10;
 
-/*const uint8_t kSerialCmdResetMetadata
-const uint8_t kSerialCmdEraseFlash
-const uint8_t kSerialCmdResetUnit
-
-const uint8_t kSerialCmdGetVersion*/
+const uint8_t kSerialCmdGetVersion = 0x11;
+const uint8_t kSerialCmdGetFlag = 0x12;
+const uint8_t kSerialCmdGetValue = 0x13;
+const uint8_t kSerialCmdGetNames = 0x14;
+const uint8_t kSerialCmdGetStoryInfo = 0x15;
 
 // Flashee storage types.
 const uint8_t kFlashMetadataType = 1;
