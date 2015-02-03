@@ -19,7 +19,6 @@ const char* kServerVarLastCmd = "last_command";
 
 // Commands.
 const char* kServerCmd = "command";
-const char* kServerCmdPing = "ping";
 const char* kServerCmdKeypadInput = "keypad_input";
 const char* kServerCmdButtonInput = "button_input";
 const char* kServerCmdAdjustCredits = "adjust_credits";
@@ -94,7 +93,6 @@ void ServerManager::handlePendingActions() {
 		TCPClient *client = new TCPClient();
 		//DEBUG("Connecting to client at %u.%u.%u.%u:%u", this->serverIp[0], this->serverIp[1], this->serverIp[2], this->serverIp[3], this->serverPort);
 		if (client->connect(this->serverIp, this->serverPort)) {
-			//DEBUG("TCPClient connected");
 			// Add Story Command
 			if (strcmp(Manager::getInstance().serverManager->pendingCommand, kServerCmdAddStory) == 0) {
 				char buffer[8] = "";
@@ -113,7 +111,6 @@ void ServerManager::handlePendingActions() {
 					memset(&buffer[0], 0, sizeof(buffer));
 					memcpy(buffer, this->pendingArguments + kServerStorySizeBytes, kServerStoryPositionBytes);
 					uint8_t newStoryIndex = atoi(buffer);
-					//DEBUG("Story Index: %d", newStoryIndex);
 
 					if (getStoryData(client, newStorySize)) {
 						// Update the data manager metadata for the new story.
@@ -179,9 +176,7 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	serverMan->pendingCommand = new char[cmdLen + 1]();
 	memcpy(serverMan->pendingCommand, commandAndArgs, cmdLen);
 
-	if (strcmp(serverMan->pendingCommand, kServerCmdPing) == 0) {
-		//return kServerReturnSuccess;
-	} else if (strcmp(serverMan->pendingCommand, kServerCmdKeypadInput) == 0) {
+	if (strcmp(serverMan->pendingCommand, kServerCmdKeypadInput) == 0) {
 		KeypadEvent event = (KeypadEvent)(serverMan->pendingArguments[0] - '0');
 		uint8_t value = serverMan->pendingArguments[1] - '0';
 		//DEBUG("Event: %d, Val: %d", event, value);
@@ -226,8 +221,11 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 			returnVal = kServerReturnFail;
 		}
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdSetValue) == 0) {
-		/* TODO */
-		returnVal = kServerReturnNotImplemented;
+		uint8_t index = serverMan->pendingArguments[0] - '0';
+		uint16_t value = atoi(&serverMan->pendingArguments[1]);
+		if (!dataMan->setValue(index, value)) {
+			returnVal = kServerReturnFail;
+		}
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdResetMetadata) == 0) {
 		if (!dataMan->resetMetadata()) {
 			returnVal = kServerReturnFail;
@@ -242,11 +240,13 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		/* TODO */
 		returnVal = kServerReturnNotImplemented;
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetFlag) == 0) {
-		/* TODO */
-		returnVal = kServerReturnNotImplemented;
+		uint8_t index = serverMan->pendingArguments[0] - '0';
+		char* flags = (char*)&dataMan->metadata.flags;
+		returnVal = flags[index];
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetValue) == 0) {
-		/* TODO */
-		returnVal = kServerReturnNotImplemented;
+		uint8_t index = serverMan->pendingArguments[0] - '0';
+		uint16_t* values = (uint16_t*)&dataMan->metadata.values;
+		returnVal = values[index];
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetNames) == 0) {
 		/* TODO */
 		returnVal = kServerReturnNotImplemented;

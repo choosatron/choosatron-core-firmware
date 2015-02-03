@@ -36,27 +36,12 @@ SYSTEM_MODE(SEMI_AUTOMATIC);
 /* Variables -----------------------------------------------------------------*/
 cdam::StateController *stateController;
 
-
-/* This allows triggering DFU mode over WiFi ---------------------------------*/
-#ifdef DEBUG_BUILD
-/*int doDFU(String command) {
-	FLASH_OTA_Update_SysFlag = 0x0000;
-	Save_SystemFlags();
-	BKP_WriteBackupRegister(BKP_DR10, 0x0000);
-	USB_Cable_Config(DISABLE);
-	NVIC_SystemReset();
-
-	return 0;
-}*/
-#endif
-
 /* This function is called once at start up ----------------------------------*/
 void setup()
 {
-#ifdef DEBUG_BUILD
-	//Spark.function("dfu", doDFU);
+#ifndef DEBUG_BUILD
+	Serial.begin(BAUD_RATE);
 #endif
-	//Serial.begin(BAUD_RATE);
 	//while(!Serial.available()) SPARK_WLAN_Loop();
 	stateController = new cdam::StateController();
 	stateController->initialize();
@@ -65,10 +50,9 @@ void setup()
 /* This function loops forever --------------------------------------------*/
 void loop()
 {
-	//CAN'T BE DOIN SERIAL AND TCP STUFF WHEN IN BLINKY BLUE MODE!!
 	cdam::Manager::getInstance().dataManager->handleSerialData();
 	cdam::Manager::getInstance().hardwareManager->updateIntervalTimers();
-	//cdam::Manager::getInstance().serverManager->handlePendingActions();
+	cdam::Manager::getInstance().serverManager->handlePendingActions();
 	//Spark.process();
 	if (cdam::Manager::getInstance().dataManager->runState) {
 		stateController->updateState();

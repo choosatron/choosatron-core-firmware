@@ -57,7 +57,7 @@ bool DataManager::initialize(StateController *aStateController) {
 bool DataManager::initStorage() {
 #if HAS_SD == 1
 	if (this->metadata.flags.sdCard && !initSD()) {
-		DEBUG("SD Failed");
+		ERROR("SD failed to init!");
 		this->metadata.flags.sdCard = 0;
 	}
 #endif
@@ -79,20 +79,13 @@ bool DataManager::initStorage() {
 #endif
 	// Setup story order.
 	memcpy(&this->liveStoryOrder, &this->metadata.storyOrder, sizeof(this->metadata.storyOrder));
-
-    //testMetadata();
-	//_metaFlash->eraseAll();
-
-	//_storyFlash->eraseAll();
-	//logStoryOffsets(&this->metadata);
-	//logStoryBytes(&this->metadata);
 	return true;
 }
 
 void DataManager::logMetadata() {
 	//DEBUG("Metadata size: %d", kMetadataSize);
 	//DEBUG("Metadata size: %d", sizeof(this->metadata));
-	DEBUG(CDAM_SUBTITLE);
+	//DEBUG(CDAM_SUBTITLE);
 	char data[kMetadataSize] = "";
 	_metaFlash->read(data, 0, kMetadataSize);
 	for (int i = 0; i < kMetadataSize; ++i) {
@@ -100,7 +93,7 @@ void DataManager::logMetadata() {
 			Serial.print(data[i],HEX);
 			//Serial.print(" ");
 	}
-	Serial.println("END");
+	Serial.println("");
 }
 
 void DataManager::handleSerialData() {
@@ -110,9 +103,12 @@ void DataManager::handleSerialData() {
 			uint8_t cmd = Serial.read();
 
 			if (cmd == 'c') {
+				//LOG("Command Mode");
+				Serial.println("Command Mode");
 				_serialTimeout = 0;
 				while (!Serial.available()) {
 					if (_serialTimeout >= kTimeoutSerialMillis) {
+						Serial.println("Command timeout.");
 						return;
 					}
 				}
@@ -130,6 +126,7 @@ void DataManager::handleSerialData() {
 						break;
 					}
 					case kSerialCmdClearWiFi: {
+						Serial.println("Clearing all WiFi credentials.");
 						WiFi.disconnect();
 						WiFi.clearCredentials();
 						WiFi.off();
@@ -138,10 +135,13 @@ void DataManager::handleSerialData() {
 					case kSerialCmdWriteFlashee: {
 						this->writeToFlashee = true;
 					case kSerialCmdWriteFlashRaw:
+						//LOG("Write to User Flash - press '1' for default address.");
+						Serial.println("Write to User Flash - Press '1' for default address.");
 						// First byte determines default address or not - ascii '0' for no, '1' for address.
 						_serialTimeout = 0;
 						while (!Serial.available()) {
 							if (_serialTimeout >= kTimeoutSerialMillis) {
+								Serial.println("Command timeout.");
 								return;
 							}
 						}
@@ -230,7 +230,9 @@ void DataManager::handleSerialData() {
 						break;
 					}
 					case kSerialCmdSetValue: {
-
+						uint8_t index = Serial.read();
+						uint16_t value = (Serial.read() << 8) | Serial.read();
+						setValue(index, value);
 						break;
 					}
 					case kSerialCmdResetMetadata: {
@@ -261,7 +263,6 @@ bool DataManager::initSD() {
 	if (_card->init(PIN_SD_MOSI, PIN_SD_MISO, PIN_SD_SCK, PIN_SD_CS) &&//_card.init(SPI_FULL_SPEED, PIN_SD_CS) &&
 		_volume->init(_card) &&
 		_root->openRoot(_volume)) {
-		//DEBUG("SD Init");
 
 		_storyFile = new SdFile();
 
@@ -269,44 +270,28 @@ bool DataManager::initSD() {
 		char fileName[13] = {'\0'};
 		uint16_t fileIndex = 0;
 		uint8_t index = 0;
-		//char title[65] = {'\0'};
 		int8_t dirBytes = 0;
 		while ((dirBytes = _root->readDir(&filePntr)) && (index < kMaxRandStoryCount)) {
-			//DEBUG("ReadDir: %d", dirBytes);
 			memcpy(fileName, filePntr.name, 8);
 			memcpy(fileName + 9, filePntr.name + 8, 3);
 			fileName[8] = '.';
-			//DEBUG("FN: %s", fileName);
 			if (strncmp(fileName + 9, "DAM", 3) == 0) {
 				if (_storyFile->open(_root, fileIndex, O_READ)) {
 					if (_storyFile->read() == kAsciiHeaderByte) {
 						this->metadata.storyOffsets[index] = fileIndex;
 						this->metadata.storyOrder[index] = index;
 						index++;
-						/*char title[65] = {'\0'};
-						_storyFile->seekSet(36); // seekCur moves forward given # of bytes
-						_storyFile->read(title, 64);
-						DEBUG("Title: %s", title);*/
-					} else {
-						//DEBUG("Not header byte");
 					}
 					_storyFile->close();
-				} else {
-					//DEBUG("Failed to open");
 				}
 			}
-			//memset(&fileName[0], 0, sizeof(fileName));
-			//delete _storyFile;
-			//_storyFile = NULL;
 			fileIndex++;
 		}
 		if (index > 0) {
-			//DEBUG("Story Count: %d", index);
 			this->metadata.storyCount = index;
 			this->liveStoryCount = (index > 10) ? 10 : index;
 			return true;
 		}
-		//DEBUG("SD: %s", (this->metadata.flags.sdCard ? "on" : "off"));
 	}
 	delete _card;
 	delete _volume;
@@ -361,10 +346,6 @@ bool DataManager::getNumberedTitle(char* aBuffer, uint8_t aIndex) {
 		}
 	}
 #endif
-	/*if (!result) {
-		Errors::setError(E_HEADER_READ_FAIL);
-		ERROR(Errors::errorString());
-	}*/
 	return result;
 }
 
@@ -404,7 +385,6 @@ void DataManager::unloadStory() {
 		delete[] _variables;
 		_variables = NULL;
 	}
-	//memset(&this->storyHeader, 0, sizeof(this->storyHeader));
 	this->storyHeader = {'\0'};
 }
 
@@ -418,7 +398,6 @@ bool DataManager::setVarAtIndex(uint8_t aIndex, int16_t aValue) {
 		return true;
 	}
 	Errors::setError(E_INVALID_VARIABLE);
-	//ERROR(Errors::errorString());
 	return false;
 }
 
@@ -462,11 +441,7 @@ bool DataManager::addStoryMetadata(uint8_t aIndex, uint8_t aPages) {
 	// Add the total story bytes to the total used.
 	this->metadata.usedStoryPages += aPages;
 
-	// Reinitialize Choosatron.
-	//_stateController->changeState(STATE_INIT);
-
 	return writeStoryCountData(&this->metadata);
-	//return writeMetadata(&this->metadata);
 }
 
 bool DataManager::removeStoryMetadata(uint8_t aIndex) {
@@ -525,8 +500,6 @@ bool DataManager::removeAllStoryData() {
 	this->liveStoryCount = 0;
 	// Add the total story bytes to the total used.
 	this->metadata.usedStoryPages = 0;
-	// Clear out storyOffsets.
-	//memset(&this->metadata.storyOffsets[0], 0, sizeof(this->metadata.storyOffsets));
 
 	for (int i = 0; i < kMaxRandStoryCount; ++i) {
 		this->metadata.storyOffsets[i] = 0;
@@ -545,18 +518,20 @@ bool DataManager::setFlag(uint8_t aFlagIndex, uint8_t aBitIndex, bool aValue) {
 		// Access the flag byte at the appropriate offset and clear it.
 		(*((uint8_t *) &this->metadata + kMetadataFlagsOffset + aFlagIndex)) &= ~(1 << aBitIndex);
 	}
-	uint8_t flag = (*((uint8_t *) &this->metadata + kMetadataFlagsOffset + aFlagIndex));
-	Errors::clearError();
+	uint8_t flag = (*((uint8_t *)&this->metadata + kMetadataFlagsOffset + aFlagIndex));
 	bool result = _metaFlash->writeEraseByte(flag, kMetadataFlagsOffset + aFlagIndex);
-	/*if (!result) {
-		Errors::setError(E_METADATA_WRITE_FAIL);
-		ERROR(Errors::errorString());
-	}*/
+	return result;
+}
+
+bool DataManager::setValue(uint8_t aIndex, uint16_t aValue) {
+	//uint16_t values = (*((uint16_t *)&this->metadata.values + (aIndex * 2)));
+	uint16_t* values = (uint16_t*)&this->metadata.values;
+	values[aIndex] = aValue;
+	bool result = _metaFlash->write(&values[aIndex], kMetadataValuesOffset + (aIndex * 2), 2);
 	return result;
 }
 
 bool DataManager::resetMetadata() {
-	//_metaFlash->eraseAll();
 	return initializeMetadata(&this->metadata);
 }
 
@@ -627,7 +602,7 @@ bool DataManager::writeData(void* aBuffer, uint32_t aAddress, uint32_t aLength) 
 #if HAS_SD == 1
 	if (this->metadata.flags.sdCard) {
 		/* Currently not writing. */
-		//WARN("No writing data in SD mode.");
+		WARN("No writing data in SD mode.");
 	} else
 #endif
 	{
@@ -665,9 +640,7 @@ bool DataManager::loadMetadata() {
 		}
 	} else {
 		// Data exists. Read it!
-		//DEBUG("SOH found, read metadata.");
 		if (!readMetadata(&this->metadata)) {
-			//ERROR(Errors::errorString());
 			return false;
 		}
 
@@ -675,7 +648,6 @@ bool DataManager::loadMetadata() {
 			// Update to the current standard (in memory)
 			if (!upgradeDataModels()) {
 				Errors::setError(E_DATA_MODEL_UPGRADE_FAIL);
-				//ERROR(Errors::errorString());
 				return false;
 			}
 		}
@@ -717,9 +689,7 @@ bool DataManager::initializeMetadata(Metadata *aMetadata) {
 	aMetadata->deletedStoryCount = 0;
 	aMetadata->usedStoryPages = 0;
 
-	strncpy(aMetadata->deviceName, "Choosatron", kMetadataDeviceNameSize);
-	strncpy(aMetadata->ownerProfile, "Jerry Belich", kMetadataOwnerProfileSize);
-	strncpy(aMetadata->ownerCloud, "jerry@monkeytheater.com", kMetadataOwnerCloudSize);
+	strncpy(aMetadata->deviceName, CDAM_TITLE, kMetadataDeviceNameSize);
 
 	if (!writeMetadata(aMetadata)) {
 		return false;
@@ -728,23 +698,16 @@ bool DataManager::initializeMetadata(Metadata *aMetadata) {
 }
 
 bool DataManager::readMetadata(Metadata *aMetadata) {
-	//DEBUG("Size of Metadata: %d", sizeof(*aMetadata));
+	bool result = false;
 	if (_metaFlash->readByte(kMetadataBaseAddress) == kAsciiHeaderByte) {
-		bool result = _metaFlash->read(aMetadata, kMetadataBaseAddress, kMetadataSize);
-		if (!result) {
-			Errors::setError(E_METADATA_READ_FAIL);
-			//ERROR(Errors::errorString());
-			return false;
-		}
+		result = _metaFlash->read(aMetadata, kMetadataBaseAddress, kMetadataSize);
 	}
-	return true;
+	return result;
 }
 
 bool DataManager::readStoryHeader(uint8_t aIndex, StoryHeader *aHeader) {
 	uint32_t offset = getStoryOffset(aIndex);
-	//DEBUG("Pages Offset: %d", getStoryOffset(aIndex));
 
-	//DEBUG("StoryHeader offset: %d, size: %d", offset, kStoryHeaderSize);
 	bool result = readData((uint8_t*)aHeader, offset, kStoryHeaderSize);
 	_variables = new int16_t[aHeader->variableCount]();
 	offset += kStoryHeaderSize;
@@ -760,23 +723,13 @@ bool DataManager::readStoryHeader(uint8_t aIndex, StoryHeader *aHeader) {
 
 	offset += this->psgCount * kPassageOffsetSize;
 	this->startOffset = offset;
-	//DEBUG("Start Offset: %d", this->startOffset);
 	this->psgIndex = 0;
-	if (!result) {
-		Errors::setError(E_HEADER_READ_FAIL);
-		//ERROR(Errors::errorString());
-	}
+
 	return result;
 }
 
 bool DataManager::writeMetadata(Metadata *aMetadata) {
-	//DEBUG("Size of Metadata: %d", sizeof(*aMetadata));
-	//DEBUG("Maybe size: %d", kMetadataSize);
 	bool result = _metaFlash->write(aMetadata, kMetadataBaseAddress, kMetadataSize);
-	/*if (!result) {
-		Errors::setError(E_METADATA_WRITE_FAIL);
-		ERROR(Errors::errorString());
-	}*/
 	return result;
 }
 
@@ -792,10 +745,7 @@ bool DataManager::writeStoryCountData(Metadata *aMetadata) {
 	result = _metaFlash->write(&aMetadata->storyOffsets, kMetadataStoryOffsetsOffset, kMetadataStoryOffsetsSize) && result ? true : false;
 	result = _metaFlash->write(&aMetadata->storyOrder, kMetadataStoryOrderOffset, kMetadataStoryOrderSize) && result ? true : false;
 	result = _metaFlash->write(&aMetadata->storyState, kMetadataStoryStateOffset, kMetadataStoryStateSize) && result ? true : false;
-	/*if (!result) {
-		Errors::setError(E_METADATA_WRITE_FAIL);
-		ERROR(Errors::errorString());
-	}*/
+
 	return result;
 }
 
@@ -819,14 +769,10 @@ bool DataManager::upgradeDataModels() {
 
 
 	// Wipe out data in flash
-	// ** Do we need to 'zero' it out?
-	// Save the new metadata
-	if (writeMetadata(&this->metadata)) {
-		Errors::setError(E_METADATA_WRITE_FAIL);
-		//ERROR(Errors::errorString());
-		return false;
-	}
-	return true;
+	// ** Do we need to 'zero' it out? **
+	// Save the new metadata.
+	bool result = writeMetadata(&this->metadata);
+	return result;
 }
 
 /*void DataManager::testMetadata() {

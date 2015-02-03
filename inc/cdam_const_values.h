@@ -52,6 +52,8 @@ const uint8_t kSerialCmdRemoveAllStories = 0x0A;
 const uint8_t kSerialCmdMoveStory = 0x0B;
 const uint8_t kSerialCmdSetFlag = 0x0C;
 const uint8_t kSerialCmdSetValue = 0x0D;
+const uint8_t kSerialCmdGetFlag = 0x0E;
+const uint8_t kSerialCmdGetValue = 0x0F;
 
 const uint8_t kSerialCmdResetMetadata = 0x0E;
 const uint8_t kSerialCmdEraseFlash = 0x0F;

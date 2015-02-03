@@ -18,7 +18,7 @@ const uint8_t kServerTTLDefault = 60;
 // How often to check for serial communication.
 const uint16_t kIntervalSerialMillis = 500;
 // Timeout to input a serial command.
-const uint16_t kTimeoutSerialMillis = 5000;
+const uint16_t kTimeoutSerialMillis = 8000;
 // How often to update the Printer state.
 const uint16_t kIntervalPrinterMillis = 50;
 // How often to update the Keypad state.

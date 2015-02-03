@@ -81,6 +81,7 @@ class DataManager
 		bool removeAllStoryData();
 		// Set and write a flag.
 		bool setFlag(uint8_t aFlagIndex, uint8_t aBitIndex, bool aValue);
+		bool setValue(uint8_t aIndex, uint16_t aValue);
 		// Resets metadata to default values.
 		bool resetMetadata();
 		// Erase entire flash memory, includes metadata.
