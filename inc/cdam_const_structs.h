@@ -241,13 +241,6 @@ typedef struct Uuid_t {
 	uint8_t node[6];
 } Uuid;
 
-/*typedef struct StoryVars_t {
-	uint8_t small; // How many 8 bit variables
-	uint8_t big; // How many 16 bit variables
-	uint8_t rsvd1;
-	uint8_t rsvd2;
-} StoryVars;*/
-
 typedef struct StoryHeader_t { // Total Size: 394 bytes
 	uint8_t soh;
 	Version binaryVer;

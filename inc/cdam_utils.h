@@ -11,8 +11,8 @@ namespace cdam
 class Utils {
 
 public:
-	static const char kEncodingTable[64];
-	static const int kModTable[3];
+	//static const char kEncodingTable[64];
+	//static const int kModTable[3];
 
 	static void shuffle(uint8_t *aArray, uint8_t aElements);
 	//static void shuffle(void *aArray, size_t aElements, size_t aArraySize);

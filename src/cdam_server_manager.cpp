@@ -52,9 +52,9 @@ const char* kServerCmdGetCredits = "get_credits";
 const char* kServerCmdGetRSSI = "get_rssi";
 const char* kServerCmdGetState = "get_state"; // Publishes event.
 const char* kServerCmdGetSSID = "get_ssid"; // Publishes event.
-const char* kServerCmdGetGatewayIP = "get_gateway_ip"; // Publishes event.
+//const char* kServerCmdGetGatewayIP = "get_gateway_ip"; // Publishes event.
 const char* kServerCmdGetMacAddr = "get_mac_addr"; // Publishes event.
-const char* kServerCmdGetSubnetMask = "get_subnet_mask"; // Publishes event.
+//const char* kServerCmdGetSubnetMask = "get_subnet_mask"; // Publishes event.
 const char* kServerCmdGetLocalIP = "get_local_ip"; // Publishes event.
 
 // Requires TCP Connection.
@@ -235,7 +235,6 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdRebootUnit) == 0) {
 		dataMan->stateController()->changeState(STATE_INIT);
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetVersion) == 0) {
-		/* TODO */
 		returnVal = (kFirmwareVersionMajor * 100) + (kFirmwareVersionMinor * 10) + kFirmwareVersionRevision;
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetFlag) == 0) {
 		uint8_t index = serverMan->pendingArguments[0] - '0';
@@ -264,7 +263,7 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 			if (!result) {
 				returnVal = kServerReturnFail;
 			} else {
-				char storyInfo[161] = "";
+				char storyInfo[1610] = "";
 				dataMan->getStoryInfo(storyInfo, 161, index, &storyHeader);
 				Spark.publish(kServerCmdGetStoryInfo, storyInfo, kServerTTLDefault, PRIVATE);
 			}
@@ -300,12 +299,12 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetSSID) == 0) {
 		Spark.publish(kServerCmdGetSSID, WiFi.SSID(), kServerTTLDefault, PRIVATE);
 		returnVal = kServerReturnEventIncoming;
-	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetGatewayIP) == 0) {
+	/*} else if (strcmp(serverMan->pendingCommand, kServerCmdGetGatewayIP) == 0) {
 		uint8_t *address = WiFi.gatewayIP().raw_address();
 		char addr[16] = "";
 		snprintf(addr, 16, "%d.%d.%d.%d", address[0], address[1], address[2], address[3]);
 		Spark.publish(kServerCmdGetGatewayIP, addr, kServerTTLDefault, PRIVATE);
-		returnVal = kServerReturnEventIncoming;
+		returnVal = kServerReturnEventIncoming;*/
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetMacAddr) == 0) {
 		byte macVal[6];
 		WiFi.macAddress(macVal);
@@ -313,12 +312,12 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		snprintf(macAddr, 18, "%02x:%02x:%02x:%02x:%02x:%02x", macVal[5], macVal[4], macVal[3], macVal[2], macVal[1], macVal[0]);
 		Spark.publish(kServerCmdGetMacAddr, macAddr, kServerTTLDefault, PRIVATE);
 		returnVal = kServerReturnEventIncoming;
-	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetSubnetMask) == 0) {
+	/*} else if (strcmp(serverMan->pendingCommand, kServerCmdGetSubnetMask) == 0) {
 		uint8_t *address = WiFi.subnetMask().raw_address();
 		char addr[16] = "";
 		snprintf(addr, 16, "%d.%d.%d.%d", address[0], address[1], address[2], address[3]);
 		Spark.publish(kServerCmdGetSubnetMask, addr, kServerTTLDefault, PRIVATE);
-		returnVal = kServerReturnEventIncoming;
+		returnVal = kServerReturnEventIncoming;*/
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetLocalIP) == 0) {
 		uint8_t *address = WiFi.localIP().raw_address();
 		char addr[16] = "";

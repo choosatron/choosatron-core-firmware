@@ -57,7 +57,7 @@ bool DataManager::initialize(StateController *aStateController) {
 bool DataManager::initStorage() {
 #if HAS_SD == 1
 	if (this->metadata.flags.sdCard && !initSD()) {
-		ERROR("SD failed to init!");
+		ERROR("SD failed!");
 		this->metadata.flags.sdCard = 0;
 	}
 #endif
@@ -86,14 +86,14 @@ void DataManager::logMetadata() {
 	//DEBUG("Metadata size: %d", kMetadataSize);
 	//DEBUG("Metadata size: %d", sizeof(this->metadata));
 	//DEBUG(CDAM_SUBTITLE);
-	char data[kMetadataSize] = "";
+	/*char data[kMetadataSize] = "";
 	_metaFlash->read(data, 0, kMetadataSize);
 	for (int i = 0; i < kMetadataSize; ++i) {
 		if (data[i]<0x10) {Serial.print("0");}
 			Serial.print(data[i],HEX);
 			//Serial.print(" ");
 	}
-	Serial.println("");
+	Serial.println("");*/
 }
 
 void DataManager::handleSerialData() {
@@ -108,7 +108,7 @@ void DataManager::handleSerialData() {
 				_serialTimeout = 0;
 				while (!Serial.available()) {
 					if (_serialTimeout >= kTimeoutSerialMillis) {
-						Serial.println("Command timeout.");
+						Serial.println("Timeout");
 						return;
 					}
 				}
@@ -126,7 +126,7 @@ void DataManager::handleSerialData() {
 						break;
 					}
 					case kSerialCmdClearWiFi: {
-						Serial.println("Clearing all WiFi credentials.");
+						Serial.println("Clearing WiFi creds.");
 						WiFi.disconnect();
 						WiFi.clearCredentials();
 						WiFi.off();
@@ -141,7 +141,7 @@ void DataManager::handleSerialData() {
 						_serialTimeout = 0;
 						while (!Serial.available()) {
 							if (_serialTimeout >= kTimeoutSerialMillis) {
-								Serial.println("Command timeout.");
+								Serial.println("Timeout");
 								return;
 							}
 						}
