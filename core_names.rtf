@@ -55,6 +55,8 @@ make PRODUCT_ID=7 PRODUCT_FIRMWARE_VERSION=1 APP=choosatron DEBUG_BUILD=y TARGET
 \f1\fs28 \cf3 make DEBUG_BUILD=y\
 make clean all SPARK_PRODUCT_ID=7 PRODUCT_FIRMWARE_VERSION=1 DEBUG_BUILD=y\
 \
+make PRODUCT_ID=7 PRODUCT_FIRMWARE_VERSION=100 APP=choosatron-core-v1 DEBUG_BUILD=y TARGET_DIR=applications/choosatron-core-v1/build v=1 clean all\
+\
 curl https://api.spark.io/v1/devices/
 \f0\fs24 \cf0 48ff70065067555020101587
 \f1\fs28 \cf3 /dfu -d access_token=\cf2 3cbce66f21cd4e0ede781cbe95d558464515ef3c\cf3  -m 2

@@ -323,7 +323,7 @@ Flashee::FlashDevice* DataManager::flashStories() {
 }
 //
 
-uint32_t DataManager::getStoryOffset(uint8_t aIndex, bool aVisibleOnly = true) {
+uint32_t DataManager::getStoryOffset(uint8_t aIndex, bool aVisibleOnly) {
 #if HAS_SD == 1
 	if (this->metadata.flags.sdCard) { return 0; }
 #endif

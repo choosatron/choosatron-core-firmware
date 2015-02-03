@@ -61,7 +61,7 @@ class DataManager
 		Flashee::FlashDevice* flashStories();
 
 		// Get the page offset the story begins at.
-		uint32_t getStoryOffset(uint8_t aIndex, bool aVisibleOnly);
+		uint32_t getStoryOffset(uint8_t aIndex, bool aVisibleOnly = true);
 		// Get the byte offset for the given passage index (in current story).
 		uint32_t getPassageOffset(uint16_t aIndex);
 		// Fill provided buffer with the title of the story and the provided position.
