@@ -434,8 +434,6 @@ void Printer::printBitmap(Stream *aStream) {
 void Printer::begin(int aHeatTime) {
 	SERIAL_IMPL.begin(kPrinterBaudRate);
 
-	DEBUG("Begin");
-
 	//timeoutSet(500000L);
 
 	wake();
