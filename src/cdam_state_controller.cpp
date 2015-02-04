@@ -173,7 +173,7 @@ void StateController::loopState(GameState aState) {
 			}
 		}
 	} else if (aState == STATE_WAITING) {
-		uint8_t total = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, _dataManager->liveStoryCount);
+		uint8_t total = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, 0);
 		if (total) {
 			if (_dataManager->liveStoryCount && (total == 10)) {
 				_dataManager->randomPlay = true;
@@ -238,7 +238,7 @@ void StateController::loopState(GameState aState) {
 		if (state == PARSE_ENDING) {
 			_resetElapsed = 0;
 		} else if (state == PARSE_IDLE) {
-			uint8_t total = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, _dataManager->liveStoryCount);
+			uint8_t total = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, 0);
 			if (_resetElapsed > kIntervalPressAnyButton) {
 				if (_dataManager->metadata.flags.arcade) {
 					changeState(STATE_CREDITS);
