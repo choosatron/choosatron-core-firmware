@@ -1,3 +1,11 @@
+
+
+## 1.0.0
+
+Features:
+
+  - Updated text for initial release.
+
 ## 2.0.0a5 (unreleased)
 
 Features:
@@ -10,10 +18,7 @@ Features:
   - Added serial firmware update / flash writing, and initial structure for more serial commands.
   - Added random play mode - release all four buttons together on the 'Press any button to start!'
   - Increase 'Press any...' message delay from 30 secs to 40 (after a game ends)
-
-Bugfixes:
-
-  -
+  - Added feature to allow changing the keypad setup depending on PCB version.
 
 ## 2.0.0a4 (unreleased)
 
