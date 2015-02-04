@@ -27,7 +27,7 @@ const uint8_t kFirmwareVersionMinor = 0;
 const uint8_t kFirmwareVersionRevision = 0;
 
 typedef enum {
-#if (BOARD_DOT_VERSION >= 6)
+/*#if (BOARD_DOT_VERSION >= 6)
 	PIN_BTN_ONE = D1,
 	PIN_BTN_TWO = D2,
 	PIN_BTN_THREE = D3,
@@ -42,7 +42,7 @@ typedef enum {
 	PIN_BTN_TWO = D5,
 	PIN_BTN_THREE = D2,
 	PIN_BTN_FOUR = D3,
-#endif
+#endif*/
 	PIN_PIEZO = A0,
 	PIN_RED_LED = A1,
 	PIN_GREEN_LED = A6,

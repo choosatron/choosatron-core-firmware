@@ -58,7 +58,8 @@ class Keypad {
 public:
 	/* Public Methods */
 	Keypad();
-	void initialize();
+	void initialize(uint8_t aPinBtnOne, uint8_t aPinBtnTwo,
+	                uint8_t aPinBtnThree, uint8_t aPinBtnFour);
 	void updateState();
 	bool buttonsDown();
 	bool buttonDown(uint8_t aBtnNum);

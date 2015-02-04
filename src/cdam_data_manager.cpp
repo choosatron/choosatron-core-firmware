@@ -712,6 +712,7 @@ bool DataManager::initializeMetadata(Metadata *aMetadata) {
 	//aMetadata->flags.rsvd3 = 0;
 	//aMetadata->flags.dictOffsetBytes = 0;
 
+	aMetadata->values.pcbVersion = BOARD_DOT_VERSION;
 	aMetadata->values.coinsPerCredit = 0;
 	aMetadata->values.coinDenomination = 0;
 

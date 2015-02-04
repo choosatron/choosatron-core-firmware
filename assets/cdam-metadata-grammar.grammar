@@ -86,10 +86,10 @@ Random: If there are more than 4 stories, randomize a menu of 4 choices.</descri
                 <number name="Flag8" id="32" type="integer" length="8" lengthunit="bit" display="binary"/>
             </structure>
             <structure name="Values" id="34" length="32" fillcolor="FFBE6B">
+                <number name="PCBVersion" id="38" type="integer" length="2"/>
                 <number name="CoinsPerCredit" id="35" type="integer" length="2"/>
                 <number name="CoinDenomination" id="36" type="integer" length="2"/>
                 <number name="CoinsToContinue" id="37" type="integer" length="2"/>
-                <number name="Value4" id="38" type="integer" length="2"/>
                 <number name="Value5" id="39" type="integer" length="2"/>
                 <number name="Value6" id="40" type="integer" length="2"/>
                 <number name="Value7" id="41" type="integer" length="2"/>
@@ -103,17 +103,17 @@ Random: If there are more than 4 stories, randomize a menu of 4 choices.</descri
                 <number name="Value15" id="49" type="integer" length="2"/>
                 <number name="Value16" id="50" type="integer" length="2"/>
             </structure>
-            <string name="DeviceName" id="58" type="fixed-length" length="30"/>
-            <string name="OwnerProfile" id="59" type="fixed-length" length="30"/>
-            <string name="OwnerCloud" id="60" type="fixed-length" length="63"/>
-            <number name="StoryCount" id="52" fillcolor="FF6CEE" type="integer" length="1" minval="0" maxval="20"/>
-            <number name="DeletedStoryCount" id="62" type="integer" length="1" minval="0" maxval="20"/>
-            <number name="UsedStoryPages" id="53" type="integer" length="1" minval="0" maxval="255">
+            <string name="DeviceName" id="52" type="fixed-length" length="30"/>
+            <string name="OwnerProfile" id="53" type="fixed-length" length="30"/>
+            <string name="OwnerCloud" id="54" type="fixed-length" length="63"/>
+            <number name="StoryCount" id="55" fillcolor="FF6CEE" type="integer" length="1" minval="0" maxval="20"/>
+            <number name="DeletedStoryCount" id="56" type="integer" length="1" minval="0" maxval="20"/>
+            <number name="UsedStoryPages" id="57" type="integer" length="1" minval="0" maxval="255">
                 <description>Total bytes used.</description>
             </number>
-            <number name="StoryOffset" id="54" fillcolor="4CCDFF" repeatmin="20" repeatmax="20" type="integer" length="2" minval="0" maxval="255"/>
-            <number name="StoryOrder" id="55" repeatmin="20" repeatmax="20" type="integer" length="1" minval="0" maxval="255"/>
-            <number name="StoryState" id="61" repeatmin="20" repeatmax="20" type="integer" length="1" minval="0" maxval="255"/>
+            <number name="StoryOffset" id="58" fillcolor="4CCDFF" repeatmin="20" repeatmax="20" type="integer" length="2" minval="0" maxval="255"/>
+            <number name="StoryOrder" id="59" repeatmin="20" repeatmax="20" type="integer" length="1" minval="0" maxval="255"/>
+            <number name="StoryState" id="60" repeatmin="20" repeatmax="20" type="integer" length="1" minval="0" maxval="255"/>
         </structure>
     </grammar>
 </ufwb>

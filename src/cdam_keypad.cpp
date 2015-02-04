@@ -17,16 +17,18 @@ namespace cdam
 
 Keypad::Keypad() {}
 
-void Keypad::initialize() {
-	pinMode(PIN_BTN_ONE, INPUT_PULLUP);
-	pinMode(PIN_BTN_TWO, INPUT_PULLUP);
-	pinMode(PIN_BTN_THREE, INPUT_PULLUP);
-	pinMode(PIN_BTN_FOUR, INPUT_PULLUP);
+void Keypad::initialize(uint8_t aPinBtnOne, uint8_t aPinBtnTwo,
+                        uint8_t aPinBtnThree, uint8_t aPinBtnFour) {
 
-	ButtonData btnOne   = { PIN_BTN_ONE, 1, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0, 0, 0 };
-	ButtonData btnTwo   = { PIN_BTN_TWO, 2, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0, 0, 0 };
-	ButtonData btnThree = { PIN_BTN_THREE, 3, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0, 0, 0 };
-	ButtonData btnFour  = { PIN_BTN_FOUR, 4, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0, 0, 0 };
+	pinMode(aPinBtnOne, INPUT_PULLUP);
+	pinMode(aPinBtnTwo, INPUT_PULLUP);
+	pinMode(aPinBtnThree, INPUT_PULLUP);
+	pinMode(aPinBtnFour, INPUT_PULLUP);
+
+	ButtonData btnOne   = { aPinBtnOne, 1, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0, 0, 0 };
+	ButtonData btnTwo   = { aPinBtnTwo, 2, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0, 0, 0 };
+	ButtonData btnThree = { aPinBtnThree, 3, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0, 0, 0 };
+	ButtonData btnFour  = { aPinBtnFour, 4, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0, 0, 0 };
 
 	this->buttonData[0] = btnOne;
 	this->buttonData[1] = btnTwo;

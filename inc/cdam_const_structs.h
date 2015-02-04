@@ -130,10 +130,10 @@ typedef struct MetaFlags_t {
 } MetaFlags;
 
 typedef struct MetaValues_t {
+	uint16_t pcbVersion;
 	uint16_t coinsPerCredit;
 	uint16_t coinDenomination;
 	uint16_t coinsToContinue;
-	uint16_t value4;
 	uint16_t value5;
 	uint16_t value6;
 	uint16_t value7;

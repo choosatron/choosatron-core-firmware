@@ -74,7 +74,23 @@ void HardwareManager::initHardware() {
 
 	// Setup Keypad
 	_keypad = new Keypad();
-	_keypad->initialize();
+	uint8_t pcbVer = Manager::getInstance().dataManager->metadata.values.pcbVersion;
+	uint8_t pinBtnOne = D1;
+	uint8_t pinBtnTwo = D2;
+	uint8_t pinBtnThree = D3;
+	uint8_t pinBtnFour = D4;
+	if (pcbVer < 3) {
+		pinBtnOne = D4;
+		pinBtnTwo = D5;
+		pinBtnThree = D2;
+		pinBtnFour = D3;
+	} else if (pcbVer < 6) {
+		pinBtnOne = D2;
+		pinBtnTwo = D3;
+		pinBtnThree = D4;
+		pinBtnFour = D5;
+	}
+	_keypad->initialize(pinBtnOne, pinBtnTwo, pinBtnThree, pinBtnFour);
 	_keypad->active = false;
 	_keypadElapsed = kIntervalKeypadMillis;
 
