@@ -1,0 +1,649 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ufwb version="1.9">
+    <grammar name="Choosatron Story Binary" start="id:143" author="Jerry Belich" email="jerry@choosatron.com" fileextension="cdam" uti="com.choosatron" complete="yes">
+        <description>Grammar for the Choosatron Deluxe Adventure Matrix binary story file.</description>
+        <scripts>
+            <script name="Passage" type="Grammar" id="66">
+                <source language="Python">def init():
+	print &quot;init&quot;
+
+def processGrammar(grammar):
+	print &quot;grammar&quot;
+
+def terminate():
+	print &quot;terminate&quot;
+</source>
+            </script>
+            <script name="TextBody" type="DataType" id="64">
+                <source language="Python"># Text Body - Used for passage body text and choice text.
+
+def parseByteRange(element, byteView, bitPos, bitLength, results):
+    # this method parses data starting at bitPos, bitLength bits are remaining
+    &quot;&quot;&quot;parseByteRange method&quot;&quot;&quot;
+
+    textStr = &quot;&quot;
+    # how many bytes were processed?
+    processedBytes = 0
+    iteration = 0
+    # we are only working with bytes
+    startPos = bytePos = bitPos / 8
+    
+    processedBytes = 0
+    byteLength = bitLength / 8
+    
+    textResult = results.getLastResult()
+    if textResult is not None:
+        countPos = textResult.getStartBytePos()
+        textCount = textResult.getByteView().readUnsignedInt(countPos, 2, ENDIAN_LITTLE)
+        if textCount == 0:
+            return 0
+
+    bodyResult = results.addStructureStart(element.getEnclosingStructure(), startPos, 0, &quot;Body&quot;, True)
+
+    while (bytePos - startPos) &lt; byteLength:
+        byteRead = byteView.readByte(bytePos)
+        #print(&quot;Byte: &quot; + chr(byteRead))
+        bytePos += 1
+        processedBytes += 1
+        #print &quot;Position: &quot; + str(bytePos - startPos) + &quot;, Total Length: &quot; + str(byteLength)
+        if byteRead == 0x1A or byteRead == 0x05 or (bytePos - startPos) == byteLength:
+            if len(textStr) &gt; 0:
+                if (bytePos - startPos) == byteLength:
+                    textStr += chr(byteRead)
+                    processedBytes += 1
+                textValue = StringValue()
+                textValue.setString(textStr)
+                print(textStr)
+                textStr = &quot;&quot;
+                textElement = Element(1, &quot;Text&quot;, True)
+                results.addElement(textElement, processedBytes - 1, iteration, textValue)
+                # The currently read byte is part of a SUB or CMD
+                processedBytes = 1
+                if (bytePos - startPos) == byteLength:
+                    print(&quot;End of Text&quot;)
+                    bodyResult = results.addStructureEnd(bytePos)
+
+        # SUB or Substitute byte means a word lookup, 3 byte address
+        if byteRead == 0x1A:
+            print(&quot;Starting SUB&quot;)
+            subByteElement = Element(1, &quot;Start Substitute&quot;, True)
+            subValue = StringValue()
+            subValue.setString(&quot;SUB: 1A&quot;)
+            results.addElement(subByteElement, 1, iteration, subValue)
+            address = byteView.readUnsignedInt(bytePos, 3, ENDIAN_LITTLE)
+            addressVal = NumberValue()
+            addressVal.setName(&quot;Lookup Address&quot;)
+            addressVal.setUnsigned(address)
+            bytePos += 3
+            subElement = Element(2, &quot;Substitution&quot;, True)
+            results.addElement(subElement, 3, iteration, addressVal)
+            processedBytes = 0
+        elif byteRead == 0x05:
+            print(&quot;Starting CMD&quot;)
+            cmdStartElement = Element(1, &quot;Start Command&quot;, True)
+            cmdStartValue = StringValue()
+            cmdStartValue.setString(&quot;ENQ: 05&quot;)
+            results.addElement(cmdStartElement, 1, iteration, cmdStartValue)
+            commandType = byteView.readByte(bytePos)
+            bytePos += 1
+            cmdTypeElement = Element(2, &quot;Command Type&quot;, True)
+            cmdTypeValue = NumberValue()
+            cmdTypeValue.setUnsigned(commandType)
+            results.addElement(cmdTypeElement, 1, iteration, cmdTypeValue)
+            cmdBody = &quot;&quot;
+            processedBytes = 0
+            while byteRead != 0x06:
+                byteRead = byteView.readByte(bytePos)
+                if byteRead != 0x06:
+                    bytePos += 1
+                    processedBytes += 1
+                    cmdBody += chr(byteRead)
+            if len(cmdBody) &gt; 0:
+                commandVal = StringValue()
+                commandVal.setName(&quot;Command Body&quot;)
+                commandVal.setString(cmdBody)
+                cmdElement = Element(1, &quot;Command&quot;, True)
+                results.addElement(cmdElement, processedBytes, iteration, commandVal)
+            bytePos += 1
+            cmdEndElement = Element(1, &quot;End Command&quot;, True)
+            cmdEndValue = StringValue()
+            cmdEndValue.setString(&quot;ACK: 06&quot;)
+            results.addElement(cmdEndElement, 1, iteration, cmdEndValue)
+            processedBytes = 0
+        else:
+            textStr += chr(byteRead)
+
+    #if (bytePos - startPos) == length:
+    #   results.addStructureEnd(bytePos)
+    #   print &quot;Processed Bytez: &quot; + str(bytePos - startPos)
+    return bytePos - startPos
+
+
+def fillByteRange(value, byteArray, bitPos, bitLength):
+    # this method translates edited values back to the file
+    &quot;&quot;&quot;fillByteRange method&quot;&quot;&quot;</source>
+            </script>
+            <script name="Ending" type="DataType" id="92">
+                <source language="Python"># custom data type script
+
+def parseByteRange(element, byteView, bitPos, bitLength, results):
+	# this method parses data starting at bitPos, bitLength bits are remaining
+	&quot;&quot;&quot;parseByteRange method&quot;&quot;&quot;
+
+	choiceResult = results.getResultByName(&quot;ChoiceCount&quot;)
+	countPos = choiceResult.getStartBytePos()
+	choiceCount = choiceResult.getByteView().readUnsignedInt(countPos, 1, ENDIAN_LITTLE)
+
+	# how many bytes were processed?
+	processedBytes = 0
+	iteration = 0
+    #startPos = bitPos / 8
+
+	#testByte = 0xAD
+	#eq = testByte &amp; 0x07
+	#print &quot;Ending Quality Test: &quot; + str(eq)
+
+	if choiceCount == 0:
+		#print &quot;This is an ending.&quot;
+		#results.addStructureStartAtPosition(element.getEnclosingStructure(), bitPos / 8, 0, &quot;Ending&quot;)
+		attributes = byteView.readUnsignedInt(bitPos / 8, 1, ENDIAN_LITTLE)
+		endingQuality = attributes &amp; 0x07
+
+		# create and set new value
+		value = NumberValue()
+		value.setUnsigned(endingQuality)
+		value.setName(&quot;Ending Quality&quot;)
+		processedBytes = 1
+		results.addElement(element, processedBytes, iteration, value)
+	else:
+		print &quot;Not an ending, choice count: &quot; + str(choiceCount)
+
+	# return number of processed bytes
+	return processedBytes
+
+def fillByteRange(value, byteArray, bitPos, bitLength):
+	# this method translates edited values back to the file
+	&quot;&quot;&quot;fillByteRange method&quot;&quot;&quot;
+
+	# write an integer back to file
+	# byteArray.writeUnsignedIntBits(highWord, bitPos, bitLength, ENDIAN_LITTLE)
+</source>
+            </script>
+            <script name="SmallDefaults" type="DataType" id="330">
+                <source language="Python"># custom data type script
+
+def parseByteRange(element, byteView, bitPos, bitLength, results):
+	# this method parses data starting at bitPos, bitLength bits are remaining
+	&quot;&quot;&quot;parseByteRange method&quot;&quot;&quot;
+
+	# how many bytes were processed?
+	processedBytes = 0
+	iteration = 0
+	# we are only working with bytes
+	bytePos = bitPos / 8
+	#startPos = bytePos
+	byteLength = bitLength / 8
+	print byteLength
+
+	countResult = results.getLastResult()
+
+	if countResult is not None:
+		countPos = countResult.getStartBytePos()
+		varCount = countResult.getByteView().readUnsignedInt(countPos, 1, ENDIAN_LITTLE)
+		if varCount == 0:
+			return 0
+
+	print element.getName()
+	#varCount =  element.getLength()
+	#results.addStructureStart(element.getEnclosingStructure(), bytetPos, 0, &quot;SmallDefaults&quot;, True)
+	print &quot;Yuck&quot;
+	#for index in range(0, varCount):
+	while (bytePos - startPos) &lt; byteLength:
+		varValue = byteView.readUnsignedInt(bytePos, 1, ENDIAN_LITTLE)
+		print &quot;Var Val: &quot; + str(varValue)
+		value = NumberValue()
+		value.setUnsigned(varValue)
+		processedBytes += 1
+		bytePos += 1
+		varElement = Element(NUMBER_ELEMENT, &quot;Var&quot;, True)
+		results.addElement(varElement, processedBytes, iteration, value)
+	#results.addStructureEnd(bytePos)
+	# return number of processed bytes
+	return processedBytes
+
+def fillByteRange(value, byteArray, bitPos, bitLength):
+	# this method translates edited values back to the file
+	&quot;&quot;&quot;fillByteRange method&quot;&quot;&quot;
+
+	# write an integer back to file
+	# byteArray.writeUnsignedIntBits(highWord, bitPos, bitLength, ENDIAN_LITTLE)
+</source>
+            </script>
+            <script name="BigDefaults" type="DataType" id="331">
+                <source language="Python"># custom data type script
+
+def parseByteRange(element, byteView, bitPos, bitLength, results):
+	# this method parses data starting at bitPos, bitLength bits are remaining
+	&quot;&quot;&quot;parseByteRange method&quot;&quot;&quot;
+
+	# how many bytes were processed?
+	processedBytes = 0
+	iteration = 0
+	# we are only working with bytes
+    startPos = bytePos = bitPos / 8
+
+	# Find the number of vars to read.
+	result = results.getResultByName(&quot;BigVars&quot;)
+	if result is not None:
+		defaultResult = results.addStructureStart(element.getEnclosingStructure(), startPos, 0, &quot;Big Defaults&quot;, True)
+		varCountPos = result.getStartBytePos()
+		varCount = result.getByteView().readUnsignedInt(varCountPos, 1, ENDIAN_LITTLE)
+		
+		index = 0
+		for index in range(0, varCount - 1):
+			value = NumberValue()
+			value.setUnsigned(byteView.readUnsignedInt(bytePos, 2, ENDIAN_LITTLE)
+			processedBytes += 2
+			bytePos += 2
+			results.addElement(element, processedBytes, iteration, value)
+
+	results.addStructureEnd(bytePos)
+
+	# return number of processed bytes
+	return processedBytes
+
+def fillByteRange(value, byteArray, bitPos, bitLength):
+	# this method translates edited values back to the file
+	&quot;&quot;&quot;fillByteRange method&quot;&quot;&quot;
+
+	# write an integer back to file
+	# byteArray.writeUnsignedIntBits(highWord, bitPos, bitLength, ENDIAN_LITTLE)</source>
+            </script>
+            <script name="Operation" type="DataType" id="322">
+                <source language="Python"># custom data type script
+
+report = &quot;&quot;
+
+def parseByteRange(element, byteView, bitPos, bitLength, results):
+    global report
+    # this method parses data starting at bitPos, bitLength bits are remaining
+    &quot;&quot;&quot;parseByteRange method&quot;&quot;&quot;
+
+    # how many bytes were processed?
+    processedBytes = 0
+    iteration = 0
+    bytePos = bitPos / 8
+
+    report = &quot;&quot;
+    opResult = results.addStructureStart(element.getEnclosingStructure(), bytePos, 0, &quot;Operations&quot;, True)
+    processedBytes = parseOperation(bytePos, element, byteView, results, iteration)
+    formElement = Element(ELEMENT_STRING, &quot;Formula&quot;, True)
+    formString = StringValue()
+    formString.setString(report)
+    results.addElement(formElement, 0, iteration, formString)
+    opResult = results.addStructureEnd(bytePos + processedBytes)
+    print report
+
+    # return number of processed bytes
+    return processedBytes
+
+def parseOperation(bytePos, element, byteView, results, iteration):
+    global report
+    #print &quot;Iteration: &quot; + str(iteration)
+    iteration += 1
+    offset = bytePos
+
+    report += &quot;( &quot;
+
+    # The recursive parser
+    operandTypes = byteView.readByte(offset)
+    argTypesOffset = offset
+    offset +=1
+    operationType = byteView.readByte(offset)
+    opTypeOffset = offset
+    offset +=1
+    leftType = (operandTypes &amp; 0xF0) &gt;&gt; 4
+    rightType = operandTypes &amp; 0x0F
+
+    #typesElement = Element(1, &quot;Argument Types&quot;, True)
+    #typesElement.setLength(1)
+
+    leftTypeVal = StringValue()
+    if leftType == 0x01:
+        leftTypeVal.setString(&quot;Raw&quot;)
+    elif leftType == 0x02:
+        leftTypeVal.setString(&quot;Var&quot;)
+    elif leftType == 0x03:
+        leftTypeVal.setString(&quot;Op&quot;)
+    leftTypeElement = Element(ELEMENT_STRING, &quot;Left Type&quot;, True)
+    results.addElementBits(leftTypeElement, 4, iteration, leftTypeVal)
+
+    rightTypeVal = StringValue()
+    if rightType == 0x01:
+        rightTypeVal.setString(&quot;Raw&quot;)
+    elif rightType == 0x02:
+        rightTypeVal.setString(&quot;Var&quot;)
+    elif rightType == 0x03:
+        rightTypeVal.setString(&quot;Op&quot;)
+    rightTypeElement = Element(ELEMENT_STRING, &quot;Right Type&quot;, True)
+    results.addElementBits(rightTypeElement, 4, iteration, rightTypeVal)
+
+    opName = &quot;&quot;
+
+    if operationType == 0x01:
+        opName = &quot;==&quot;
+    elif operationType == 0x02:
+        opName = &quot;!=&quot;
+    elif operationType == 0x03:
+        opName = &quot;&gt;&quot;
+    elif operationType == 0x04:
+        opName = &quot;&lt;&quot;
+    elif operationType == 0x05:
+        opName = &quot;&gt;=&quot;
+    elif operationType == 0x06:
+        opName = &quot;&lt;=&quot;
+    elif operationType == 0x07:
+        opName = &quot;AND&quot;
+    elif operationType == 0x08:
+        opName = &quot;OR&quot;
+    elif operationType == 0x09:
+        opName = &quot;XOR&quot;
+    elif operationType == 0x0A:
+        opName = &quot;NAND&quot;
+    elif operationType == 0x0B:
+        opName = &quot;NOR&quot;
+    elif operationType == 0x0C:
+        opName = &quot;XNOR&quot;
+    elif operationType == 0x0D:
+        opName = &quot;ChoiceVisible&quot;
+    elif operationType == 0x0E:
+        opName = &quot;%&quot;
+    elif operationType == 0x0F:
+        opName = &quot;=&quot;
+    elif operationType == 0x10:
+        opName = &quot;+&quot;
+    elif operationType == 0x11:
+        opName = &quot;-&quot;
+    elif operationType == 0x12:
+        opName = &quot;*&quot;
+    elif operationType == 0x13:
+        opName = &quot;/&quot;
+    elif operationType == 0x14:
+        opName = &quot;Rand&quot;
+    elif operationType == 0x15:
+        opName = &quot;DiceRoll&quot;
+    elif operationType == 0x16:
+        opName = &quot;If&quot;
+
+    print &quot;Operation: &quot; + opName
+
+    opValue = StringValue()
+    opValue.setString(opName)
+    opTypeElement = Element(1, &quot;Op Type&quot;, True)
+    results.addElement(opTypeElement, 1, iteration, opValue)
+
+    #opResult = results.addStructureStart(element.getEnclosingStructure(), offset, 0, opName, True)
+
+    if leftType == 0x01: # Raw Value
+        print &quot;LeftType: Raw&quot;
+        leftVal = byteView.readSignedInt(offset, 2, ENDIAN_LITTLE)
+        print &quot;LeftVal: &quot; + str(leftVal)
+        
+        value = NumberValue()
+        value.setSigned(leftVal)
+        leftValElement = Element(ELEMENT_NUMBER, &quot;Left: Value&quot;, True)
+
+        value.setName(&quot;Left Raw&quot;)
+        results.addElement(leftValElement, 2, iteration, value)
+        offset += 2
+        report += &quot;[&quot; + str(leftVal) + &quot;] &quot; + opName + &quot; &quot; 
+    elif leftType == 0x02: # Variable
+        print &quot;LeftType: Var&quot;
+        leftVal = byteView.readUnsignedInt(offset, 2, ENDIAN_LITTLE)
+        print &quot;LeftIndex: &quot; + str(leftVal)
+
+        value = NumberValue()
+        value.setUnsigned(leftVal)
+        leftValElement = Element(ELEMENT_NUMBER, &quot;Left: Index&quot;, True)
+
+        value.setName(&quot;Left Index&quot;)
+        results.addElement(leftValElement, 2, iteration, value)
+        offset += 2
+        report += &quot;[&quot; + str(leftVal) + &quot;] &quot; + opName + &quot; &quot; 
+    elif leftType == 0x03: # Operation
+        print &quot;LeftType: Operation&quot;
+        opResult = results.addStructureStart(element.getEnclosingStructure(), offset, 0, &quot;Left: Op&quot;, True)
+        offset += parseOperation(offset, element, byteView, results, iteration)
+        results.addStructureEnd(offset)
+        report += &quot; &quot; + opName + &quot; &quot;
+
+    if rightType == 0x01: # Raw Value
+        print &quot;RightType: Raw&quot;
+        rightVal = byteView.readSignedInt(offset, 2, ENDIAN_LITTLE)
+        print &quot;RightVal: &quot; + str(rightVal)
+
+        value = NumberValue()
+        value.setSigned(rightVal)
+        rightValElement = Element(ELEMENT_NUMBER, &quot;Right: Value&quot;, True)
+
+        value.setName(&quot;Right Raw&quot;)
+        results.addElement(rightValElement, 2, iteration, value)
+        offset += 2
+        report += str(rightVal)
+    elif rightType == 0x02: # Variable
+        print &quot;RightType: Var&quot;
+        rightVal = byteView.readUnsignedInt(offset, 2, ENDIAN_LITTLE)
+        print &quot;RightIndex: &quot; + str(rightVal)
+
+        value = NumberValue()
+        value.setUnsigned(rightVal)
+        rightValElement = Element(ELEMENT_NUMBER, &quot;Right: Index&quot;, True)
+
+        value.setName(&quot;Right Index&quot;)
+        results.addElement(rightValElement, 2, iteration, value)
+        offset += 2
+        report += &quot;[&quot; + str(rightVal) + &quot;]&quot;
+    elif rightType == 0x03: # Operation
+        print &quot;RightType: Operation&quot;
+        opResult = results.addStructureStart(element.getEnclosingStructure(), offset, 0, &quot;Right: Op&quot;, True)
+        offset += parseOperation(offset, element, byteView, results, iteration)
+        results.addStructureEnd(offset)
+
+    report += &quot; )&quot;
+
+    #opResult = results.addStructureEnd(offset)
+    return offset - bytePos
+
+
+def fillByteRange(value, byteArray, bitPos, bitLength):
+    # this method translates edited values back to the file
+    &quot;&quot;&quot;fillByteRange method&quot;&quot;&quot;
+
+    # write an integer back to file
+    # byteArray.writeUnsignedIntBits(highWord, bitPos, bitLength, ENDIAN_LITTLE)</source>
+            </script>
+        </scripts>
+        <structure name="Story" id="143" encoding="ISO_8859-1:1987" endian="little" signed="no">
+            <structure name="StoryHeader" id="144">
+                <binary name="StartHeader" mustmatch="yes" id="145" fillcolor="BA1A00" length="1">
+                    <description>Start of Heading byte.</description>
+                    <fixedvalues>
+                        <fixedvalue name="SOH" value="01"/>
+                    </fixedvalues>
+                </binary>
+                <structure name="BinaryVersion" id="146" length="3">
+                    <number name="Major" id="147" fillcolor="E7D3FF" type="integer" length="1"/>
+                    <number name="Minor" id="148" fillcolor="E6D2FF" type="integer" length="1"/>
+                    <number name="Revision" id="149" type="integer" length="1"/>
+                </structure>
+                <string name="UUID" id="219" type="fixed-length" length="36"/>
+                <structure name="Flags" id="153" length="4">
+                    <number name="Features Used" id="154" fillcolor="BEFBA9" type="integer" length="8" lengthunit="bit" display="binary">
+                        <mask name="Scripting" value="0x80">
+                            <fixedvalue name="Yes" value="0x80"/>
+                            <fixedvalue name="No" value="0x0"/>
+                        </mask>
+                        <mask name="Variables" value="0x40">
+                            <fixedvalue name="Yes" value="0x40"/>
+                            <fixedvalue name="No" value="0x0"/>
+                        </mask>
+                        <mask name="Images" value="0x20">
+                            <fixedvalue name="Yes" value="0x20"/>
+                            <fixedvalue name="No" value="0x0"/>
+                        </mask>
+                    </number>
+                    <number name="Toggles" id="155" fillcolor="BFFBA9" type="integer" length="8" lengthunit="bit" display="binary">
+                        <mask name="Continue" value="0x80">
+                            <fixedvalue name="Yes" value="0x80"/>
+                            <fixedvalue name="No" value="0x0"/>
+                        </mask>
+                        <mask name="Multiplayer" value="0x40">
+                            <fixedvalue name="Yes" value="0x40"/>
+                            <fixedvalue name="No" value="0x0"/>
+                        </mask>
+                        <mask name="Hide Used" value="0x20">
+                            <fixedvalue name="Yes" value="0x20"/>
+                            <fixedvalue name="No" value="0x0"/>
+                        </mask>
+                    </number>
+                    <number name="Flags3" id="156" fillcolor="BDFBA7" type="integer" length="8" lengthunit="bit" display="binary"/>
+                    <number name="Flags4" id="157" fillcolor="C1FBA9" type="integer" length="8" lengthunit="bit" display="binary"/>
+                </structure>
+                <number name="StorySize" id="159" fillcolor="B764FF" type="integer" length="4">
+                    <description>The story size in bytes.</description>
+                </number>
+                <structure name="StoryVersion" id="160" length="3" fillcolor="F9DCFF">
+                    <number name="Major" id="161" fillcolor="E0C6FF" type="integer" length="1"/>
+                    <number name="Minor" id="162" fillcolor="E4D1FF" type="integer" length="1"/>
+                    <number name="Revision" id="163" fillcolor="DCCFFF" type="integer" length="1"/>
+                </structure>
+                <number name="Rsvd" id="165" type="integer" length="1"/>
+                <string name="LanguageCode" id="166" fillcolor="FFB85D" type="fixed-length" length="4"/>
+                <string name="Title" id="167" fillcolor="FFBA68" type="fixed-length" length="64"/>
+                <string name="Subtitle" id="168" fillcolor="FFB24F" type="fixed-length" length="32"/>
+                <string name="Author" id="169" fillcolor="FFBA64" type="fixed-length" length="48"/>
+                <string name="Credits" id="170" fillcolor="FFB961" type="fixed-length" length="80"/>
+                <string name="Contact" id="171" fillcolor="FFB962" type="fixed-length" length="128"/>
+                <number name="PublishDate" id="172" type="integer" length="4" endian="little"/>
+                <number name="VariableCount" id="173" fillcolor="FFF67D" type="integer" length="2" minval="0">
+                    <description>The number of big variables to allocate space for (16 bit).</description>
+                </number>
+            </structure>
+            <structure name="StoryBody" id="175">
+                <number name="PassageCount" id="176" type="integer" length="2"/>
+                <number name="PassageOffset" id="177" repeatmin="PassageCount" repeatmax="PassageCount" type="integer" length="4"/>
+                <structure name="Passage" id="178" length="0" repeat="id:176" repeatmin="PassageCount" repeatmax="PassageCount">
+                    <number name="Attributes" id="179" type="integer" length="8" lengthunit="bit" display="binary">
+                        <mask name="Append" value="0x80">
+                            <fixedvalue name="Yes" value="0x80"/>
+                            <fixedvalue name="No" value="0x0"/>
+                        </mask>
+                    </number>
+                    <number name="UpdateCount" id="180" fillcolor="9BFB97" type="integer" length="1" minval="0" maxval="8"/>
+                    <custom name="UpdateOperation" id="181" repeatmin="UpdateCount" repeatmax="UpdateCount" script="id:322"/>
+                    <structure name="ValueUpdate" id="182" length="5" disabled="yes" repeatmin="UpdateCount" repeatmax="UpdateCount" encoding="ISO_8859-1:1987" endian="little" signed="no">
+                        <number name="VariableTypes" id="183" type="integer" length="8" lengthunit="bit" display="binary">
+                            <mask name="ValueOneType" value="0xC0">
+                                <fixedvalue name="raw" value="0x0"/>
+                                <fixedvalue name="bool" value="0x40"/>
+                                <fixedvalue name="uint 8" value="0x80"/>
+                                <fixedvalue name="uint 16" value="0xC0"/>
+                            </mask>
+                            <mask name="ValueTwoType" value="0x30">
+                                <fixedvalue name="raw" value="0x0"/>
+                                <fixedvalue name="bool" value="0x10"/>
+                                <fixedvalue name="uint 8" value="0x20"/>
+                                <fixedvalue name="uint 16" value="0x30"/>
+                            </mask>
+                            <mask name="Operator" value="0xF">
+                                <fixedvalue name="Equals" value="0x0"/>
+                                <fixedvalue name="Plus" value="0x1"/>
+                                <fixedvalue name="Minus" value="0x2"/>
+                                <fixedvalue name="Multiply" value="0x3"/>
+                                <fixedvalue name="Divide" value="0x4"/>
+                                <fixedvalue name="Modulus" value="0x5"/>
+                            </mask>
+                        </number>
+                        <number name="Value/Index1" id="184" type="integer" length="2"/>
+                        <number name="Value/Index2" id="185" type="integer" length="2"/>
+                    </structure>
+                    <number name="BodyLength" id="187" type="integer" length="2" minval="0"/>
+                    <custom name="Body" id="188" length="BodyLength" script="id:64"/>
+                    <number name="ChoiceCount" id="189" fillcolor="FFEC90" type="integer" length="1" minval="0" maxval="10"/>
+                    <structure name="Choice" id="190" repeatmin="ChoiceCount" repeatmax="ChoiceCount">
+                        <number name="Attributes" id="191" type="integer" length="8" lengthunit="bit" display="binary"/>
+                        <number name="ConditionCount" id="192" type="integer" length="1" minval="0" maxval="255"/>
+                        <custom name="ConditionOperation" id="193" repeatmin="ConditionCount" repeatmax="ConditionCount" script="id:322"/>
+                        <structure name="DisplayCondition" id="194" length="5" disabled="yes" repeatmin="ConditionCount" repeatmax="ConditionCount">
+                            <number name="ValueTypes" id="195" type="integer" length="8" lengthunit="bit" display="binary">
+                                <mask name="ValueOneType" value="0xC0">
+                                    <fixedvalue name="raw" value="0x0"/>
+                                    <fixedvalue name="bool" value="0x40"/>
+                                    <fixedvalue name="uint 8" value="0x80"/>
+                                    <fixedvalue name="uint 16" value="0xC0"/>
+                                </mask>
+                                <mask name="ValueTwoType" value="0x30">
+                                    <fixedvalue name="hard value" value="0x0"/>
+                                    <fixedvalue name="bool" value="0x10"/>
+                                    <fixedvalue name="uint 8" value="0x20"/>
+                                    <fixedvalue name="uint 16" value="0x30"/>
+                                </mask>
+                                <mask name="Operator" value="0xF">
+                                    <fixedvalue name="Equal To" value="0x0"/>
+                                    <fixedvalue name="Greater Than" value="0x1"/>
+                                    <fixedvalue name="Less Than" value="0x2"/>
+                                    <fixedvalue name="Equal or Greater" value="0x3"/>
+                                    <fixedvalue name="Equal or Less" value="0x4"/>
+                                    <fixedvalue name="Modulus" value="0x5"/>
+                                </mask>
+                            </number>
+                            <number name="Value/Index1" id="196" type="integer" length="2"/>
+                            <number name="Value/Index2" id="197" type="integer" length="2"/>
+                        </structure>
+                        <number name="UpdateLength" id="199" type="integer" length="2"/>
+                        <number name="UpdateCount" id="200" type="integer" length="1"/>
+                        <custom name="UpdateOperation" id="201" repeatmin="UpdateCount" repeatmax="UpdateCount" script="id:322"/>
+                        <structure name="ValueUpdate" id="202" length="5" disabled="yes" repeatmin="UpdateCount" repeatmax="UpdateCount" encoding="ISO_8859-1:1987" endian="little" signed="no">
+                            <number name="VariableTypes" id="203" type="integer" length="8" lengthunit="bit" display="binary">
+                                <mask name="ValueOneType" value="0xC0">
+                                    <fixedvalue name="raw" value="0x0"/>
+                                    <fixedvalue name="bool" value="0x40"/>
+                                    <fixedvalue name="uint 8" value="0x80"/>
+                                    <fixedvalue name="uint 16" value="0xC0"/>
+                                </mask>
+                                <mask name="ValueTwoType" value="0x30">
+                                    <fixedvalue name="raw" value="0x0"/>
+                                    <fixedvalue name="bool" value="0x10"/>
+                                    <fixedvalue name="uint 8" value="0x20"/>
+                                    <fixedvalue name="uint 16" value="0x30"/>
+                                </mask>
+                                <mask name="Operator" value="0xF">
+                                    <fixedvalue name="Equals" value="0x0"/>
+                                    <fixedvalue name="Plus" value="0x1"/>
+                                    <fixedvalue name="Minus" value="0x2"/>
+                                    <fixedvalue name="Multiply" value="0x3"/>
+                                    <fixedvalue name="Divide" value="0x4"/>
+                                    <fixedvalue name="Modulus" value="0x5"/>
+                                </mask>
+                            </number>
+                            <number name="Value/Index1" id="204" type="integer" length="2"/>
+                            <number name="Value/Index2" id="205" type="integer" length="2"/>
+                        </structure>
+                        <number name="ChoiceLength" id="207" type="integer" length="2"/>
+                        <custom name="ChoiceBody" id="208" repeatmin="0" length="ChoiceLength" script="id:64"/>
+                        <number name="PassageIndex" id="209" type="integer" length="2" minval="0"/>
+                    </structure>
+                    <custom name="Ending" id="211" script="id:92"/>
+                    <binary name="EndBody" mustmatch="yes" id="212" length="1">
+                        <fixedvalues>
+                            <fixedvalue name="ETX" value="03"/>
+                        </fixedvalues>
+                    </binary>
+                </structure>
+            </structure>
+            <structure name="Dictionary" id="215" disabled="yes">
+                <string name="Word" id="216" repeatmax="-1" type="zero-terminated"/>
+            </structure>
+        </structure>
+    </grammar>
+</ufwb>
