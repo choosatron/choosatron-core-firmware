@@ -424,8 +424,8 @@ void DataManager::getStoryInfo(char* aBuffer, uint32_t aLength, uint8_t aIndex, 
 	if (aHeader->storySize % Flashee::Devices::userFlash().pageSize()) {
 		pages++;
 	}
-	Utils::uuidToString(&aHeader->uuid, aBuffer, 37);
-	snprintf(&aBuffer[36], aLength - 37, ":%s:%s:%d.%d.%d:%d:%d", aHeader->title,
+	snprintf(aBuffer, aLength, "%s:%s:%s:%d.%d.%d:%d:%d",
+	         aHeader->uuid, aHeader->title,
 	         aHeader->author, aHeader->storyVer.major,
 	         aHeader->storyVer.minor, aHeader->storyVer.revision,
 	         this->metadata.storyState[aIndex], pages);

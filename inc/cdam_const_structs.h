@@ -170,7 +170,7 @@ typedef struct Metadata_t {
 const uint16_t kStoryBinaryVersionOffset = 1; // adding SOH byte
 const uint16_t kStoryBinaryVersionSize = 3;
 const uint16_t kStoryUuidOffset = (kStoryBinaryVersionOffset + kStoryBinaryVersionSize);
-const uint16_t kStoryUuidSize = 16; // bytes
+const uint16_t kStoryUuidSize = 36; // bytes
 const uint16_t kStoryFlagsOffset = (kStoryUuidOffset + kStoryUuidSize);
 const uint16_t kStoryFlagsSize = 4; // bytes
 const uint16_t kStorySizeOffset = (kStoryFlagsOffset + kStoryFlagsSize);
@@ -196,7 +196,6 @@ const uint16_t kStoryPublishedSize = 4; // bytes
 const uint16_t kStoryVarCountOffset = (kStoryPublishedOffset + kStoryPublishedSize);
 const uint16_t kStoryVarCountSize = 2; // bytes
 const uint16_t kStoryHeaderSize = (kStoryVarCountOffset + kStoryVarCountSize);
-//const uint16_t kStoryHeaderSize = 394;
 
 typedef struct StoryFlags_t
 {
@@ -232,19 +231,10 @@ typedef struct StoryFlags_t
 	};
 } StoryFlags;
 
-typedef struct Uuid_t {
-	uint32_t time_low;
-	uint16_t time_mid;
-	uint16_t time_hi_and_version;
-	uint8_t clock_seq_hi_and_reserved;
-	uint8_t clock_seq_low;
-	uint8_t node[6];
-} Uuid;
-
 typedef struct StoryHeader_t { // Total Size: 394 bytes
 	uint8_t soh;
 	Version binaryVer;
-	Uuid uuid;
+	char uuid[kStoryUuidSize];
 	StoryFlags flags;
     uint32_t storySize;
     Version storyVer;

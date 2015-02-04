@@ -40,7 +40,7 @@ void Utils::shuffle(uint8_t *aArray, uint8_t aElements)
  *    Converts a UUID from binary representation to a string representation.
  */
 
-void Utils::uuidToString(const Uuid *uuid, char *str, size_t strsz)
+/*void Utils::uuidToString(const Uuid *uuid, char *str, size_t strsz)
 {
 	snprintf(str, strsz,
 	     "%08lx-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
@@ -55,7 +55,7 @@ void Utils::uuidToString(const Uuid *uuid, char *str, size_t strsz)
 	     (unsigned char)uuid->node[3],
 	     (unsigned char)uuid->node[4],
 	     (unsigned char)uuid->node[5]);
-}
+}*/
 
 /*uint32_t bytesToLong(sint8_t c0, sint8_t c1, sint8_t c2, sint8_t c3) {
     return Utils::bytesToLong((uint8_t)c0, (uint8_t)c1, (uint8_t)c2, (uint8_t)c3);

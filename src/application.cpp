@@ -52,7 +52,7 @@ void loop()
 {
 	cdam::Manager::getInstance().dataManager->handleSerialData();
 	cdam::Manager::getInstance().hardwareManager->updateIntervalTimers();
-	cdam::Manager::getInstance().serverManager->handlePendingActions();
+	//cdam::Manager::getInstance().serverManager->handlePendingActions();
 	//Spark.process();
 	if (cdam::Manager::getInstance().dataManager->runState) {
 		stateController->updateState();

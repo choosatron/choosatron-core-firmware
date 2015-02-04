@@ -42,7 +42,6 @@ const char* kServerCmdGetValue = "get_value"; // Value index 0 - 15, each has 16
 const char* kServerCmdGetNames = "get_names"; // Device name and owner name, colon separated.
 const char* kServerCmdGetStoryInfo = "get_story_info"; // Get the UUID, version of a story, whether or not it is deleted, and # of pages it uses.
 const char* kServerCmdGetCurrentStory = "get_current_story"; // Same as get_story_info, but on current playing story.
-const char* kServerCmdGetAllStoryInfo = "get_all_story_info"; // Series of bytes to report all storage.
 const char* kServerCmdGetStorageReport = "get_storage_report";
 const char* kServerCmdGetMillis = "get_millis";
 const char* kServerCmdGetSeconds = "get_seconds";
@@ -121,7 +120,6 @@ void ServerManager::handlePendingActions() {
 						}
 						Manager::getInstance().dataManager->addStoryMetadata(newStoryIndex, pages);
 						if (_stateController->getState() == STATE_SELECT) {
-							Manager::getInstance().hardwareManager->printer()->println(CDAM_SERVER_REBOOT);
 							_stateController->changeState(STATE_INIT);
 						}
 					}
@@ -263,25 +261,47 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 			if (!result) {
 				returnVal = kServerReturnFail;
 			} else {
-				char storyInfo[1610] = "";
-				dataMan->getStoryInfo(storyInfo, 161, index, &storyHeader);
+				char storyInfo[163] = "";
+				dataMan->getStoryInfo(storyInfo, 163, index, &storyHeader);
 				Spark.publish(kServerCmdGetStoryInfo, storyInfo, kServerTTLDefault, PRIVATE);
 			}
 		}
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetCurrentStory) == 0) {
 		if (dataMan->currentStory > -1) {
-			char storyInfo[161] = "";
-			dataMan->getStoryInfo(storyInfo, 161, dataMan->metadata.storyOrder[dataMan->currentStory], &dataMan->storyHeader);
+			char storyInfo[163] = "";
+			dataMan->getStoryInfo(storyInfo, 163, dataMan->metadata.storyOrder[dataMan->currentStory], &dataMan->storyHeader);
 			Spark.publish(kServerCmdGetCurrentStory, storyInfo, kServerTTLDefault, PRIVATE);
 		} else {
 			returnVal = kServerReturnFail;
 		}
-	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetAllStoryInfo) == 0) {
-		/* TODO */
-		returnVal = kServerReturnNotImplemented;
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetStorageReport) == 0) {
-		/* TODO */
-		returnVal = kServerReturnNotImplemented;
+		char report[195] = "";
+		snprintf(report, 14, "%d:%d:%d:%d", dataMan->metadata.usedStoryPages,
+		         kFlashStoriesPageCount - dataMan->metadata.usedStoryPages,
+		         dataMan->metadata.storyCount, dataMan->metadata.deletedStoryCount);
+		uint8_t total = dataMan->metadata.storyCount + dataMan->metadata.deletedStoryCount;
+		uint8_t offset = strlen(report);
+		for (uint8_t i = 0; i < total; ++i) {
+			//char storyInfo[7] = "";
+			uint8_t pages = 0;
+			if (i == (total - 1)) {
+				pages = dataMan->metadata.usedStoryPages - dataMan->metadata.storyOffsets[i];
+			} else {
+				pages = dataMan->metadata.storyOffsets[i + 1] - dataMan->metadata.storyOffsets[i];
+			}
+			uint8_t order = 0;
+			if (dataMan->metadata.storyState[i] == kStoryStateNormal) {
+				for (uint8_t j = 0; j < dataMan->metadata.storyCount; ++j) {
+					if (dataMan->metadata.storyOrder[j] == i) {
+						order = j;
+						break;
+					}
+				}
+			}
+			snprintf(&report[offset], 9, ":%d:%d:%d", dataMan->metadata.storyState[i], order, pages);
+			offset += strlen(&report[offset]);
+		}
+		Spark.publish(kServerCmdGetStorageReport, report, kServerTTLDefault, PRIVATE);
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetMillis) == 0) {
 		returnVal = millis();
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetSeconds) == 0) {
