@@ -24,13 +24,13 @@ class YMODEM(XMODEM):
         Returns ``True`` upon succesful transmission or ``False`` in case of
         failure.
         '''
-	print "start sending..."
+        print "start sending..."
         # Get a list of files to send
         #filenames = glob.glob(pattern)
         if not filenames:
             return True
-	print "after globbing.."
- 
+        print "after globbing.."
+
         # initialize protocol
         error_count = 0
         crc_mode = 0
@@ -41,7 +41,7 @@ class YMODEM(XMODEM):
             log.error(error.ABORT_PROTOCOL)
             # Already aborted
             return False
-	print "StartChar received.."
+        print "StartChar received.."
         for filename in filenames:
             print "start filename: ", filename
             # Send meta data packet
@@ -49,14 +49,30 @@ class YMODEM(XMODEM):
             error_count = 0
             # REQUIREMENT 1,1a,1b,1c,1d
             print "s 1"
-	
-            data = ''.join([os.path.basename(filename), '\x00'])
+
+            # Pick a suitable packet length for the filename
+            packet_size = 128# if (len(data) < 128) else 1024
+
+            # Filename, then null, then ascii filesize, space,
+            # 12 bytes of modification date, space, 1 byte file mode (ascii '0'),
+            # space, serial number (or ascii '0'), space, '1', filesize again
+            data = ''.join([os.path.basename(filename), '\x00',
+                str(os.path.getsize(filename)), '\x20', '012467013744',
+                '\x20', '\x30', '\x20', '\x30', '\x20', '\x31', '\x20',
+                str(os.path.getsize(filename)), '\x00'])
+            print len(data)
+            data = data.ljust(packet_size - 1, '\0')
+            data += '\x36'
+            # Get filename length to use as index
+            #index = len(os.path.basename(filename)) + 2
+            #filesize = str(os.path.getsize(filename))
+
             print "s 2"
 
             #log.debug(error.DEBUG_START_FILE % (filename,))
             print "s 3"
-            # Pick a suitable packet length for the filename
-            packet_size = 128 if (len(data) < 128) else 1024
+            
+            print "Packet Size: " + str(packet_size)
             print "send filename"
 
             # Packet padding
@@ -64,7 +80,7 @@ class YMODEM(XMODEM):
             print "s 4"
 
             # Calculate checksum
-            crc = self.calc_crc16(data) if crc_mode else self.calc_checksum(data)
+            crc = self.calc_crc16(data)
             print "s 5"
 
             # Emit packet
@@ -72,11 +88,11 @@ class YMODEM(XMODEM):
                 crc, error_count, retry, timeout):
                 self.abort(timeout=timeout)
                 return False
-            print "wating for CRC"
+            print "waiting for CRC - 01"
 
             # Wait for <CRC> before transmitting the file contents
             error_count = 0
-            if not self._wait_recv(error_count, timeout):
+            if not self._wait_recv(error_count, 0, timeout):
                 self.abort(timeout)
                 return False
 
@@ -85,10 +101,9 @@ class YMODEM(XMODEM):
             # AT THIS POINT
             # - PACKET 0 WITH METADATA TRANSMITTED
             # - INITIAL <CRC> OR <NAK> ALREADY RECEIVED
-            print "wating for CRC"
-
+            print "send stream prep"
             if not self._send_stream(filedesc, crc_mode, retry, timeout):
-                #log.error(error.ABORT_SEND_STREAM)
+                log.error(error.ABORT_SEND_STREAM)
                 return False
 
             # AT THIS POINT
@@ -196,7 +211,7 @@ class YMODEM(XMODEM):
                     seq2 = 0xff - ord(self.getc(1))
 
                     if seq1 == sequence and seq2 == sequence:
-                        packet_size = 128 if char == SOH else 1024
+                        packet_size = 128# if char == SOH else 1024
                         data = self.getc(packet_size + 1 + crc_mode)
                         data = self._check_crc(data, crc_mode)
                         if data:

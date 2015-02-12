@@ -193,22 +193,26 @@ class XMODEM(Modem):
         '''
 
         # Get packet size for current protocol
-        packet_size = PACKET_SIZE.get(self.protocol, 128)
+        packet_size = 128#PACKET_SIZE.get(self.protocol, 128)
 
         # ASSUME THAT I'VE ALREADY RECEIVED THE INITIAL <CRC> OR <NAK>
         # SO START DIRECTLY WITH STREAM TRANSMISSION
         sequence = 1
         error_count = 0
 
+        print "Start send stream"
         while True:
             data = stream.read(packet_size)
+            print "Data size: " + str(len(data))
             # Check if we're done sending
             if not data:
+                print "Done sending file."
                 break
 
             # Select optimal packet size when using YMODEM
             if self.protocol == PROTOCOL_YMODEM:
-                packet_size = (len(data) <= 128) and 128 or 1024
+                packet_size = 128#(len(data) <= 128) and 128 or 1024
+                print "Packet size: " + str(packet_size)
 
             # Align the packet
             data = data.ljust(packet_size, '\x00')
@@ -217,9 +221,14 @@ class XMODEM(Modem):
             crc = crc_mode and self.calc_crc16(data) or \
                 self.calc_checksum(data)
 
+            print "CRC: " + str(hex(crc))
+
             # SENDS PACKET WITH CRC
+            print "Send Packet"
+            print "Packet Data size: " + str(len(data))
             if not self._send_packet(sequence, data, packet_size, crc_mode,
                 crc, error_count, retry, timeout):
+                print "Packet Error"
                 log.error(error.ERROR_SEND_PACKET)
                 return False
 
@@ -242,26 +251,44 @@ class XMODEM(Modem):
 
         Return ``True`` on success, ``False`` in case of failure.
         '''
-        start_char = SOH if packet_size == 128 else STX
+        start_char = SOH# if packet_size == 128 else STX
+        if start_char == SOH:
+            print "Start of 128 packet"
+        elif start_char == STX:
+            print "Start of 1024 packet"
+
         while True:
             self.putc(start_char)
             self.putc(chr(sequence))
             self.putc(chr(0xff - sequence))
             self.putc(data)
             if crc_mode:
+                print "CRC mode..."
                 self.putc(chr(crc >> 8))
                 self.putc(chr(crc & 0xff))
             else:
+                print "Send CRC"
                 # Send CRC or checksum
                 self.putc(chr(crc))
 
             # Wait for the <ACK>
             char = self.getc(1, timeout)
+            while char == 'C':
+                print "still 'C'"
+                char = self.getc(1, timeout)
+
             if char == ACK:
+                print "Ack Received"
                 # Transmission of the character was successful
                 return True
+            else:
+                print "NO ACK"
 
             if char in [None, NAK]:
+                if char is None:
+                    print "Got None"
+                elif char is NAK:
+                    print "Got NAK"
                 error_count += 1
                 if error_count >= retry:
                     # Excessive amounts of retransmissions requested
@@ -273,6 +300,7 @@ class XMODEM(Modem):
             # Protocol error
             log.error(error.ERROR_PROTOCOL)
             error_count += 1
+            print error_count
             if error_count >= retry:
                 log.error(error.ABORT_ERROR_LIMIT)
                 self.abort(timeout=timeout)
@@ -285,12 +313,14 @@ class XMODEM(Modem):
 
         Return ``True`` on success, ``False`` in case of failure.
         '''
+        print "Send EOT"
         while True:
             self.putc(EOT)
             # Wait for <ACK>
             char = self.getc(1, timeout)
             if char == ACK:
                 # <EOT> confirmed
+                print "EOT -> ACK Confirmed"
                 return True
             else:
                 error_count += 1
@@ -312,10 +342,13 @@ class XMODEM(Modem):
         # we reach the retry limit
         while True:
             char = self.getc(1)
-            print char ;
             if char:
                 if char in [NAK, CRC]:
-                    print "char is NAK or CRC"
+                    print char
+                    if char == NAK:
+                        print "Got NAK"
+                    elif char == CRC:
+                        print "Got CRC"
                     return char
                 elif char == CAN:
                     # Cancel at two consecutive cancels
@@ -368,7 +401,7 @@ class XMODEM(Modem):
                 else:
                     cancel = 1
             elif char in [SOH, STX]:
-                packet_size = 128 if char == SOH else 1024
+                packet_size = 128# if char == SOH else 1024
                 # Check the requested packet size, only YMODEM has a variable
                 # size
                 if self.protocol != PROTOCOL_YMODEM and \

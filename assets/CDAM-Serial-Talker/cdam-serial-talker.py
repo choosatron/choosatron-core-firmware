@@ -8,9 +8,14 @@ import glob
 import sys
 import os
 
+import binascii
+
 from modem import YMODEM
 
 kCdamSerial = None
+
+RESULT_SUCCESS = chr(0x01)
+RESULT_FAILURE = chr(0x02)
 
 CMD_START = chr(0x63)
 CMD_ADD_STORY = chr(0x08)
@@ -26,7 +31,8 @@ class CDAMSerial(object):
 			usage='''cdam-serial-talker <command> [<args>]
 
 Choosatron Serial Commands:
-   addStory     Add a story to the Choosatron
+   addstory     Add a story to the Choosatron
+   removestory  Remove a story from the Choosatron
 ''')
 		parser.add_argument('command', help='Subcommand to run')
 		# parse_args defaults to [1:] for args, but you need to
@@ -40,21 +46,23 @@ Choosatron Serial Commands:
 		# Serup Serial connection
 		serialPaths = glob.glob("/dev/cu.usb*")
 		if len(serialPaths) > 0:
-			kCdamSerial = serial.Serial(serialPaths[0], 9600, timeout=5, writeTimeout=5)
+			kCdamSerial = serial.Serial(serialPaths[0], 9600, timeout=None)
 			# use dispatch pattern to invoke method with same name
 			getattr(self, args.command)()
 		else:
 			print "No USB Serial Device Found"
 
-	def getc(size, timeout=1):
-		global kCdamSerial
-		return kCdamSerial.read(size) or None
+	def getc(self, size, timeout=1):
+		data = kCdamSerial.read(size) or None
+		#print "GET: " + ''.join('{:02x}'.format(x) for x in data)
+		print "GET: " + binascii.hexlify(data);
+		return data
 
-	def putc(data, timeout=1):
-		global kCdamSerial
+	def putc(self, data, timeout=1):
+		print "PUT: " + binascii.hexlify(data)
 		return kCdamSerial.write(data) or None
 
-	def addStory(self):
+	def addstory(self):
 		global kCdamSerial
 		parser = argparse.ArgumentParser(
 			description='Add a story to the Choosatron')
@@ -70,36 +78,47 @@ Choosatron Serial Commands:
 		print "Binary filesize: " + str(filesize)
 		sizeBytes = bytearray(struct.pack('>L', filesize))
 
-		data = bytearray()
-
 		#serialPath = subprocess.check_output('ls /dev/cu.usb*', shell=True);
 		#print serialPath
 
+		data = bytearray()
 		data += CMD_START
 		data += CMD_ADD_STORY
 		data += sizeBytes
 		data += chr(args.index)
 		kCdamSerial.write(data)
 
-		try:
-			ymodem = YMODEM(getc, putc)
-			status = ymodem.send([filename])
-		except:
-			print "Unexpected error:", sys.exc_info()[0]
+		response = kCdamSerial.read(77)
+		print response
+		#try:
+		ymodem = YMODEM(self.getc, self.putc)
+		status = ymodem.send([args.filename])
+		#except:
+			#print "Unexpected error:", sys.exc_info()[0]
+			#kCdamSerial.close()
 
 
-	def removeStory(self):
+	def removestory(self):
 		parser = argparse.ArgumentParser(
 			description='Remove a story from the Choosatron')
 
-		parser.add_argument('index', action='story', type=int)
+		parser.add_argument('index', action='store', type=int)
 		args = parser.parse_args(sys.argv[2:])
-		print 'Running git fetch, repository=%s' % args.repository
+		print 'Index=%d' % args.index
 
+		data = bytearray()
 		data += CMD_START
 		data += CMD_REMOVE_STORY
 		data += chr(args.index)
 		kCdamSerial.write(data)
+		result = kCdamSerial.read(1)
+
+		if result == RESULT_SUCCESS:
+			print "Success"
+			exit(0)
+		elif result == RESULT_FAILURE:
+			print "Fail"
+			exit(1)
 
 
 if __name__ == '__main__':
