@@ -200,7 +200,6 @@ class XMODEM(Modem):
         sequence = 1
         error_count = 0
 
-        print "Start send stream"
         while True:
             data = stream.read(packet_size)
             print "Data size: " + str(len(data))
@@ -212,7 +211,7 @@ class XMODEM(Modem):
             # Select optimal packet size when using YMODEM
             if self.protocol == PROTOCOL_YMODEM:
                 packet_size = 128#(len(data) <= 128) and 128 or 1024
-                print "Packet size: " + str(packet_size)
+                #print "Packet size: " + str(packet_size)
 
             # Align the packet
             data = data.ljust(packet_size, '\x00')
@@ -225,10 +224,8 @@ class XMODEM(Modem):
 
             # SENDS PACKET WITH CRC
             print "Send Packet"
-            print "Packet Data size: " + str(len(data))
             if not self._send_packet(sequence, data, packet_size, crc_mode,
                 crc, error_count, retry, timeout):
-                print "Packet Error"
                 log.error(error.ERROR_SEND_PACKET)
                 return False
 
@@ -263,7 +260,6 @@ class XMODEM(Modem):
             self.putc(chr(0xff - sequence))
             self.putc(data)
             if crc_mode:
-                print "CRC mode..."
                 self.putc(chr(crc >> 8))
                 self.putc(chr(crc & 0xff))
             else:
@@ -272,10 +268,11 @@ class XMODEM(Modem):
                 self.putc(chr(crc))
 
             # Wait for the <ACK>
+            time.sleep(0.1)
             char = self.getc(1, timeout)
-            while char == 'C':
-                print "still 'C'"
-                char = self.getc(1, timeout)
+            #while char == 'C':
+            #    print "still 'C'"
+            #    char = self.getc(1, timeout)
 
             if char == ACK:
                 print "Ack Received"
@@ -284,7 +281,7 @@ class XMODEM(Modem):
             else:
                 print "NO ACK"
 
-            if char in [None, NAK]:
+            if char in [None, NAK, CRC]:
                 if char is None:
                     print "Got None"
                 elif char is NAK:
@@ -338,13 +335,13 @@ class XMODEM(Modem):
         '''
         # Initialize protocol
         cancel = 0
+        time.sleep(1)
         # Loop until the first character is a control character (NAK, CRC) or
         # we reach the retry limit
         while True:
             char = self.getc(1)
             if char:
                 if char in [NAK, CRC]:
-                    print char
                     if char == NAK:
                         print "Got NAK"
                     elif char == CRC:

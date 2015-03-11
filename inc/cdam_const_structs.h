@@ -68,7 +68,7 @@ typedef struct Version_t {
 
 typedef struct MetaFlags_t {
 	union {
-		int8_t flag1;
+		uint8_t flag1;
 		struct {
 			uint8_t auth 			:1; // Bit 0
 			uint8_t random			:1;
@@ -131,10 +131,10 @@ typedef struct MetaFlags_t {
 
 typedef struct MetaValues_t {
 	uint16_t pcbVersion;
+	int16_t timezoneOffset;
 	uint16_t coinsPerCredit;
 	uint16_t coinDenomination;
 	uint16_t coinsToContinue;
-	uint16_t value5;
 	uint16_t value6;
 	uint16_t value7;
 	uint16_t value8;

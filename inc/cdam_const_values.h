@@ -40,6 +40,7 @@ const uint8_t kSerialCmdListeningMode = 0x77; // 'w'
 const uint8_t kSerialCmdClearWiFi = 0x78; // 'x'
 
 // TODO: Start at 'a' or 0x61
+const uint8_t kSerialCmdMode = 'c';
 const uint8_t kSerialCmdWriteFlashRaw = 0x66; // 'f'
 const uint8_t kSerialCmdWriteFlashee = 0x03;
 const uint8_t kSerialCmdKeypadInput = 0x04;
@@ -55,6 +56,7 @@ const uint8_t kSerialCmdSetValue = 0x0D;
 const uint8_t kSerialCmdResetMetadata = 0x0E;
 const uint8_t kSerialCmdEraseFlash = 0x0F;
 const uint8_t kSerialCmdRebootUnit = 0x10;
+const uint8_t kSerialCmdDfuMode = 0x16;
 
 const uint8_t kSerialCmdGetVersion = 0x11;
 const uint8_t kSerialCmdGetFlag = 0x12;

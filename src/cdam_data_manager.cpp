@@ -15,7 +15,6 @@ bool DataManager::initialize(StateController *aStateController) {
 	_stateController = aStateController;
 	this->logPrint = false;
 	this->runState = true;
-	this->timeSynced = false;
 	this->hasCredentials = false;
 	this->metadata = {'\0'};
 
@@ -210,6 +209,9 @@ void DataManager::handleSerialData() {
 								(this->currentStory == index)) {
 								stateController()->changeState(STATE_INIT);
 							}
+							Serial.write(0x01);
+						} else {
+							Serial.write(0x02);
 						}
 						break;
 					}
@@ -247,6 +249,14 @@ void DataManager::handleSerialData() {
 					}
 					case kSerialCmdRebootUnit: {
 						stateController()->changeState(STATE_INIT);
+						break;
+					}
+					case kSerialCmdDfuMode: {
+						FLASH_OTA_Update_SysFlag = 0x0000;
+						Save_SystemFlags();
+						BKP_WriteBackupRegister(BKP_DR10, 0x0000);
+						USB_Cable_Config(DISABLE);
+						NVIC_SystemReset();
 						break;
 					}
 					case kSerialCmdGetFlag: {
@@ -603,6 +613,7 @@ void DataManager::writeBegin(uint32_t aAddress, uint32_t aBinarySize) {
 	_writeInProgress = true;
 	_currentAddress = aAddress;
 	_binarySize = aBinarySize;
+	//Serial1.println(aBinarySize);
 }
 
 void DataManager::writeEnd(bool aResult) {
@@ -713,6 +724,7 @@ bool DataManager::initializeMetadata(Metadata *aMetadata) {
 	//aMetadata->flags.dictOffsetBytes = 0;
 
 	aMetadata->values.pcbVersion = BOARD_DOT_VERSION;
+	aMetadata->values.timezoneOffset = 0;
 	aMetadata->values.coinsPerCredit = 0;
 	aMetadata->values.coinDenomination = 0;
 

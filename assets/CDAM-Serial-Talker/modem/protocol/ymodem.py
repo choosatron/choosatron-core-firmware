@@ -1,4 +1,5 @@
 import glob
+import time
 import os
 from modem.const import *
 from modem.tools import log
@@ -58,11 +59,10 @@ class YMODEM(XMODEM):
             # space, serial number (or ascii '0'), space, '1', filesize again
             data = ''.join([os.path.basename(filename), '\x00',
                 str(os.path.getsize(filename)), '\x20', '012467013744',
-                '\x20', '\x30', '\x20', '\x30', '\x20', '\x31', '\x20',
-                str(os.path.getsize(filename)), '\x00'])
+                '\x20', '\x30', '\x20', '\x30'])
             print len(data)
-            data = data.ljust(packet_size - 1, '\0')
-            data += '\x36'
+            data = data.ljust(packet_size, '\0')
+            #data += '\x36'
             # Get filename length to use as index
             #index = len(os.path.basename(filename)) + 2
             #filesize = str(os.path.getsize(filename))
@@ -84,6 +84,7 @@ class YMODEM(XMODEM):
             print "s 5"
 
             # Emit packet
+            time.sleep(1)
             if not self._send_packet(sequence, data, packet_size, crc_mode,
                 crc, error_count, retry, timeout):
                 self.abort(timeout=timeout)
@@ -93,15 +94,16 @@ class YMODEM(XMODEM):
             # Wait for <CRC> before transmitting the file contents
             error_count = 0
             if not self._wait_recv(error_count, 0, timeout):
+                print "TIMEOUT"
                 self.abort(timeout)
                 return False
 
             filedesc = open(filename, 'rb')
-
+            
+            #self.putc("testing")
             # AT THIS POINT
             # - PACKET 0 WITH METADATA TRANSMITTED
             # - INITIAL <CRC> OR <NAK> ALREADY RECEIVED
-            print "send stream prep"
             if not self._send_stream(filedesc, crc_mode, retry, timeout):
                 log.error(error.ABORT_SEND_STREAM)
                 return False
@@ -110,7 +112,7 @@ class YMODEM(XMODEM):
             # - FILE CONTENTS TRANSMITTED
             # - <EOT> TRANSMITTED
             # - <ACK> RECEIVED
-            print "stream send"
+            print "stream sent"
 
             filedesc.close()
             # WAIT A <CRC> BEFORE NEXT FILE

@@ -4,6 +4,7 @@ import subprocess
 import argparse
 import serial
 import struct
+import time
 import glob
 import sys
 import os
@@ -46,21 +47,31 @@ Choosatron Serial Commands:
 		# Serup Serial connection
 		serialPaths = glob.glob("/dev/cu.usb*")
 		if len(serialPaths) > 0:
-			kCdamSerial = serial.Serial(serialPaths[0], 9600, timeout=None)
+			kCdamSerial = serial.Serial(serialPaths[0], 9600, timeout=5)
+			kCdamSerial.flushOutput()
+			kCdamSerial.flushInput()
 			# use dispatch pattern to invoke method with same name
 			getattr(self, args.command)()
 		else:
 			print "No USB Serial Device Found"
 
 	def getc(self, size, timeout=1):
-		data = kCdamSerial.read(size) or None
+		global kCdamSerial
+		#data = kCdamSerial.read(size) or None
 		#print "GET: " + ''.join('{:02x}'.format(x) for x in data)
-		print "GET: " + binascii.hexlify(data);
+		#print "GET: " + binascii.hexlify(data);
+		data = kCdamSerial.read(size) or None
+		kCdamSerial.flushInput()
 		return data
 
 	def putc(self, data, timeout=1):
-		print "PUT: " + binascii.hexlify(data)
-		return kCdamSerial.write(data) or None
+		global kCdamSerial
+		#print "PUT: " + binascii.hexlify(data)
+		kCdamSerial.flushOutput()
+		data = kCdamSerial.write(data) or None
+		#kCdamSerial.flushOutput()
+		#kCdamSerial.flush()
+		return data
 
 	def addstory(self):
 		global kCdamSerial
@@ -86,10 +97,12 @@ Choosatron Serial Commands:
 		data += CMD_ADD_STORY
 		data += sizeBytes
 		data += chr(args.index)
+		time.sleep(1)
 		kCdamSerial.write(data)
-
 		response = kCdamSerial.read(77)
 		print response
+		kCdamSerial.flushOutput()
+		kCdamSerial.flushInput()
 		#try:
 		ymodem = YMODEM(self.getc, self.putc)
 		status = ymodem.send([args.filename])

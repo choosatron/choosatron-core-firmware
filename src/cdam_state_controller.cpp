@@ -29,7 +29,6 @@ StateController::StateController() {
 }
 
 void StateController::initialize() {
-	//changeState(STATE_BOOTING);
 	_state = STATE_BOOTING;
 	initState(_state);
 }
@@ -71,13 +70,9 @@ void StateController::initState(GameState aState) {
 	} else if (aState == STATE_INIT) {
 		_dataManager->unloadStory();
 		if (Spark.connected()) {
-			DEBUG("Syncing time - how do we verify?");
-			// TODO: Verify time sync, set booleon on dataManager
 			Spark.syncTime();
-			_dataManager->timeSynced = true; // ???
+			//Time.zone(_dataManager->metadata.values.timezone);
 		}
-		_seed = millis();
-		randomSeed(_seed);
 	} else if (aState == STATE_CREDITS) {
 		_hardwareManager->coinAcceptor()->active = true;
 		_hardwareManager->printer()->printInsertCoin(_hardwareManager->coinAcceptor()->coins,
@@ -167,6 +162,8 @@ void StateController::loopState(GameState aState) {
 	} else if (aState == STATE_CREDITS) {
 		if (_hardwareManager->keypad()->buttonEvent(BTN_UP_EVENT)) {
 			if (_hardwareManager->coinAcceptor()->consumeCredit()) {
+				_seed = millis();
+				randomSeed(_seed);
 				changeState(STATE_READY);
 			} else {
 				_hardwareManager->printCoinInsertIntervalUpdate();
@@ -175,6 +172,8 @@ void StateController::loopState(GameState aState) {
 	} else if (aState == STATE_WAITING) {
 		uint8_t total = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, 0);
 		if (total) {
+			_seed = millis();
+			randomSeed(_seed);
 			if (_dataManager->liveStoryCount && (total == 10)) {
 				_dataManager->randomPlay = true;
 				uint8_t value = random(1, _dataManager->liveStoryCount + 1);
