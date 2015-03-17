@@ -58,7 +58,7 @@
 #define ABORT2                  (0x61)  /* 'a' == 0x61, abort by user */
 
 #define NAK_TIMEOUT             (0x100000)
-#define MAX_ERRORS              (5)
+#define MAX_ERRORS              (50)
 
 /* Constants used by Serial Command Line Mode */
 #define CMD_STRING_SIZE         128
@@ -149,42 +149,72 @@ static int32_t Receive_Packet(Stream *serialObj, uint8_t *data, int32_t *length,
   {
     return -1;
   }
+  Serial1.write(c);
+  //bool isSoh = false;
   switch (c)
   {
     case SOH:
       packet_size = PACKET_SIZE;
+      //isSoh = true;
+      //Serial1.println("SOH - 128 size");
       break;
     case STX:
       packet_size = PACKET_1K_SIZE;
+      //Serial1.println("STX - 1024 size");
       break;
     case EOT:
+      //Serial1.println("EOT");
       return 0;
     case CA:
+      //Serial1.print("CA - ");
       if ((Receive_Byte(serialObj, &c, timeout) == 0) && (c == CA))
       {
+        Serial1.write(c);
         *length = -1;
         return 0;
       }
       else
       {
+        //Serial1.println("Bad second byte.");
         return -1;
       }
     case ABORT1:
     case ABORT2:
       return 1;
     default:
+    	//Serial1.println("Default");
       return -1;
   }
   *data = c;
+  //int line = 0;
   for (i = 1; i < (packet_size + PACKET_OVERHEAD); i ++)
   {
     if (Receive_Byte(serialObj, data + i, timeout) != 0)
     {
+      //Serial1.println("Badness!");
       return -1;
     }
+    Serial1.write(data[i]);
+    /*if (isSoh) {
+	    if (data[i]<0x10) {
+	    	Serial1.print("0");
+	    }
+	    Serial1.print(data[i], HEX);
+	    line++;
+	    if (line < 11) {
+	    	Serial1.print(" ");
+	  	} else {
+	  		line = 0;
+	  		Serial1.println("");
+	  	}
+  	}*/
   }
+  /*if (isSoh) {
+  	Serial1.println("---");
+	}*/
   if (data[PACKET_SEQNO_INDEX] != ((data[PACKET_SEQNO_COMP_INDEX] ^ 0xff) & 0xff))
   {
+    //Serial1.println("Badness 2!");
     return -1;
   }
   *length = packet_size;
@@ -207,6 +237,7 @@ static int32_t Ymodem_Receive(Stream *serialObj, uint32_t sFlashAddress, uint8_t
   {
     for (packets_received = 0, file_done = 0, buf_ptr = buf; ;)
     {
+      //Serial1.println("Receive packet");
       switch (Receive_Packet(serialObj, packet_data, &packet_length, NAK_TIMEOUT))
       {
         case 0:
@@ -226,6 +257,11 @@ static int32_t Ymodem_Receive(Stream *serialObj, uint32_t sFlashAddress, uint8_t
             default:
               if ((packet_data[PACKET_SEQNO_INDEX] & 0xff) != (packets_received & 0xff))
               {
+                /*Serial1.print("NAK: ");
+                Serial1.print(packet_data[PACKET_SEQNO_INDEX] & 0xff);
+                Serial1.print(" - ");
+                Serial1.println(packets_received & 0xff);*/
+                Serial1.print("SENT NAK");
                 Send_Byte(serialObj, NAK);
               }
               else
@@ -248,10 +284,18 @@ static int32_t Ymodem_Receive(Stream *serialObj, uint32_t sFlashAddress, uint8_t
                     file_size[i++] = '\0';
                     size = strtoul((const char *)file_size, NULL, 10);
 
+                    //Serial1.print("filename: ");
+                    //Serial1.println(&fileName)
+                    //Serial_PrintCharArray(&Serial1, fileName);
+
                     /* Test the size of the image to be sent */
                     /* Image size is greater than max OTA firmware size or max USER size */
                     bool valid = false;
                     if (CDAM_Write_To_Flashee()) {
+                    	/*Serial1.print("Addr: ");
+                    	Serial1.print(sFlashAddress);
+                    	Serial1.print(" - ");
+                    	Serial1.println(size);*/
                       valid = CDAM_FLASH_CheckValidAddressRange(sFlashAddress, size);
                     } else {
                       valid = HAL_FLASH_CheckValidAddressRange(sFlashAddress, size);
@@ -259,6 +303,7 @@ static int32_t Ymodem_Receive(Stream *serialObj, uint32_t sFlashAddress, uint8_t
                     if (valid != true)
                     {
                       /* End session */
+                      //Serial1.println("CA1");
                       Send_Byte(serialObj, CA);
                       Send_Byte(serialObj, CA);
                       return -1;
@@ -291,20 +336,28 @@ static int32_t Ymodem_Receive(Stream *serialObj, uint32_t sFlashAddress, uint8_t
                 {
                   memcpy(buf_ptr, packet_data + PACKET_HEADER, packet_length);
                   TimingFlashUpdateTimeout = 0;
+                  /*Serial1.print("PL: ");
+                  Serial1.println(packet_length);*/
                   if (CDAM_Write_To_Flashee()) {
                     saved_index = CDAM_FLASH_Update(buf, packet_length);
                   } else {
                     saved_index = HAL_FLASH_Update(buf, packet_length);
                   }
+                  /*Serial1.print("indexes: ");
+                  Serial1.print(current_index);
+                  Serial1.print(" -> ");
+                  Serial1.println(saved_index);*/
                   LED_Toggle(LED_RGB);
                   if(saved_index > current_index)
                   {
                     current_index = saved_index;
                     Send_Byte(serialObj, ACK);
+                    //Serial1.println("Sent ACK");
                   }
                   else
                   {
                     /* End session if Spark_Save_Firmware_Chunk() fails */
+                    //Serial1.println("CA2");
                     Send_Byte(serialObj, CA);
                     Send_Byte(serialObj, CA);
                     return -2;
@@ -316,6 +369,7 @@ static int32_t Ymodem_Receive(Stream *serialObj, uint32_t sFlashAddress, uint8_t
           }
           break;
             case 1:
+              //Serial1.println("CA3");
               Send_Byte(serialObj, CA);
               Send_Byte(serialObj, CA);
               return -3;
@@ -326,11 +380,16 @@ static int32_t Ymodem_Receive(Stream *serialObj, uint32_t sFlashAddress, uint8_t
               }
               if (errors > MAX_ERRORS)
               {
+                //Serial1.println("CA4");
                 Send_Byte(serialObj, CA);
                 Send_Byte(serialObj, CA);
                 return 0;
               }
+              //if (session_begin == 0) {
               Send_Byte(serialObj, CRC16);
+              //} else {
+                //Send_Byte(serialObj, ACK);
+              //}
               break;
       }
       if (file_done != 0)
