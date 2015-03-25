@@ -2,7 +2,7 @@
 
 This is the main source code repository of the Choosatron firmware for the Spark Core hardware device.
 
-This firmware depends on one other library: the [Spark Core Firmware](https://github.com/spark/firmware) - specifically the [HAL Feature Branch](https://github.com/spark/firmware/tree/feature/hal). HAL stands for *Hardware Abstraction Layer*, allowing for a single repository to support multiple hardware devices, including their upcoming Spark Photon.
+This firmware depends on one other repository: the [Spark Core Firmware](https://github.com/spark/firmware) - specifically the [HAL Feature Branch](https://github.com/spark/firmware/tree/feature/hal). HAL stands for *Hardware Abstraction Layer*, allowing for a single repository to support multiple hardware devices, including their upcoming Spark Photon.
 
 1. [Download and Install Dependencies](#1-download-and-install-dependencies)
 2. [Download and Build Repositories](#2-download-and-build-repositories)
