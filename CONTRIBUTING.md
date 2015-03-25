@@ -9,7 +9,7 @@
 
 ## Team members
 
-(Jerry Belich)[http://jerrytron.com/press]
+[Jerry Belich](http://jerrytron.com) - [Presskit](http://jerrytron.com/press)
 
 ## Community 
 If you'd like to contribute in a non-development related way, consider the following:
