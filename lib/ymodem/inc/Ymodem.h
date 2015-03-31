@@ -368,29 +368,24 @@ static int32_t Ymodem_Receive(Stream *serialObj, uint32_t sFlashAddress, uint8_t
               }
           }
           break;
-            case 1:
-              //Serial1.println("CA3");
-              Send_Byte(serialObj, CA);
-              Send_Byte(serialObj, CA);
-              return -3;
-            default:
-              if (session_begin > 0)
-              {
-                errors++;
-              }
-              if (errors > MAX_ERRORS)
-              {
-                //Serial1.println("CA4");
-                Send_Byte(serialObj, CA);
-                Send_Byte(serialObj, CA);
-                return 0;
-              }
-              //if (session_begin == 0) {
-              Send_Byte(serialObj, CRC16);
-              //} else {
-                //Send_Byte(serialObj, ACK);
-              //}
-              break;
+        case 1:
+          Send_Byte(serialObj, CA);
+          Send_Byte(serialObj, CA);
+          return -3;
+        default:
+          if (session_begin > 0)
+          {
+            errors++;
+            Send_Byte(serialObj, CRC16);
+          }
+          if (errors > MAX_ERRORS)
+          {
+            Send_Byte(serialObj, CA);
+            Send_Byte(serialObj, CA);
+            return 0;
+          }          
+          break;
+
       }
       if (file_done != 0)
       {
