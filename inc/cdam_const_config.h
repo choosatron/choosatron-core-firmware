@@ -24,15 +24,15 @@ const uint16_t kIntervalPrinterMillis = 50;
 // How often to update the Keypad state.
 const uint16_t kIntervalKeypadMillis = 5;
 // How often to update the Coin Acceptor state.
-const uint16_t kIntervalCoinAcceptorMillis = 5;
+const uint16_t kIntervalCoinAcceptorMillis = 0;
 // How often to allow printing Insert Coin message.
 const uint16_t kIntervalCoinInsertMessage = 10000;
 // Delay until printing out 'press any button' message.
 const uint16_t kIntervalPressAnyButton = 40000;
 // Min value for coin sensing.
-const uint8_t kCoinAcceptorSenseMin = 15;
+const uint8_t kCoinAcceptorSenseMin = 20;
 // Max value for coin sensing.
-const uint8_t kCoinAcceptorSenseMax = 60;
+const uint8_t kCoinAcceptorSenseMax = 40;
 // Maximum bytes available for stories. (1MB)
 const uint32_t kFlashMaxStoryBytes = 1048576;
 // Passage buffer read size.

@@ -160,14 +160,13 @@ void StateController::loopState(GameState aState) {
 			changeState(STATE_WAITING);
 		}
 	} else if (aState == STATE_CREDITS) {
-		if (_hardwareManager->keypad()->buttonEvent(BTN_UP_EVENT)) {
-			if (_hardwareManager->coinAcceptor()->consumeCredit()) {
-				_seed = millis();
-				randomSeed(_seed);
-				changeState(STATE_READY);
-			} else {
-				_hardwareManager->printCoinInsertIntervalUpdate();
-			}
+		if (_hardwareManager->coinAcceptor()->consumeCredit()) {
+			_seed = millis();
+			randomSeed(_seed);
+			//_hardwareManager->coinAcceptor()->active = false;
+			changeState(STATE_READY);
+		} else if (_hardwareManager->keypad()->buttonEvent(BTN_UP_EVENT)) {
+			_hardwareManager->printCoinInsertIntervalUpdate();
 		}
 	} else if (aState == STATE_WAITING) {
 		uint8_t total = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, 0);

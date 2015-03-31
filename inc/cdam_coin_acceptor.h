@@ -6,6 +6,7 @@
 #define CDAM_COIN_ACCEPTOR_H
 
 #include "cdam_constants.h"
+#include "elapsed_time.h"
 
 namespace cdam
 {
@@ -14,8 +15,8 @@ class CoinAcceptor {
 
 public:
     /* Public Methods */
-    CoinAcceptor(uint8_t aCoinsPerCredit = 2, uint8_t aCoinsToContinue = 1);
-    void initialize();
+    CoinAcceptor();
+    void initialize(uint8_t aCoinsPerCredit = 2, uint8_t aCoinsToContinue = 1);
     void updateState();
     //static void waitForCoin(const Keypad *aKeypad);
     // bool checkForCoinOld();
@@ -45,7 +46,9 @@ private:
     void checkForCoin();
 
     /* Private Variables */
-    uint8_t _coinSenseCounter;
+    bool _coinSensed;
+    // Time elapsed since coin sensed.
+    ElapsedMillis _coinElapsed;
 
 };
 

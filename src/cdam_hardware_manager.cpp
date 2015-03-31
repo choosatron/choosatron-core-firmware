@@ -12,7 +12,6 @@ HardwareManager::HardwareManager() {
 
 bool HardwareManager::initialize(StateController *aStateController) {
 	_stateController = aStateController;
-	_coinAcceptor = NULL;
 	setupHardwarePins();
 	initHardware();
 	return true;
@@ -60,7 +59,7 @@ void HardwareManager::setupHardwarePins() {
 	digitalWrite(PIN_GREEN_LED, HIGH);
 	digitalWrite(PIN_BLUE_LED, HIGH);
 	// Pin for Coin Acceptor
-	pinMode(PIN_COIN, INPUT);
+	pinMode(PIN_COIN, INPUT_PULLUP);
 }
 
 void HardwareManager::initHardware() {

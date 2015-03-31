@@ -9,13 +9,14 @@ namespace cdam
 
 /* Public Methods */
 
-CoinAcceptor::CoinAcceptor(uint8_t aCoinsPerCredit, uint8_t aCoinsToContinue) {
-	coinsPerCredit = aCoinsPerCredit;
-	coinsToContinue = aCoinsToContinue;
+CoinAcceptor::CoinAcceptor() {
 }
 
-void CoinAcceptor::initialize() {
-	_coinSenseCounter = 0;
+void CoinAcceptor::initialize(uint8_t aCoinsPerCredit, uint8_t aCoinsToContinue) {
+	coinsPerCredit = aCoinsPerCredit;
+	coinsToContinue = aCoinsToContinue;
+	coins = 0;
+	_coinSensed = false;
 	this->active = true;
 }
 
@@ -75,15 +76,20 @@ bool CoinAcceptor::consumeContinue() {
 /* Private Methods */
 
 void CoinAcceptor::checkForCoin() {
-	if (digitalRead(PIN_COIN)) {
-		_coinSenseCounter++;
-	} else {
-		if ((_coinSenseCounter >= kCoinAcceptorSenseMin) &&
-		    (_coinSenseCounter <= kCoinAcceptorSenseMax)) {
-			//DEBUG("Senser Count: %d", _coinSenseCounter);
+	uint8_t pinRead = digitalRead(PIN_COIN);
+	if (!_coinSensed && pinRead) {
+		//DEBUG("Coin Start");
+		_coinSensed = true;
+		_coinElapsed = 0;
+	} else if (_coinSensed && !pinRead) {
+		uint8_t elapsed = (uint8_t)_coinElapsed;
+		//DEBUG("Coin Stop: %d", elapsed);
+		_coinSensed = false;
+		if ((elapsed >= kCoinAcceptorSenseMin) &&
+		    (elapsed <= kCoinAcceptorSenseMax)) {
 			coins++;
+			//DEBUG("Coins: %d", coins);
 		}
-		_coinSenseCounter = 0;
 	}
 }
 
