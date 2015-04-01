@@ -35,14 +35,6 @@ void CoinAcceptor::addCredits(uint8_t aCredits) {
 	}
 }
 
-void CoinAcceptor::setCredits(uint8_t aCredits) {
-	coins = (aCredits * coinsPerCredit);
-}
-
-uint8_t CoinAcceptor::getCredits() {
-	return coins / coinsPerCredit;
-}
-
 bool CoinAcceptor::consumeCredit() {
 	if (coins >= coinsPerCredit) {
 		coins -= coinsPerCredit;
@@ -61,17 +53,13 @@ bool CoinAcceptor::consumeContinue() {
 
 /* Accessors */
 
-// uint8_t CoinAcceptor::getCoinsPerCredit() {
-// 	return _coinsPerCredit;
-// }
+void CoinAcceptor::setCredits(uint8_t aCredits) {
+	coins = (aCredits * coinsPerCredit);
+}
 
-// void CoinAcceptor::setCoinsPerCredit(uint8_t aCoinsPerCredit) {
-// 	_coinsPerCredit = aCoinsPerCredit;
-// }
-
-// void CoinAcceptor::setCoinsToContinue(uint8_t aCoinsToContinue) {
-// 	_coinsToContinue = aCoinsToContinue;
-// }
+uint8_t CoinAcceptor::getCredits() {
+	return coins / coinsPerCredit;
+}
 
 /* Private Methods */
 
@@ -92,56 +80,5 @@ void CoinAcceptor::checkForCoin() {
 		}
 	}
 }
-
-/*void CoinAcceptor::waitForCoin(const Keypad *aKeypad) {
-while (!digitalRead(COIN_PIN)) {
-  char key = aKeypad->getKey();
-  if ((key != NO_KEY) && (key != RESET_PASS)) {
-    slogln(key);
-    unsigned long timeDelay = millis();
-    if (INSERT_COIN_DELAY > timeDelay) {
-      timeDelay = INSERT_COIN_DELAY;
-    }
-    if ((_insertCoinTime == 0) || ((timeDelay - INSERT_COIN_DELAY) >= _insertCoinTime)) {
-      printInsertCoin();
-      _insertCoinTime = timeDelay;
-    }
-    delay(1);
-  }
-}
-}*/
-
-/*boolean senseCoin() {
-if (!digitalRead(COIN_PIN)) {
-  char key = _keypad.getKey();
-  if (key != NO_KEY) {
-    unsigned long timeDelay = millis();
-    if (INSERT_COIN_DELAY > timeDelay) {
-      timeDelay = INSERT_COIN_DELAY;
-    }
-    if ((_insertCoinTime == 0) || ((timeDelay - INSERT_COIN_DELAY) >= _insertCoinTime)) {
-      printInsertCoin();
-      _insertCoinTime = timeDelay;
-    }
-  }
-  return false;
-}
-return true;
-}*/
-
-/*bool CoinAcceptor::checkForCoinOld() {
-// When coin pin is high, track the length with a counter.
-	uint8_t coinSenseCounter = 0;
-	while (digitalRead(PIN_COIN)) {
-		delay(1);
-		coinSenseCounter++;
-	}
-	if ((coinSenseCounter <= 60) && (coinSenseCounter >= 15)) {
-		DEBUG("Senser Count: %d", coinSenseCounter);
-		coinInserted();
-		return true;
-	}
-	return false;
-}*/
 
 }
