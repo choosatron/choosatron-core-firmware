@@ -32,7 +32,7 @@ const uint16_t kIntervalPressAnyButton = 40000;
 // Min value for coin sensing.
 const uint8_t kCoinAcceptorSenseMin = 20;
 // Max value for coin sensing.
-const uint8_t kCoinAcceptorSenseMax = 40;
+const uint8_t kCoinAcceptorSenseMax = 60;
 // Maximum bytes available for stories. (1MB)
 const uint32_t kFlashMaxStoryBytes = 1048576;
 // Passage buffer read size.
