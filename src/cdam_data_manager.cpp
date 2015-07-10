@@ -1,4 +1,5 @@
 #include "cdam_data_manager.h"
+#include "cdam_manager.h"
 #include "cdam_constants.h"
 #include "cdam_state_controller.h"
 #include "spark_wiring_time.h"
@@ -163,19 +164,33 @@ void DataManager::handleSerialData() {
 						break;
 					}
 					case kSerialCmdKeypadInput: {
-
+						//  No event = 0, multi down = 1, multi up = 2
+						KeypadEvent event = (KeypadEvent)(Serial.read());
+						uint8_t value = Serial.read();
+						Manager::getInstance().hardwareManager->keypad()->setKeypadEvent(event, value);
 						break;
 					}
 					case kSerialCmdButtonInput: {
-
+						//  No event = 0, button down = 1, button held = 2, button up = 3
+						ButtonEvent event = (ButtonEvent)(Serial.read());
+						uint8_t btnNum = Serial.read();
+						Manager::getInstance().hardwareManager->keypad()->setButtonEvent(event, btnNum);
 						break;
 					}
 					case kSerialCmdAdjustCredits: {
-
+						// First byte is the number of credits to adjust.
+						int8_t credits = Serial.read();
+						// Second byte is 0 for negative, 1 for positive adjustment.
+						if (Serial.read() == 0) {
+							credits *= -1;
+						}
+						Manager::getInstance().hardwareManager->coinAcceptor()->addCredits(credits);
+						Serial.write(Manager::getInstance().hardwareManager->coinAcceptor()->getCredits());
 						break;
 					}
 					case kSerialCmdSetCredits: {
-
+						Manager::getInstance().hardwareManager->coinAcceptor()->setCredits(Serial.read());
+						Serial.write(Manager::getInstance().hardwareManager->coinAcceptor()->getCredits());
 						break;
 					}
 					case kSerialCmdAddStory: {
@@ -211,7 +226,7 @@ void DataManager::handleSerialData() {
 							}
 							Serial.write(0x01);
 						} else {
-							Serial.write(0x02);
+							Serial.write('e');
 						}
 						break;
 					}
@@ -259,6 +274,12 @@ void DataManager::handleSerialData() {
 						NVIC_SystemReset();
 						break;
 					}
+					case kSerialCmdGetVersion: {
+						Serial.write(kFirmwareVersionMajor);
+						Serial.write(kFirmwareVersionMinor);
+						Serial.write(kFirmwareVersionRevision);
+						break;
+					}
 					case kSerialCmdGetFlag: {
 						uint8_t index = Serial.read();
 						char* flags = (char*)&this->metadata.flags;
@@ -270,6 +291,32 @@ void DataManager::handleSerialData() {
 						uint8_t* values = (uint8_t*)&this->metadata.values;
 						Serial.write(values[index * 2]);
 						Serial.write(values[(index * 2) + 1]);
+						break;
+					}
+					case kSerialCmdGetNames: {
+						char titleBuffer[kStoryTitleSize] = "";
+						for (uint8_t i = 0; i < this->metadata.storyCount; ++i) {
+							memset(&titleBuffer[0], 0, sizeof(titleBuffer));
+							if (getTitle(titleBuffer, i, false)) {
+								Serial.write(strlen(titleBuffer));
+								Serial.write(titleBuffer);
+							}
+						}
+						break;
+					}
+					case kSerialCmdGetStoryInfo: {
+						uint8_t index = Serial.read();
+						uint8_t visibleOnly = Serial.read();
+						char storyInfo[kReturnSizeStoryInfo + 1] = "";
+						StoryHeader storyHeader;
+						uint32_t offset = getStoryOffset(index, visibleOnly);
+						bool result = readData((uint8_t*)&storyHeader, offset, kStoryHeaderSize);
+						if (result) {
+							getStoryInfo(storyInfo, kReturnSizeStoryInfo + 1, this->metadata.storyOrder[index], &this->storyHeader);
+							Serial.write(storyInfo);
+						} else {
+							Serial.write('e');
+						}
 						break;
 					}
 				}
@@ -351,8 +398,10 @@ uint32_t DataManager::getPassageOffset(uint16_t aIndex) {
 	return offset;
 }
 
-bool DataManager::getNumberedTitle(char* aBuffer, uint8_t aIndex) {
-	sprintf(aBuffer, "%d. ", aIndex + 1);
+bool DataManager::getTitle(char* aBuffer, uint8_t aIndex, bool aNumbered) {
+	if (aNumbered) {
+		sprintf(aBuffer, "%d. ", aIndex + 1);
+	}
 	uint32_t offset = kStoryTitleOffset;
 #if HAS_SD == 1
 	if (this->metadata.flags.sdCard) {

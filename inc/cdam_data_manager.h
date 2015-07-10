@@ -65,7 +65,7 @@ class DataManager
 		// Get the byte offset for the given passage index (in current story).
 		uint32_t getPassageOffset(uint16_t aIndex);
 		// Fill provided buffer with the title of the story and the provided position.
-		bool getNumberedTitle(char* aBuffer, uint8_t aIndex);
+		bool getTitle(char* aBuffer, uint8_t aIndex, bool aNumbered);
 		// Story selected, load the header for the story in play.
 		bool loadStory(uint8_t aIndex);
 		// Cleanup after the finished story.

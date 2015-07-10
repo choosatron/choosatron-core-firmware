@@ -36,8 +36,8 @@ const uint8_t kStoryStateDeleted = 2;
 
 // Serial Communication Commands
 
-const uint8_t kSerialCmdListeningMode = 0x77; // 'w'
-const uint8_t kSerialCmdClearWiFi = 0x78; // 'x'
+const uint8_t kSerialCmdListeningMode = 'l';
+const uint8_t kSerialCmdClearWiFi = 'x'; // 0x78
 
 // TODO: Start at 'a' or 0x61
 const uint8_t kSerialCmdMode = 'c';

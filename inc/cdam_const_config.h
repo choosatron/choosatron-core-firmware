@@ -13,6 +13,9 @@ const uint16_t kFlashStoriesPageCount = 256; // 124 pages remaining
 // Flash saves page count.
 //const uint16_t kFlashSavesPageCount = 64; // 60 pages remaining
 
+// Story info size.
+const uint8_t kReturnSizeStoryInfo = 162;
+
 // Seconds for timeout of Published Spark Events
 const uint8_t kServerTTLDefault = 60;
 // How often to check for serial communication.

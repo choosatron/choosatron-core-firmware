@@ -198,7 +198,7 @@ void StateController::loopState(GameState aState) {
 
 			for (int i = 0; i < storyCount; ++i) {
 				memset(&titleBuffer[0], 0, sizeof(titleBuffer));
-				if (_dataManager->getNumberedTitle(titleBuffer, i)) {
+				if (_dataManager->getTitle(titleBuffer, i, true)) {
 					_hardwareManager->printer()->wrapText(titleBuffer, kPrinterColumns);
 					_hardwareManager->printer()->println(titleBuffer);
 					//DEBUG("%s", titleBuffer);

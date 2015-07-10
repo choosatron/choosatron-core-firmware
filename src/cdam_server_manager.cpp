@@ -261,15 +261,15 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 			if (!result) {
 				returnVal = kServerReturnFail;
 			} else {
-				char storyInfo[163] = "";
-				dataMan->getStoryInfo(storyInfo, 163, index, &storyHeader);
+				char storyInfo[kReturnSizeStoryInfo + 1] = "";
+				dataMan->getStoryInfo(storyInfo, kReturnSizeStoryInfo + 1, index, &storyHeader);
 				Spark.publish(kServerCmdGetStoryInfo, storyInfo, kServerTTLDefault, PRIVATE);
 			}
 		}
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdGetCurrentStory) == 0) {
 		if (dataMan->currentStory > -1) {
-			char storyInfo[163] = "";
-			dataMan->getStoryInfo(storyInfo, 163, dataMan->metadata.storyOrder[dataMan->currentStory], &dataMan->storyHeader);
+			char storyInfo[kReturnSizeStoryInfo + 1] = "";
+			dataMan->getStoryInfo(storyInfo, kReturnSizeStoryInfo + 1, dataMan->metadata.storyOrder[dataMan->currentStory], &dataMan->storyHeader);
 			Spark.publish(kServerCmdGetCurrentStory, storyInfo, kServerTTLDefault, PRIVATE);
 		} else {
 			returnVal = kServerReturnFail;
