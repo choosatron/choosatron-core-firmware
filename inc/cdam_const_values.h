@@ -40,7 +40,8 @@ const uint8_t kSerialCmdListeningMode = 'l';
 const uint8_t kSerialCmdClearWiFi = 'x'; // 0x78
 
 const uint8_t kSerialCmdMode = 'c';
-const uint8_t kSerialCmdWriteFlashRaw = 0x02; // 'f'
+const uint8_t kSerialCmdPing = 0x01;
+const uint8_t kSerialCmdWriteFlashRaw = 0x02;
 const uint8_t kSerialCmdWriteFlashee = 0x03;
 const uint8_t kSerialCmdKeypadInput = 0x04;
 const uint8_t kSerialCmdButtonInput = 0x05;

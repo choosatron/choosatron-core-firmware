@@ -103,12 +103,11 @@ void DataManager::handleSerialData() {
 			uint8_t cmd = Serial.read();
 
 			if (cmd == 'c') {
-				//LOG("Command Mode");
-				Serial.println("Command Mode");
+				Serial.println("CM");
 				_serialTimeout = 0;
 				while (!Serial.available()) {
 					if (_serialTimeout >= kTimeoutSerialMillis) {
-						Serial.println("Timeout");
+						Serial.println("TO");
 						return;
 					}
 				}
@@ -116,6 +115,10 @@ void DataManager::handleSerialData() {
 
 				switch (cmd)
 				{
+					case kSerialCmdPing: {
+						Serial.write(0x01);
+						break;
+					}
 					case kSerialCmdListeningMode: {
 						this->hasCredentials = WiFi.hasCredentials();
 						WiFi.listen();
