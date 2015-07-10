@@ -319,6 +319,10 @@ void DataManager::handleSerialData() {
 						}
 						break;
 					}
+					case kSerialCmdGetCredits: {
+						Serial.write(Manager::getInstance().hardwareManager->coinAcceptor()->getCredits());
+						break;
+					}
 				}
 			}
 		}

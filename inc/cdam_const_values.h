@@ -39,9 +39,8 @@ const uint8_t kStoryStateDeleted = 2;
 const uint8_t kSerialCmdListeningMode = 'l';
 const uint8_t kSerialCmdClearWiFi = 'x'; // 0x78
 
-// TODO: Start at 'a' or 0x61
 const uint8_t kSerialCmdMode = 'c';
-const uint8_t kSerialCmdWriteFlashRaw = 0x66; // 'f'
+const uint8_t kSerialCmdWriteFlashRaw = 0x02; // 'f'
 const uint8_t kSerialCmdWriteFlashee = 0x03;
 const uint8_t kSerialCmdKeypadInput = 0x04;
 const uint8_t kSerialCmdButtonInput = 0x05;
@@ -56,13 +55,14 @@ const uint8_t kSerialCmdSetValue = 0x0D;
 const uint8_t kSerialCmdResetMetadata = 0x0E;
 const uint8_t kSerialCmdEraseFlash = 0x0F;
 const uint8_t kSerialCmdRebootUnit = 0x10;
-const uint8_t kSerialCmdDfuMode = 0x16;
+const uint8_t kSerialCmdDfuMode = 0x11;
 
-const uint8_t kSerialCmdGetVersion = 0x11;
-const uint8_t kSerialCmdGetFlag = 0x12;
-const uint8_t kSerialCmdGetValue = 0x13;
-const uint8_t kSerialCmdGetNames = 0x14;
-const uint8_t kSerialCmdGetStoryInfo = 0x15;
+const uint8_t kSerialCmdGetVersion = 0x12;
+const uint8_t kSerialCmdGetFlag = 0x13;
+const uint8_t kSerialCmdGetValue = 0x14;
+const uint8_t kSerialCmdGetNames = 0x15;
+const uint8_t kSerialCmdGetStoryInfo = 0x16;
+const uint8_t kSerialCmdGetCredits = 0x17;
 
 // Flashee storage types.
 const uint8_t kFlashMetadataType = 1;
