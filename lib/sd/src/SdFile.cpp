@@ -18,7 +18,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include <Application.h>
+#include <application.h>
 #include "SdFat.h"
 #include "SdFatUtil.h"
 

@@ -18,7 +18,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include <Application.h>
+#include <application.h>
 #include "Sd2Card.h"
 
 //#include "spark_wiring_spi.h"
