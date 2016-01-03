@@ -116,7 +116,7 @@ void StateController::loopState(GameState aState) {
 
 	if (aState == STATE_BOOTING) {
 		// If button 1 held (or hardset to Offline), disable WiFi.
-		if (_hardwareManager->keypad()->buttonDown(1)) {
+		if (_hardwareManager->keypad()->btnOne()->depressed) {
 			_dataManager->metadata.flags.offline = !_dataManager->metadata.flags.offline;
 		}
 		if (!_dataManager->metadata.flags.offline) {
@@ -138,13 +138,13 @@ void StateController::loopState(GameState aState) {
 			// TODO - doesn't work
 			_dataManager->logPrint = true;
 		}*/
-		if (_hardwareManager->keypad()->buttonDown(2)) {
+		if (_hardwareManager->keypad()->btnTwo()->depressed) {
 			_dataManager->metadata.flags.sdCard = !_dataManager->metadata.flags.sdCard;
 		}
 		// Override has had a chance to get set, now setup storage.
 		_dataManager->initStorage();
 		// Admin mode, if pass required change to STATE_AUTH
-		if (_hardwareManager->keypad()->buttonDown(4)) {
+		if (_hardwareManager->keypad()->btnFour()->depressed) {
 			if (_dataManager->metadata.flags.auth) {
 				changeState(STATE_AUTH);
 			} else {
@@ -165,18 +165,22 @@ void StateController::loopState(GameState aState) {
 			randomSeed(_seed);
 			//_hardwareManager->coinAcceptor()->active = false;
 			changeState(STATE_READY);
-		} else if (_hardwareManager->keypad()->buttonEvent(BTN_UP_EVENT)) {
+		} else if (_hardwareManager->keypad()->pressedValue()) {
 			_hardwareManager->printCoinInsertIntervalUpdate();
 		}
 	} else if (aState == STATE_WAITING) {
-		uint8_t total = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, 0);
+		//uint8_t total = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, 0);
+		int16_t total = _hardwareManager->keypad()->pressedValue();
 		if (total) {
 			_seed = millis();
 			randomSeed(_seed);
 			if (_dataManager->liveStoryCount && (total == 10)) {
 				_dataManager->randomPlay = true;
 				uint8_t value = random(1, _dataManager->liveStoryCount + 1);
-				_hardwareManager->keypad()->setKeypadEvent(KEYPAD_MULTI_UP_EVENT, value);
+				//_hardwareManager->keypad()->setKeypadEvent(KEYPAD_MULTI_UP_EVENT, value);
+				DEBUG("Rand val: %d", value);
+				_hardwareManager->keypad()->setPressedValue(value);
+				DEBUG("Pressed val: %d", _hardwareManager->keypad()->pressedValue());
 				changeState(STATE_SELECT);
 			} else {
 				changeState(STATE_READY);
@@ -215,15 +219,17 @@ void StateController::loopState(GameState aState) {
 		}
 	} else if (aState == STATE_IDLE) {
 		if ((_resetElapsed > kIntervalPressAnyButton) ||
-		    _hardwareManager->keypad()->buttonEvent(BTN_UP_EVENT)) {
+		    _hardwareManager->keypad()->pressedValue()) {
 			if (_dataManager->metadata.storyCount > 0) {
 				changeState(STATE_INIT);
 			}
 		}
 	} else if (aState == STATE_SELECT) {
 		// Wait for multi button up event for story selection.
-		uint8_t total = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, _dataManager->liveStoryCount);
-		if (total) {
+		//uint8_t total = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, _dataManager->liveStoryCount);
+		bool success = false;
+		int16_t total = _hardwareManager->keypad()->pressedValInRange(success, 1, _dataManager->liveStoryCount);
+		if (success) {
 			// Story has been selected, initialize the parser with story index (not number).
 			if (_parser->initStory(total - 1)) {
 				changeState(STATE_PLAY);
@@ -236,7 +242,8 @@ void StateController::loopState(GameState aState) {
 		if (state == PARSE_ENDING) {
 			_resetElapsed = 0;
 		} else if (state == PARSE_IDLE) {
-			uint8_t total = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, 0);
+			//uint8_t total = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, 0);
+			int16_t total = _hardwareManager->keypad()->pressedValue();
 			if (_resetElapsed > kIntervalPressAnyButton) {
 				if (_dataManager->metadata.flags.arcade) {
 					changeState(STATE_CREDITS);
@@ -250,7 +257,8 @@ void StateController::loopState(GameState aState) {
 					if (_dataManager->liveStoryCount && (total == 10)) {
 						_dataManager->randomPlay = true;
 						uint8_t value = random(1, _dataManager->liveStoryCount + 1);
-						_hardwareManager->keypad()->setKeypadEvent(KEYPAD_MULTI_UP_EVENT, value);
+						//_hardwareManager->keypad()->setKeypadEvent(KEYPAD_MULTI_UP_EVENT, value);
+						_hardwareManager->keypad()->setPressedValue(value);
 						changeState(STATE_SELECT);
 					} else {
 						changeState(STATE_READY);

@@ -175,17 +175,37 @@ void DataManager::handleSerialData() {
 						break;
 					}
 					case kSerialCmdKeypadInput: {
-						//  No event = 0, multi down = 1, multi up = 2
-						KeypadEvent event = (KeypadEvent)(Serial.read());
+						// Multi down = 1, multi presses = 2, multi long pressed = 3
+						uint8_t event = Serial.read();
 						uint8_t value = Serial.read();
-						Manager::getInstance().hardwareManager->keypad()->setKeypadEvent(event, value);
+						if (event == 1) {
+							Manager::getInstance().hardwareManager->keypad()->setDownValue(value);
+						} else if (event == 2) {
+							Manager::getInstance().hardwareManager->keypad()->setPressedValue(value);
+						} else if (event == 3) {
+							Manager::getInstance().hardwareManager->keypad()->setPressedValue(value, true);
+						}
+						//KeypadEvent event = (KeypadEvent)(Serial.read());
+						//uint8_t value = Serial.read();
+						//Manager::getInstance().hardwareManager->keypad()->setKeypadEvent(event, value);
 						break;
 					}
 					case kSerialCmdButtonInput: {
-						//  No event = 0, button down = 1, button held = 2, button up = 3
-						ButtonEvent event = (ButtonEvent)(Serial.read());
+						// Button down = 1, button presses = 2, button long presses = 3
+						uint8_t event = Serial.read();
 						uint8_t btnNum = Serial.read();
-						Manager::getInstance().hardwareManager->keypad()->setButtonEvent(event, btnNum);
+						uint8_t presses = Serial.read();
+						if (event == 1) {
+							Manager::getInstance().hardwareManager->keypad()->setDownButton(btnNum);
+						} else if (event == 2) {
+							Manager::getInstance().hardwareManager->keypad()->setPressedButton(btnNum, presses);
+						} else if (event == 3) {
+							Manager::getInstance().hardwareManager->keypad()->setPressedButton(btnNum, -presses);
+						}
+
+						//ButtonEvent event = (ButtonEvent)(Serial.read());
+						//uint8_t btnNum = Serial.read();
+						//Manager::getInstance().hardwareManager->keypad()->setButtonEvent(event, btnNum);
 						break;
 					}
 					case kSerialCmdAdjustCredits: {

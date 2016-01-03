@@ -207,14 +207,17 @@ ParseState Parser::parsePassage() {
 			}
 		}
 	} else if (_state == PARSE_USER_INPUT) {
-		if (_dataManager->randomPlay) {  
+		if (_dataManager->randomPlay) {
 			uint8_t value = random(1, _visibleCount + 1);
-			_hardwareManager->keypad()->setKeypadEvent(KEYPAD_MULTI_UP_EVENT, value);
+			//_hardwareManager->keypad()->setKeypadEvent(KEYPAD_MULTI_UP_EVENT, value);
+			_hardwareManager->keypad()->setPressedValue(value);
 		}
 		// Once we have a valid choice, execute it's value updates and setup for the next passage.
 		// Wait for multi button up event for story selection.
-		_choiceSelected = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, _visibleCount);
-		if (_choiceSelected) {
+		//_choiceSelected = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, _visibleCount);
+		bool success = false;
+		_choiceSelected = _hardwareManager->keypad()->pressedValInRange(success, 1, _visibleCount);
+		if (success) {
 			_lastIndent = 0;
 			// Choice has been selected.
 			_offset = _choices[_choiceLinks[_choiceSelected - 1]].updatesOffset;

@@ -178,13 +178,36 @@ int ServerManager::serverCommand(String aCommandAndArgs) {
 		/* TODO */
 		returnVal = kServerReturnNotImplemented;
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdKeypadInput) == 0) {
-		KeypadEvent event = (KeypadEvent)(serverMan->pendingArguments[0] - '0');
+		// Multi down = 1, multi presses = 2, multi long pressed = 3
+		uint8_t event = serverMan->pendingArguments[0] - '0';
 		uint8_t value = serverMan->pendingArguments[1] - '0';
-		hardMan->keypad()->setKeypadEvent(event, value);
+		if (event == 1) {
+			hardMan->keypad()->setDownValue(value);
+		} else if (event == 2) {
+			hardMan->keypad()->setPressedValue(value);
+		} else if (event == 3) {
+			hardMan->keypad()->setPressedValue(value, true);
+		}
+
+		//KeypadEvent event = (KeypadEvent)(serverMan->pendingArguments[0] - '0');
+		//uint8_t value = serverMan->pendingArguments[1] - '0';
+		//hardMan->keypad()->setKeypadEvent(event, value);
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdButtonInput) == 0) {
-		ButtonEvent event = (ButtonEvent)(serverMan->pendingArguments[0] - '0');
-		uint8_t btnNum = serverMan->pendingArguments[1] - '0';
-		hardMan->keypad()->setButtonEvent(event, btnNum);
+		// Button down = 1, button presses = 2, button long presses = 3
+		uint8_t event = Serial.read();
+		uint8_t btnNum = Serial.read();
+		uint8_t presses = Serial.read();
+		if (event == 1) {
+			hardMan->keypad()->setDownButton(btnNum);
+		} else if (event == 2) {
+			hardMan->keypad()->setPressedButton(btnNum, presses);
+		} else if (event == 3) {
+			hardMan->keypad()->setPressedButton(btnNum, -presses);
+		}
+
+		//ButtonEvent event = (ButtonEvent)(serverMan->pendingArguments[0] - '0');
+		//uint8_t btnNum = serverMan->pendingArguments[1] - '0';
+		//hardMan->keypad()->setButtonEvent(event, btnNum);
 	} else if (strcmp(serverMan->pendingCommand, kServerCmdAdjustCredits) == 0) {
 		int8_t credits = serverMan->pendingArguments[0] - '0';
 		if (serverMan->pendingArguments[1] == '0') {
