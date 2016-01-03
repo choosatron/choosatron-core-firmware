@@ -105,7 +105,12 @@ Choosatron Serial Commands:
 		kCdamSerial.flushInput()
 		#try:
 		ymodem = YMODEM(self.getc, self.putc)
+		time.sleep(1)
 		status = ymodem.send([args.filename])
+		if status:
+			print "Success!!!"
+		else:
+			print "Failed :("
 		#except:
 			#print "Unexpected error:", sys.exc_info()[0]
 			#kCdamSerial.close()

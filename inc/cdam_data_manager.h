@@ -77,6 +77,7 @@ class DataManager
 
 		/* API Calls */
 		void getStoryInfo(char* aBuffer, uint32_t aLength, uint8_t aIndex, StoryHeader *aHeader);
+		void sendStoryInfoSerial(uint8_t aIndex);
 		// Add the metadata for a new story.
 		bool addStoryMetadata(uint8_t aIndex, uint8_t aPages);
 		bool removeStoryMetadata(uint8_t aIndex);

@@ -115,8 +115,16 @@ void DataManager::handleSerialData() {
 
 				switch (cmd)
 				{
-					case kSerialCmdPing: {
-						Serial.write(0x01);
+					case kSerialCmdGetInfo: {
+						Serial.write(PRODUCT_ID + '0');
+						Serial.write(':');
+						Serial.print(Spark.deviceID());
+						Serial.write(':');
+					}
+					case kSerialCmdGetVersion: {
+						Serial.write(kFirmwareVersionMajor + '0');
+						Serial.write(kFirmwareVersionMinor + '0');
+						Serial.write(kFirmwareVersionRevision + '0');
 						break;
 					}
 					case kSerialCmdListeningMode: {
@@ -277,12 +285,6 @@ void DataManager::handleSerialData() {
 						NVIC_SystemReset();
 						break;
 					}
-					case kSerialCmdGetVersion: {
-						Serial.write(kFirmwareVersionMajor);
-						Serial.write(kFirmwareVersionMinor);
-						Serial.write(kFirmwareVersionRevision);
-						break;
-					}
 					case kSerialCmdGetFlag: {
 						uint8_t index = Serial.read();
 						char* flags = (char*)&this->metadata.flags;
@@ -296,7 +298,7 @@ void DataManager::handleSerialData() {
 						Serial.write(values[(index * 2) + 1]);
 						break;
 					}
-					case kSerialCmdGetNames: {
+					/*case kSerialCmdGetNames: {
 						char titleBuffer[kStoryTitleSize] = "";
 						for (uint8_t i = 0; i < this->metadata.storyCount; ++i) {
 							memset(&titleBuffer[0], 0, sizeof(titleBuffer));
@@ -306,8 +308,35 @@ void DataManager::handleSerialData() {
 							}
 						}
 						break;
+					}*/
+					case kSerialCmdGetStoryCount: {
+						uint8_t totalCount = this->metadata.storyCount + this->metadata.deletedStoryCount;
+						Serial.write(totalCount);
+						break;
 					}
-					case kSerialCmdGetStoryInfo: {
+					case kSerialCmdGetStory: {
+						uint8_t index = Serial.read();
+						sendStoryInfoSerial(index);
+
+						/*StoryHeader storyHeader;
+						uint32_t offset = getStoryOffset(index, false);
+						bool result = readData((uint8_t*)&storyHeader, offset, kStoryHeaderSize);
+						if (result) {
+							char storyInfo[kReturnSizeStoryInfo + 1] = "";
+							getStoryInfo(storyInfo, kReturnSizeStoryInfo + 1, index, &storyHeader);
+							Serial.write(storyInfo);
+						} else {
+							Serial.write('e');
+						}*/
+						break;
+					}
+					/*case kSerialCmdGetStories: {
+						uint8_t totalCount = this->metadata.storyCount + this->metadata.deletedStoryCount;
+
+						for (uint8_t i = 0; i < totalCount; ++i) {
+							sendStoryInfoSerial(index);
+						}
+
 						uint8_t index = Serial.read();
 						uint8_t visibleOnly = Serial.read();
 						char storyInfo[kReturnSizeStoryInfo + 1] = "";
@@ -321,7 +350,7 @@ void DataManager::handleSerialData() {
 							Serial.write('e');
 						}
 						break;
-					}
+					}*/
 					case kSerialCmdGetCredits: {
 						Serial.write(Manager::getInstance().hardwareManager->coinAcceptor()->getCredits());
 						break;
@@ -331,6 +360,8 @@ void DataManager::handleSerialData() {
 		}
 	}
 }
+
+
 
 #if HAS_SD == 1
 bool DataManager::initSD() {
@@ -495,6 +526,19 @@ void DataManager::getStoryInfo(char* aBuffer, uint32_t aLength, uint8_t aIndex, 
 	         aHeader->author, aHeader->storyVer.major,
 	         aHeader->storyVer.minor, aHeader->storyVer.revision,
 	         this->metadata.storyState[aIndex], pages);
+}
+
+void DataManager::sendStoryInfoSerial(uint8_t aIndex) {
+	StoryHeader storyHeader;
+	uint32_t offset = getStoryOffset(aIndex, false);
+	bool result = readData((uint8_t*)&storyHeader, offset, kStoryHeaderSize);
+	if (result) {
+		char storyInfo[kReturnSizeStoryInfo + 1] = "";
+		getStoryInfo(storyInfo, kReturnSizeStoryInfo + 1, aIndex, &storyHeader);
+		Serial.write(storyInfo);
+	} else {
+		Serial.write('e');
+	}
 }
 
 bool DataManager::addStoryMetadata(uint8_t aIndex, uint8_t aPages) {

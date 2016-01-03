@@ -36,11 +36,9 @@ const uint8_t kStoryStateDeleted = 2;
 
 // Serial Communication Commands
 
+const uint8_t kSerialCmdMode = 'c';
 const uint8_t kSerialCmdListeningMode = 'l';
 const uint8_t kSerialCmdClearWiFi = 'x'; // 0x78
-
-const uint8_t kSerialCmdMode = 'c';
-const uint8_t kSerialCmdPing = 0x01;
 const uint8_t kSerialCmdWriteFlashRaw = 0x02;
 const uint8_t kSerialCmdWriteFlashee = 0x03;
 const uint8_t kSerialCmdKeypadInput = 0x04;
@@ -58,11 +56,14 @@ const uint8_t kSerialCmdEraseFlash = 0x0F;
 const uint8_t kSerialCmdRebootUnit = 0x10;
 const uint8_t kSerialCmdDfuMode = 0x11;
 
+const uint8_t kSerialCmdGetInfo = 'i';
 const uint8_t kSerialCmdGetVersion = 0x12;
 const uint8_t kSerialCmdGetFlag = 0x13;
 const uint8_t kSerialCmdGetValue = 0x14;
-const uint8_t kSerialCmdGetNames = 0x15;
-const uint8_t kSerialCmdGetStoryInfo = 0x16;
+//const uint8_t kSerialCmdGetNames = 0x15;
+const uint8_t kSerialCmdGetStoryCount = 0x15;
+const uint8_t kSerialCmdGetStory = 0x16;
+//const uint8_t kSerialCmdGetStories = 0x17;
 const uint8_t kSerialCmdGetCredits = 0x17;
 
 // Flashee storage types.

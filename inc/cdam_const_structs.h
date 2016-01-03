@@ -202,19 +202,22 @@ typedef struct StoryFlags_t
 	union {
 		uint8_t flag1;
 		struct {
-			uint8_t rsvd1 				:5;
-			uint8_t images				:1;
-			uint8_t variables			:1;
-			uint8_t scripting			:1;
+			uint8_t rsvd1 				:1; // UNUSED
+			uint8_t multiplayer			:1; // This is a multiplayer game. *REQUIRES WIFI* *NOT IMPLEMENTED*
+			uint8_t realtime			:1; // Uses the realtime clock. *REQUIRES WIFI* *NOT IMPLEMENTED*
+			uint8_t images				:1; // Uses bitmap printing. *NOT IMPLEMENTED*
+			uint8_t variables			:1; // Uses variables for logic.
+			uint8_t liveVars			:1; // Uses online variable. *REQUIRES WIFI* *NOT IMPLEMENTED*
+			uint8_t saveState			:1; // Stores variable states between sessions. *NOT IMPLEMENTED*
+			uint8_t scripting			:1; // Uses dynamic scripting (in copy). *NOT IMPLEMENTED*
 		};
 	};
 	union {
 		uint8_t flag2;
 		struct {
-			uint8_t rsvd2 			:5;
-			uint8_t hideUsed		:1;
-			uint8_t multiplayer		:1;
-			uint8_t continues		:1;
+			uint8_t rsvd2 			:6;
+			uint8_t hideUsed		:1; // At a given passage, hide choices already made. *NOT IMPLEMENTED*
+			uint8_t continues		:1; // Allows the ability to continue (jump back choices). *NOT IMPLEMENTED*
 		};
 	};
 	union {

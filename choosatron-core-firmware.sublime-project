@@ -2,8 +2,12 @@
 	"folders":
 	[
 		{
-			"path": ".",
-			"file_exclude_patterns": [".gitignore", ".git"]
+			"file_exclude_patterns":
+			[
+				".gitignore",
+				".git"
+			],
+			"path": "."
 		},
 		{
 			"path": "src"
@@ -17,11 +21,11 @@
 	],
 	"settings":
 	{
+		"indent_to_bracket": true,
+		"smart_indent": true,
 		"tab_size": 4,
 		"translate_tabs_to_spaces": false,
-		"use_tab_stops": true,
 		"trim_trailing_white_space_on_save": true,
-		"smart_indent": true,
-		"indent_to_bracket": true
+		"use_tab_stops": true
 	}
 }
