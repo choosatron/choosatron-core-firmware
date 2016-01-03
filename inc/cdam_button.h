@@ -74,8 +74,8 @@ public:
 	int8_t presses; // Total button presses.
 	bool depressed; // Current press state of button.
 	uint32_t debounceTime;
-	uint32_t longPressTime;
-	uint32_t multiPressTime;
+	uint16_t longPressTime;
+	uint16_t multiPressTime;
 private:
 	/* Private Methods */
 	void updateButton();

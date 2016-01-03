@@ -104,7 +104,7 @@ void Button::setPresses(int16_t aPresses) {
 /* Private Methods */
 
 void Button::updateButton() {
-	long now = millis();
+	uint32_t now = millis();
 	_buttonState = digitalRead(_pin); // Current apparent pin state.
 
 	// Make the button logic active-high in code

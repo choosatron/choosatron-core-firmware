@@ -7,7 +7,8 @@
 namespace cdam
 {
 
-#define BTN_TOTAL 4
+#define NUM_BUTTONS 4
+#define KEYPAD_FILTER_COUNT 200
 
 class Keypad {
 
@@ -41,7 +42,10 @@ private:
 	/* Private Methods */
 
 	/* Private Variables */
-	Button _buttons[BTN_TOTAL];
+	Button _buttons[NUM_BUTTONS];
+	bool _multiDebounce;
+	int16_t _multiValue;
+	uint32_t _debounceTime;
 
 };
 
