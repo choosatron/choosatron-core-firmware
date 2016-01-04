@@ -21,7 +21,6 @@ typedef enum GameState_t {
 	STATE_SELECT,
 	STATE_PLAY,
 	STATE_CONTINUE,
-	STATE_AUTH,
 	STATE_ADMIN
 } GameState;
 

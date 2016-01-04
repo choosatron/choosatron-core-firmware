@@ -45,6 +45,7 @@ typedef struct {
 	uint8_t pin;   // the pin number of the button
 	uint8_t num;
 	uint8_t count;
+	ButtonState lastState; // The last button state
 	ButtonState state; // The current button state
 	ButtonEvent event;
 	uint8_t value:1; // the last digital read value

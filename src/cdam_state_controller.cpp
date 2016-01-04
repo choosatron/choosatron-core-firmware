@@ -19,7 +19,6 @@ struct GameStateStr_t {
 	{ STATE_SELECT, "select" },
 	{ STATE_PLAY, "play" },
 	{ STATE_CONTINUE, "continue" },
-	{ STATE_AUTH, "auth" },
 	{ STATE_ADMIN, "admin" }
 };
 
@@ -90,14 +89,14 @@ void StateController::initState(GameState aState) {
 		}
 	} else if (aState == STATE_IDLE) {
 		_resetElapsed = 0;
-	}/* else if (aState == STATE_SELECT) {
+	} else if (aState == STATE_ADMIN) {
+		_hardwareManager->printer()->printAdminTitle();
+		_hardwareManager->printer()->printAdminMenu();
+	}
+	/* else if (aState == STATE_SELECT) {
 
 	} else if (aState == STATE_PLAY) {
 
-	} else if (aState == STATE_AUTH) {
-
-	} else if (aState == STATE_ADMIN) {
-		DEBUG("Hello from admin!");
 	}*/
 }
 
@@ -143,14 +142,12 @@ void StateController::loopState(GameState aState) {
 		}
 		// Override has had a chance to get set, now setup storage.
 		_dataManager->initStorage();
-		// Admin mode, if pass required change to STATE_AUTH
+		// Admin mode.
 		if (_hardwareManager->keypad()->buttonDown(4)) {
-			if (_dataManager->metadata.flags.auth) {
-				changeState(STATE_AUTH);
-			} else {
-				changeState(STATE_ADMIN);
-			}
+			_hardwareManager->keypad()->clearEvents();
+			changeState(STATE_ADMIN);
 		} else {
+			_hardwareManager->keypad()->clearEvents();
 			changeState(STATE_INIT);
 		}
 	} else if (aState == STATE_INIT) {
@@ -169,7 +166,7 @@ void StateController::loopState(GameState aState) {
 			_hardwareManager->printCoinInsertIntervalUpdate();
 		}
 	} else if (aState == STATE_WAITING) {
-		uint8_t total = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, 0);
+		uint8_t total = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, 4);
 		if (total) {
 			_seed = millis();
 			randomSeed(_seed);
@@ -260,11 +257,30 @@ void StateController::loopState(GameState aState) {
 		} else if (state == PARSE_ERROR) {
 			changeState(STATE_ERROR);
 		}
-	}/* else if (aState == STATE_AUTH) {
-
 	} else if (aState == STATE_ADMIN) {
-
-	} else if (aState == STATE_ERROR) {
+		if (_hardwareManager->keypad()->buttonEventValue(BTN_HELD_EVENT, 1)) {
+			_hardwareManager->keypad()->clearEvents();
+			changeState(STATE_BOOTING);
+			return;
+		}
+		uint8_t total = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, 4);
+		if (total) {
+			if (total == 1) {
+				_dataManager->setFlag(0, 7, !_dataManager->metadata.flags.offline);
+				//_hardwareManager->printer()->printAdminOne();
+			} else if (total == 2) {
+				_dataManager->setFlag(0, 5, !_dataManager->metadata.flags.sdCard);
+				//_hardwareManager->printer()->printAdminTwo();
+			} else if (total == 3) {
+				_dataManager->setFlag(0, 1, !_dataManager->metadata.flags.random);
+				//_hardwareManager->printer()->printAdminThree();
+			} else if (total == 4) {
+				_dataManager->setFlag(0, 3, !_dataManager->metadata.flags.arcade);
+				//_hardwareManager->printer()->printAdminFour();
+			}
+			_hardwareManager->printer()->printAdminMenu();
+		}
+	}/* else if (aState == STATE_ERROR) {
 
 	}*/
 }
@@ -288,8 +304,6 @@ void StateController::endState(GameState aState) {
 	} else if (aState == STATE_SELECT) {
 
 	} else if (aState == STATE_PLAY) {
-
-	} else if (aState == STATE_AUTH) {
 
 	} else if (aState == STATE_ADMIN) {
 

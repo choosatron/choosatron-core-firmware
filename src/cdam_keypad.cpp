@@ -25,10 +25,10 @@ void Keypad::initialize(uint8_t aPinBtnOne, uint8_t aPinBtnTwo,
 	pinMode(aPinBtnThree, INPUT_PULLUP);
 	pinMode(aPinBtnFour, INPUT_PULLUP);
 
-	ButtonData btnOne   = { aPinBtnOne, 1, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0, 0, 0 };
-	ButtonData btnTwo   = { aPinBtnTwo, 2, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0, 0, 0 };
-	ButtonData btnThree = { aPinBtnThree, 3, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0, 0, 0 };
-	ButtonData btnFour  = { aPinBtnFour, 4, 0, BTN_IDLE_STATE, BTN_NO_EVENT, 0, 0, 0 };
+	ButtonData btnOne   = { aPinBtnOne, 1, 0, BTN_IDLE_STATE, BTN_IDLE_STATE, BTN_NO_EVENT, 0, 0, 0 };
+	ButtonData btnTwo   = { aPinBtnTwo, 2, 0, BTN_IDLE_STATE, BTN_IDLE_STATE, BTN_NO_EVENT, 0, 0, 0 };
+	ButtonData btnThree = { aPinBtnThree, 3, 0, BTN_IDLE_STATE, BTN_IDLE_STATE, BTN_NO_EVENT, 0, 0, 0 };
+	ButtonData btnFour  = { aPinBtnFour, 4, 0, BTN_IDLE_STATE, BTN_IDLE_STATE, BTN_NO_EVENT, 0, 0, 0 };
 
 	this->buttonData[0] = btnOne;
 	this->buttonData[1] = btnTwo;
@@ -186,6 +186,8 @@ uint8_t Keypad::keypadEventValue(KeypadEvent aEvent) {
 void Keypad::clearEvents() {
 	for (int i = NUM_BUTTONS - 1; i >= 0; i--) {
 		this->buttonData[i].event = BTN_NO_EVENT;
+		this->buttonData[i].lastState = BTN_FILTER_DOWN_STATE;
+		this->buttonData[i].state = BTN_FILTER_DOWN_STATE;
 	}
 	this->lastEvent = this->event;
 	this->event = KEYPAD_NO_EVENT;
@@ -228,10 +230,12 @@ ButtonEvent Keypad::filterButton(ButtonData *aBtnData) {
 			if (!aBtnData->active && (val != 0)) {
 				// Filter button down.
 				aBtnData->count = BTN_FILTER_DOWN_COUNT;
+				aBtnData->lastState = aBtnData->state;
 				aBtnData->state = BTN_FILTER_DOWN_STATE;
 			} else if (aBtnData->active && (val == 0)) {
 				// Filter button up.
 				aBtnData->count = BTN_FILTER_UP_COUNT;
+				aBtnData->lastState = aBtnData->state;
 				aBtnData->state = BTN_FILTER_UP_STATE;
 			}
 			break;
@@ -241,10 +245,16 @@ ButtonEvent Keypad::filterButton(ButtonData *aBtnData) {
 					aBtnData->active = val;
 					aBtnData->event = BTN_DOWN_EVENT;
 					aBtnData->count = BTN_HOLD_COUNT;
+					aBtnData->lastState = aBtnData->state;
 					aBtnData->state = BTN_FILTER_HOLD_STATE; // Button is down.
 				}
 			} else {
-				aBtnData->count = BTN_FILTER_UP_COUNT;
+				// If the last and current state are the same, don't setup count.
+				// This will keep an up event from occurring.
+				if (aBtnData->state != aBtnData->lastState) {
+					aBtnData->count = BTN_FILTER_UP_COUNT;
+				}
+				aBtnData->lastState = aBtnData->state;
 				aBtnData->state = BTN_FILTER_UP_STATE;
 			}
 			break;
@@ -252,11 +262,16 @@ ButtonEvent Keypad::filterButton(ButtonData *aBtnData) {
 			if (val == 1 && (aBtnData->active)) {
 				if ((aBtnData->count != 0) && (--aBtnData->count == 0)) {
 					aBtnData->event = BTN_HELD_EVENT;
+					aBtnData->lastState = aBtnData->state;
 					aBtnData->state = BTN_IDLE_STATE;
 				}
 			} else {
-				// Filter button up.
-				aBtnData->count = BTN_FILTER_UP_COUNT;
+				// If the last and current state are the same, don't setup count.
+				// This will keep an up event from occurring.
+				if (aBtnData->state != aBtnData->lastState) {
+					aBtnData->count = BTN_FILTER_UP_COUNT;
+				}
+				aBtnData->lastState = aBtnData->state;
 				aBtnData->state = BTN_FILTER_UP_STATE;
 			}
 			break;
@@ -266,14 +281,17 @@ ButtonEvent Keypad::filterButton(ButtonData *aBtnData) {
 					aBtnData->active = val;
 					aBtnData->heldFlag = 0;
 					aBtnData->event = BTN_UP_EVENT;
+					aBtnData->lastState = aBtnData->state;
 					aBtnData->state = BTN_IDLE_STATE; // Button let up.
 				}
 			} else {
 				aBtnData->count = BTN_FILTER_DOWN_COUNT;
+				aBtnData->lastState = aBtnData->state;
 				aBtnData->state = BTN_FILTER_DOWN_STATE;
 			}
 			break;
 		default:
+			aBtnData->lastState = aBtnData->state;
 			aBtnData->state = BTN_IDLE_STATE;
 			break;
 	}
