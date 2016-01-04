@@ -216,7 +216,7 @@ ParseState Parser::parsePassage() {
 		// Wait for multi button up event for story selection.
 		//_choiceSelected = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, _visibleCount);
 		bool success = false;
-		_choiceSelected = _hardwareManager->keypad()->pressedValInRange(success, 1, _visibleCount);
+		_choiceSelected = _hardwareManager->keypad()->multiUpValInRange(success, 1, _visibleCount);
 		if (success) {
 			_lastIndent = 0;
 			// Choice has been selected.

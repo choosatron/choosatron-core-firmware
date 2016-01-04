@@ -19,8 +19,15 @@ void Keypad::initialize(uint8_t aPinBtnOne, uint8_t aPinBtnTwo,
 	_buttons[2].initialize(aPinBtnThree, LOW, HIGH, 3);
 	_buttons[3].initialize(aPinBtnFour, LOW, HIGH, 4);
 
-	multiUpTime = 200;
+	_multiDebounce = false;
+	_lastBtnStates = 0;
+	_lastValue = 0;
+	_storedValue = 0;
+	_lastDebounceTime = 0;
+	//_buttonStates = 0;
+	//_keypadValue = 0;
 
+	this->multiUpTime = 200;
 	this->active = true;
 }
 
@@ -58,7 +65,19 @@ int16_t Keypad::downValInRange(bool &aValid, int16_t aLow, int16_t aHigh) {
 	return total;
 }
 
-int16_t Keypad::pressedValue() {
+int16_t Keypad::multiUpValue() {
+	return _multiUpValue;
+}
+
+int16_t Keypad::multiUpValInRange(bool &aValid, int16_t aLow, int16_t aHigh) {
+	aValid = false;
+	if ((aLow <= _multiUpValue) && (_multiUpValue <= aHigh)) {
+		aValid = true;
+	}
+	return _multiUpValue;
+}
+
+/*int16_t Keypad::pressedValue() {
 	int16_t total = 0;
 
 	for (uint8_t i = 0; i < NUM_BUTTONS; ++i) {
@@ -81,7 +100,7 @@ int16_t Keypad::pressedValInRange(bool &aValid, int16_t aLow, int16_t aHigh) {
 		aValid = true;
 	}
 	return total;
-}
+}*/
 
 void Keypad::setDownButton(uint8_t aButtonNum) {
 	_buttons[aButtonNum - 1].depressed = true;
@@ -103,6 +122,9 @@ void Keypad::setDownValue(int16_t aValue) {
 }
 
 void Keypad::setPressedValue(int16_t aValue, bool aLongPresses) {
+	_multiUpValue = aValue;
+	_multiDebounce = false;
+	_storedValue = 0;
 	int16_t presses = (aLongPresses) ? -1 : 1;
 	for (int8_t i = NUM_BUTTONS - 1; i >= 0; --i) {
 		if (aValue >= _buttons[i].value) {
@@ -115,6 +137,8 @@ void Keypad::setPressedValue(int16_t aValue, bool aLongPresses) {
 }
 
 /* Accessors */
+
+
 
 Button* Keypad::btnOne() {
 	return &_buttons[0];
@@ -135,7 +159,50 @@ Button* Keypad::btnFour() {
 /* Private Methods */
 
 void Keypad::updateKeypad() {
+	_multiUpValue = 0;
+	uint32_t now = millis();
+	uint8_t buttonStates = 0;
+	int16_t keypadValue = 0;
+	// Notice reverse count order, to accomodate left shift.
+	for (uint8_t i = NUM_BUTTONS - 1; i >= 0; --i) {
+		if (_buttons[i].depressed) {
+			buttonStates |= (_buttons[i].depressed << i);
+			keypadValue += _buttons[i].value;
+		}
+	}
 
+	if (_multiDebounce && (now - _lastDebounceTime > this->multiUpTime)) {
+		if (buttonStates == 0) {
+			DEBUG("Multi up event: %d", _storedValue);
+			_multiUpValue = _storedValue;
+		} else {
+			DEBUG("Failed multi up.");
+		}
+		_multiDebounce = false;
+		_storedValue = 0;
+	}
+
+	// We want to make sure new buttons haven't gone down, only up.
+	// The OR reveals new down buttons.
+	if ((buttonStates | _lastBtnStates) == _lastBtnStates) {
+		// XOR (Exclusive-Or) reveals differences. We already checked
+		// that no new buttons went down, so all differences are newly upped.
+		uint8_t newUpBtns = buttonStates ^ _lastBtnStates;
+		if (newUpBtns > 0) {
+			if (!_multiDebounce) {
+				_multiDebounce = true;
+				_storedValue = _lastValue;
+			}
+			_lastDebounceTime = millis();
+		}
+	} else {
+		_multiDebounce = false;
+		_storedValue = 0;
+	}
+
+	_lastBtnStates = buttonStates;
+	_lastValue = keypadValue;
+	//_buttonStates = 0;
 }
 
 }

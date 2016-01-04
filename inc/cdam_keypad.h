@@ -20,8 +20,10 @@ public:
 	void updateState();
 	int16_t downValue();
 	int16_t downValInRange(bool &aValid, int16_t aLow, int16_t aHigh);
-	int16_t pressedValue();
-	int16_t pressedValInRange(bool &aValid, int16_t aLow, int16_t aHigh);
+	int16_t multiUpValue();
+	int16_t multiUpValInRange(bool &aValid, int16_t aLow, int16_t aHigh);
+	//int16_t pressedValue();
+	//int16_t pressedValInRange(bool &aValid, int16_t aLow, int16_t aHigh);
 	void setDownButton(uint8_t aButtonNum);
 	void setPressedButton(uint8_t aButtonNum, int16_t aPresses = 1);
 	void setDownValue(int16_t aValue);
@@ -35,18 +37,25 @@ public:
 	/* Public Variables */
 	bool active; // Should the keypad respond to update requests.
 	uint16_t multiUpTime;
+	
 	/*Button btnOne;
 	Button btnTwo;
 	Button btnThree;
 	Button btnFour;*/
 private:
 	/* Private Methods */
+	void updateKeypad();
 
 	/* Private Variables */
 	Button _buttons[NUM_BUTTONS];
-	/*bool _multiDebounce;
-	int16_t _multiValue;
-	uint32_t _debounceTime;*/
+	bool _multiDebounce;
+	uint8_t _lastBtnStates;
+	//uint8_t _buttonStates;
+	int16_t _lastValue;
+	int16_t _storedValue;
+	int16_t _multiUpValue;
+	//int16_t _keypadValue;
+	uint32_t _lastDebounceTime;
 
 };
 

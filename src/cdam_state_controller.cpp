@@ -165,12 +165,12 @@ void StateController::loopState(GameState aState) {
 			randomSeed(_seed);
 			//_hardwareManager->coinAcceptor()->active = false;
 			changeState(STATE_READY);
-		} else if (_hardwareManager->keypad()->pressedValue()) {
+		} else if (_hardwareManager->keypad()->multiUpValue()) {
 			_hardwareManager->printCoinInsertIntervalUpdate();
 		}
 	} else if (aState == STATE_WAITING) {
 		//uint8_t total = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, 0);
-		int16_t total = _hardwareManager->keypad()->pressedValue();
+		int16_t total = _hardwareManager->keypad()->multiUpValue();
 		if (total) {
 			_seed = millis();
 			randomSeed(_seed);
@@ -180,7 +180,7 @@ void StateController::loopState(GameState aState) {
 				//_hardwareManager->keypad()->setKeypadEvent(KEYPAD_MULTI_UP_EVENT, value);
 				DEBUG("Rand val: %d", value);
 				_hardwareManager->keypad()->setPressedValue(value);
-				DEBUG("Pressed val: %d", _hardwareManager->keypad()->pressedValue());
+				DEBUG("Pressed val: %d", _hardwareManager->keypad()->multiUpValue());
 				changeState(STATE_SELECT);
 			} else {
 				changeState(STATE_READY);
@@ -219,7 +219,7 @@ void StateController::loopState(GameState aState) {
 		}
 	} else if (aState == STATE_IDLE) {
 		if ((_resetElapsed > kIntervalPressAnyButton) ||
-		    _hardwareManager->keypad()->pressedValue()) {
+		    _hardwareManager->keypad()->multiUpValue()) {
 			if (_dataManager->metadata.storyCount > 0) {
 				changeState(STATE_INIT);
 			}
@@ -228,7 +228,7 @@ void StateController::loopState(GameState aState) {
 		// Wait for multi button up event for story selection.
 		//uint8_t total = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, _dataManager->liveStoryCount);
 		bool success = false;
-		int16_t total = _hardwareManager->keypad()->pressedValInRange(success, 1, _dataManager->liveStoryCount);
+		int16_t total = _hardwareManager->keypad()->multiUpValInRange(success, 1, _dataManager->liveStoryCount);
 		if (success) {
 			// Story has been selected, initialize the parser with story index (not number).
 			if (_parser->initStory(total - 1)) {
@@ -243,7 +243,7 @@ void StateController::loopState(GameState aState) {
 			_resetElapsed = 0;
 		} else if (state == PARSE_IDLE) {
 			//uint8_t total = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, 0);
-			int16_t total = _hardwareManager->keypad()->pressedValue();
+			int16_t total = _hardwareManager->keypad()->multiUpValue();
 			if (_resetElapsed > kIntervalPressAnyButton) {
 				if (_dataManager->metadata.flags.arcade) {
 					changeState(STATE_CREDITS);
