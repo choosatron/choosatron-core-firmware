@@ -19,6 +19,8 @@ void Keypad::initialize(uint8_t aPinBtnOne, uint8_t aPinBtnTwo,
 	_buttons[2].initialize(aPinBtnThree, LOW, HIGH, 3);
 	_buttons[3].initialize(aPinBtnFour, LOW, HIGH, 4);
 
+	multiUpTime = 200;
+
 	this->active = true;
 }
 
@@ -27,6 +29,7 @@ void Keypad::updateState() {
 		for (uint8_t i = 0; i < NUM_BUTTONS; ++i) {
 			_buttons[i].updateState();
 		}
+		updateKeypad();
 	}
 }
 
@@ -127,6 +130,12 @@ Button* Keypad::btnThree() {
 
 Button* Keypad::btnFour() {
 	return &_buttons[3];
+}
+
+/* Private Methods */
+
+void Keypad::updateKeypad() {
+
 }
 
 }

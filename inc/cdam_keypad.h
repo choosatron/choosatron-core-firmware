@@ -34,6 +34,7 @@ public:
 
 	/* Public Variables */
 	bool active; // Should the keypad respond to update requests.
+	uint16_t multiUpTime;
 	/*Button btnOne;
 	Button btnTwo;
 	Button btnThree;
@@ -43,9 +44,9 @@ private:
 
 	/* Private Variables */
 	Button _buttons[NUM_BUTTONS];
-	bool _multiDebounce;
+	/*bool _multiDebounce;
 	int16_t _multiValue;
-	uint32_t _debounceTime;
+	uint32_t _debounceTime;*/
 
 };
 

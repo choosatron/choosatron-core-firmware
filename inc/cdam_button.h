@@ -73,7 +73,7 @@ public:
 	int16_t value; // Value of the button, zero if not set.
 	int8_t presses; // Total button presses.
 	bool depressed; // Current press state of button.
-	uint32_t debounceTime;
+	uint16_t debounceTime;
 	uint16_t longPressTime;
 	uint16_t multiPressTime;
 private:
