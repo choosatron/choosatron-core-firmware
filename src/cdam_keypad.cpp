@@ -45,14 +45,14 @@ int16_t Keypad::downValue() {
 
 	for (uint8_t i = 0; i < NUM_BUTTONS; ++i) {
 		if (_buttons[i].depressed) {
-			DEBUG("BTN-%d down, %d presses", _buttons[i].value, _buttons[i].presses);
+			//DEBUG("BTN-%d down, %d presses", _buttons[i].value, _buttons[i].presses);
 			total += (_buttons[i].presses * _buttons[i].value);
 		}
 	}
 
-	if (total > 0) {
+	/*if (total > 0) {
 		DEBUG("Down Val: %d\n---", total);
-	}
+	}*/
 	return total;
 }
 
@@ -66,12 +66,14 @@ int16_t Keypad::downValInRange(bool &aValid, int16_t aLow, int16_t aHigh) {
 }
 
 int16_t Keypad::multiUpValue() {
+	DEBUG("MUV: %d", _multiUpValue);
 	return _multiUpValue;
 }
 
 int16_t Keypad::multiUpValInRange(bool &aValid, int16_t aLow, int16_t aHigh) {
 	aValid = false;
 	if ((aLow <= _multiUpValue) && (_multiUpValue <= aHigh)) {
+		DEBUG("valid MUV: %d", _multiUpValue);
 		aValid = true;
 	}
 	return _multiUpValue;
@@ -164,7 +166,7 @@ void Keypad::updateKeypad() {
 	uint8_t buttonStates = 0;
 	int16_t keypadValue = 0;
 	// Notice reverse count order, to accomodate left shift.
-	for (uint8_t i = NUM_BUTTONS - 1; i >= 0; --i) {
+	for (int8_t i = NUM_BUTTONS - 1; i >= 0; --i) {
 		if (_buttons[i].depressed) {
 			buttonStates |= (_buttons[i].depressed << i);
 			keypadValue += _buttons[i].value;
