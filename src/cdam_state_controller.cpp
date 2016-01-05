@@ -171,11 +171,9 @@ void StateController::loopState(GameState aState) {
 			if (_dataManager->liveStoryCount && (total == 10)) {
 				_dataManager->randomPlay = true;
 				uint8_t value = random(1, _dataManager->liveStoryCount + 1);
-				//_hardwareManager->keypad()->setKeypadEvent(KEYPAD_MULTI_UP_EVENT, value);
-				DEBUG("Rand val: %d", value);
-				_hardwareManager->keypad()->setPressedValue(value);
-				DEBUG("Pressed val: %d", _hardwareManager->keypad()->multiUpValue());
-				changeState(STATE_SELECT);
+				if (_parser->initStory(value - 1)) {
+					changeState(STATE_PLAY);
+				}
 			} else {
 				changeState(STATE_READY);
 			}

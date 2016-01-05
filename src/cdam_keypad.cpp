@@ -19,6 +19,7 @@ void Keypad::initialize(uint8_t aPinBtnOne, uint8_t aPinBtnTwo,
 	_buttons[2].initialize(aPinBtnThree, LOW, HIGH, 3);
 	_buttons[3].initialize(aPinBtnFour, LOW, HIGH, 4);
 
+	_waitForUp = false;
 	_multiDebounce = false;
 	_lastBtnStates = 0;
 	_lastValue = 0;
@@ -48,20 +49,22 @@ bool Keypad::buttonDepressed(uint8_t aButtonNum) {
 	if (_waitForUp) { return false; }
 	if (aButtonNum > NUM_BUTTONS) { return false; }
 	// Don't allow any new events until all buttons are up.
-	if (_buttons[aButtonNum - 1].depressed) {
+	bool depressed = _buttons[aButtonNum - 1].depressed;
+	if (depressed) {
 		_waitForUp = true;
 	}
-	return _buttons[aButtonNum - 1].depressed;
+	return depressed;
 }
 
 bool Keypad::buttonHeld(uint8_t aButtonNum) {
 	if (_waitForUp) { return false; }
 	if (aButtonNum > NUM_BUTTONS) { return false; }
 	// Don't allow any new events until all buttons are up.
-	if (_buttons[aButtonNum - 1].held) {
+	bool held = _buttons[aButtonNum - 1].held;
+	if (held) {
 		_waitForUp = true;
 	}
-	return _buttons[aButtonNum - 1].held;
+	return held;
 }
 
 int16_t Keypad::downValue() {
@@ -149,14 +152,17 @@ int16_t Keypad::pressedValInRange(bool &aValid, int16_t aLow, int16_t aHigh) {
 }*/
 
 void Keypad::setDownButton(uint8_t aButtonNum) {
+	_waitForUp = false;
 	_buttons[aButtonNum - 1].depressed = true;
 }
 
 void Keypad::setPressedButton(uint8_t aButtonNum, int16_t aPresses) {
+	_waitForUp = false;
 	_buttons[aButtonNum - 1].setPresses(aPresses);
 }
 
 void Keypad::setDownValue(int16_t aValue) {
+	_waitForUp = false;
 	for (int8_t i = NUM_BUTTONS - 1; i >= 0; --i) {
 		if (aValue >= _buttons[i].value) {
 			aValue -= _buttons[i].value;
@@ -168,6 +174,7 @@ void Keypad::setDownValue(int16_t aValue) {
 }
 
 void Keypad::setPressedValue(int16_t aValue, bool aLongPresses) {
+	_waitForUp = false;
 	_multiUpValue = aValue;
 	_multiDebounce = false;
 	_storedValue = 0;
