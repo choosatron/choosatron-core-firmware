@@ -40,16 +40,44 @@ void Keypad::updateState() {
 	}
 }
 
-int16_t Keypad::downValue() {
-	int16_t total = 0;
+void Keypad::waitForUp() {
+	_waitForUp = true;
+}
 
+bool Keypad::buttonDepressed(uint8_t aButtonNum) {
+	if (_waitForUp) { return false; }
+	if (aButtonNum > NUM_BUTTONS) { return false; }
+	// Don't allow any new events until all buttons are up.
+	if (_buttons[aButtonNum - 1].depressed) {
+		_waitForUp = true;
+	}
+	return _buttons[aButtonNum - 1].depressed;
+}
+
+bool Keypad::buttonHeld(uint8_t aButtonNum) {
+	if (_waitForUp) { return false; }
+	if (aButtonNum > NUM_BUTTONS) { return false; }
+	// Don't allow any new events until all buttons are up.
+	if (_buttons[aButtonNum - 1].held) {
+		_waitForUp = true;
+	}
+	return _buttons[aButtonNum - 1].held;
+}
+
+int16_t Keypad::downValue() {
+	if (_waitForUp) { return 0; }
+
+	int16_t total = 0;
 	for (uint8_t i = 0; i < NUM_BUTTONS; ++i) {
 		if (_buttons[i].depressed) {
 			//DEBUG("BTN-%d down, %d presses", _buttons[i].value, _buttons[i].presses);
 			total += (_buttons[i].presses * _buttons[i].value);
 		}
 	}
-
+	// Don't allow any new events until all buttons are up.
+	if (total > 0) {
+		_waitForUp = true;
+	}
 	/*if (total > 0) {
 		DEBUG("Down Val: %d\n---", total);
 	}*/
@@ -57,24 +85,40 @@ int16_t Keypad::downValue() {
 }
 
 int16_t Keypad::downValInRange(bool &aValid, int16_t aLow, int16_t aHigh) {
-	int16_t total = downValue();
 	aValid = false;
+	if (_waitForUp) { return 0; }
+
+	int16_t total = downValue();
 	if ((aLow <= total) && (total <= aHigh)) {
 		aValid = true;
+	}
+	// Don't allow any new events until all buttons are up.
+	if (aValid) {
+		_waitForUp = true;
 	}
 	return total;
 }
 
 int16_t Keypad::multiUpValue() {
-	DEBUG("MUV: %d", _multiUpValue);
+	if (_waitForUp) { return 0; }
+
+	// Don't allow any new events until all buttons are up.
+	if (_multiUpValue > 0) {
+		_waitForUp = true;
+	}
 	return _multiUpValue;
 }
 
 int16_t Keypad::multiUpValInRange(bool &aValid, int16_t aLow, int16_t aHigh) {
 	aValid = false;
+	if (_waitForUp) { return 0; }
+	
 	if ((aLow <= _multiUpValue) && (_multiUpValue <= aHigh)) {
-		DEBUG("valid MUV: %d", _multiUpValue);
 		aValid = true;
+	}
+	// Don't allow any new events until all buttons are up.
+	if (aValid) {
+		_waitForUp = true;
 	}
 	return _multiUpValue;
 }
@@ -140,8 +184,6 @@ void Keypad::setPressedValue(int16_t aValue, bool aLongPresses) {
 
 /* Accessors */
 
-
-
 Button* Keypad::btnOne() {
 	return &_buttons[0];
 }
@@ -173,12 +215,23 @@ void Keypad::updateKeypad() {
 		}
 	}
 
+	if (_waitForUp) {
+		if (buttonStates == 0) {
+			_lastBtnStates = 0;
+			_waitForUp = false;
+			_multiDebounce = false;
+			_storedValue = 0;
+			_multiUpValue = 0;
+		}
+		return;
+	}
+
 	if (_multiDebounce && (now - _lastDebounceTime > this->multiUpTime)) {
 		if (buttonStates == 0) {
-			DEBUG("Multi up event: %d", _storedValue);
+			//DEBUG("Multi up event: %d", _storedValue);
 			_multiUpValue = _storedValue;
 		} else {
-			DEBUG("Failed multi up.");
+			//DEBUG("Failed multi up.");
 		}
 		_multiDebounce = false;
 		_storedValue = 0;

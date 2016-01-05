@@ -40,6 +40,12 @@ public:
 	void printBigNumbers();
 	void printContinue(uint8_t aCoinsToContinue);
 	void printEnding(char* aCredits, char* aContact);
+	void printAdminTitle();
+	void printAdminMenu();
+	void printAdminOne();
+	void printAdminTwo();
+	void printAdminThree();
+	void printAdminFour();
 
 	uint8_t wrapText(char* aBuffer, uint8_t aColumns, uint8_t aStartOffset = 0);
 

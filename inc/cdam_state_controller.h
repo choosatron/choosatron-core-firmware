@@ -11,7 +11,6 @@ namespace cdam
 // Game States
 typedef enum GameState_t {
 	STATE_NONE = 0,
-	STATE_ERROR,
 	STATE_BOOTING,
 	STATE_INIT,
 	STATE_CREDITS,
@@ -21,7 +20,6 @@ typedef enum GameState_t {
 	STATE_SELECT,
 	STATE_PLAY,
 	STATE_CONTINUE,
-	STATE_AUTH,
 	STATE_ADMIN
 } GameState;
 
@@ -38,7 +36,7 @@ public:
 
 	void initialize();
 	GameState getState();
-	const char* stateString();
+	//const char* stateString();
 	void changeState(GameState aState);
 	void updateState();
 

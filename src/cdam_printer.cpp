@@ -296,6 +296,59 @@ void Printer::printEnding(char* aCredits, char* aContact) {
 	feed(2);
 }
 
+void Printer::printAdminTitle() {
+	boldOn();
+	justify('C');
+	print(CDAM_TITLE);
+	println(" Admin\n# toggles, hold [1] to exit.\n");
+	boldOff();
+}
+
+void Printer::printAdminMenu() {
+	justify('L');
+	printAdminOne();
+	printAdminTwo();
+	printAdminThree();
+	printAdminFour();
+	feed(2);
+}
+
+void Printer::printAdminOne() {
+	print("1. Offline Mode:   ");
+	if (Manager::getInstance().dataManager->metadata.flags.offline) {
+		println(CDAM_ADMIN_ON);
+	} else {
+		println(CDAM_ADMIN_OFF);
+	}
+}
+
+void Printer::printAdminTwo() {
+	print("2. SD Default:     ");
+	if (Manager::getInstance().dataManager->metadata.flags.sdCard) {
+		println(CDAM_ADMIN_ON);
+	} else {
+		println(CDAM_ADMIN_OFF);
+	}
+}
+
+void Printer::printAdminThree() {
+	print("3. Random Stories: ");
+	if (Manager::getInstance().dataManager->metadata.flags.random) {
+		println(CDAM_ADMIN_ON);
+	} else {
+		println(CDAM_ADMIN_OFF);
+	}
+}
+
+void Printer::printAdminFour() {
+	print("4. Arcade Mode:    ");
+	if (Manager::getInstance().dataManager->metadata.flags.arcade) {
+		println(CDAM_ADMIN_ON);
+	} else {
+		println(CDAM_ADMIN_OFF);
+	}
+}
+
 /* END - Hard Coded Printing */
 
 uint8_t Printer::wrapText(char* aBuffer, uint8_t aColumns, uint8_t aStartOffset) {

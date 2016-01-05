@@ -4,12 +4,11 @@
 
 namespace cdam {
 
-struct GameStateStr_t {
+/*struct GameStateStr_t {
 	GameState state;
 	const char *stateDesc;
 } GameStateDesc[] = {
 	{ STATE_NONE, "none" }, // Only before actual state is set.
-	{ STATE_ERROR, "error" }, // Problem, report if possible.
 	{ STATE_BOOTING, "booting" }, // Only occurs during power cycle.
 	{ STATE_INIT, "init" }, // Initializes unit for new play.
 	{ STATE_CREDITS, "credits" }, // Waiting for play credits.
@@ -19,9 +18,8 @@ struct GameStateStr_t {
 	{ STATE_SELECT, "select" },
 	{ STATE_PLAY, "play" },
 	{ STATE_CONTINUE, "continue" },
-	{ STATE_AUTH, "auth" },
 	{ STATE_ADMIN, "admin" }
-};
+};*/
 
 /* Public Methods */
 
@@ -37,9 +35,9 @@ GameState StateController::getState() {
 	return _state;
 }
 
-const char* StateController::stateString() {
+/*const char* StateController::stateString() {
 	return GameStateDesc[_state].stateDesc;
-}
+}*/
 
 void StateController::changeState(GameState aState) {
 	endState(_state);
@@ -54,11 +52,9 @@ void StateController::updateState() {
 /* Private Methods */
 
 void StateController::initState(GameState aState) {
-	LOG("Init State: %s", stateString());
+	LOG("Init State: %d", _state);
 
-	if (aState == STATE_ERROR) {
-		ERROR("*** ERROR STATE ***");
-	} else if (aState == STATE_BOOTING) {
+	if (aState == STATE_BOOTING) {
 		Manager::getInstance().initialize(this);
 		_dataManager = Manager::getInstance().dataManager;
 		_hardwareManager = Manager::getInstance().hardwareManager;
@@ -66,6 +62,7 @@ void StateController::initState(GameState aState) {
 		_parser = new Parser();
 		_parser->initialize();
 		_hardwareManager->keypad()->active = true;
+		delay(50);
 		_resetElapsed = kIntervalPressAnyButton;
 	} else if (aState == STATE_INIT) {
 		_dataManager->unloadStory();
@@ -90,14 +87,14 @@ void StateController::initState(GameState aState) {
 		}
 	} else if (aState == STATE_IDLE) {
 		_resetElapsed = 0;
-	}/* else if (aState == STATE_SELECT) {
+	} else if (aState == STATE_ADMIN) {
+		_hardwareManager->printer()->printAdminTitle();
+		_hardwareManager->printer()->printAdminMenu();
+	}
+	/* else if (aState == STATE_SELECT) {
 
 	} else if (aState == STATE_PLAY) {
 
-	} else if (aState == STATE_AUTH) {
-
-	} else if (aState == STATE_ADMIN) {
-		DEBUG("Hello from admin!");
 	}*/
 }
 
@@ -116,7 +113,7 @@ void StateController::loopState(GameState aState) {
 
 	if (aState == STATE_BOOTING) {
 		// If button 1 held (or hardset to Offline), disable WiFi.
-		if (_hardwareManager->keypad()->btnOne()->depressed) {
+		if (_hardwareManager->keypad()->buttonDepressed(1)) {
 			_dataManager->metadata.flags.offline = !_dataManager->metadata.flags.offline;
 		}
 		if (!_dataManager->metadata.flags.offline) {
@@ -138,18 +135,15 @@ void StateController::loopState(GameState aState) {
 			// TODO - doesn't work
 			_dataManager->logPrint = true;
 		}*/
-		if (_hardwareManager->keypad()->btnTwo()->depressed) {
+		if (_hardwareManager->keypad()->buttonDepressed(2)) {
 			_dataManager->metadata.flags.sdCard = !_dataManager->metadata.flags.sdCard;
 		}
 		// Override has had a chance to get set, now setup storage.
 		_dataManager->initStorage();
-		// Admin mode, if pass required change to STATE_AUTH
-		if (_hardwareManager->keypad()->btnFour()->depressed) {
-			if (_dataManager->metadata.flags.auth) {
-				changeState(STATE_AUTH);
-			} else {
-				changeState(STATE_ADMIN);
-			}
+
+		// Admin mode.
+		if (_hardwareManager->keypad()->buttonDepressed(4)) {
+			changeState(STATE_ADMIN);
 		} else {
 			changeState(STATE_INIT);
 		}
@@ -206,9 +200,6 @@ void StateController::loopState(GameState aState) {
 					_hardwareManager->printer()->wrapText(titleBuffer, kPrinterColumns);
 					_hardwareManager->printer()->println(titleBuffer);
 					//DEBUG("%s", titleBuffer);
-				} else {
-					changeState(STATE_ERROR);
-					return;
 				}
 			}
 			_hardwareManager->printer()->feed(2);
@@ -233,8 +224,6 @@ void StateController::loopState(GameState aState) {
 			// Story has been selected, initialize the parser with story index (not number).
 			if (_parser->initStory(total - 1)) {
 				changeState(STATE_PLAY);
-			} else {
-				changeState(STATE_ERROR);
 			}
 		}
 	} else if (aState == STATE_PLAY) {
@@ -265,21 +254,38 @@ void StateController::loopState(GameState aState) {
 					}
 				}
 			}
-		} else if (state == PARSE_ERROR) {
-			changeState(STATE_ERROR);
 		}
-	}/* else if (aState == STATE_AUTH) {
-
 	} else if (aState == STATE_ADMIN) {
-
-	} else if (aState == STATE_ERROR) {
+		if (_hardwareManager->keypad()->buttonHeld(1)) {
+			changeState(STATE_BOOTING);
+			return;
+		}
+		bool success = false;
+		int16_t total = _hardwareManager->keypad()->multiUpValInRange(success, 1, 4);
+		if (success) {
+			if (total == 1) {
+				_dataManager->setFlag(0, 7, !_dataManager->metadata.flags.offline);
+				//_hardwareManager->printer()->printAdminOne();
+			} else if (total == 2) {
+				_dataManager->setFlag(0, 5, !_dataManager->metadata.flags.sdCard);
+				//_hardwareManager->printer()->printAdminTwo();
+			} else if (total == 3) {
+				_dataManager->setFlag(0, 1, !_dataManager->metadata.flags.random);
+				//_hardwareManager->printer()->printAdminThree();
+			} else if (total == 4) {
+				_dataManager->setFlag(0, 3, !_dataManager->metadata.flags.arcade);
+				//_hardwareManager->printer()->printAdminFour();
+			}
+			_hardwareManager->printer()->printAdminMenu();
+		}
+	}/* else if (aState == STATE_ERROR) {
 
 	}*/
 }
 
 
 void StateController::endState(GameState aState) {
-	LOG("End State: %s", stateString());
+	LOG("End State: %d", _state);
 
 	if (aState == STATE_BOOTING) {
 		_dataManager->logMetadata();
@@ -297,11 +303,7 @@ void StateController::endState(GameState aState) {
 
 	} else if (aState == STATE_PLAY) {
 
-	} else if (aState == STATE_AUTH) {
-
 	} else if (aState == STATE_ADMIN) {
-
-	} else if (aState == STATE_ERROR) {
 
 	}*/
 }

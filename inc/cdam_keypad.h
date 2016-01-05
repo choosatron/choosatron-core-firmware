@@ -18,6 +18,9 @@ public:
 	void initialize(uint8_t aPinBtnOne, uint8_t aPinBtnTwo,
 	                uint8_t aPinBtnThree, uint8_t aPinBtnFour);
 	void updateState();
+	void waitForUp();
+	bool buttonDepressed(uint8_t aButtonNum);
+	bool buttonHeld(uint8_t aButtonNum);
 	int16_t downValue();
 	int16_t downValInRange(bool &aValid, int16_t aLow, int16_t aHigh);
 	int16_t multiUpValue();
@@ -56,6 +59,7 @@ private:
 	int16_t _multiUpValue;
 	//int16_t _keypadValue;
 	uint32_t _lastDebounceTime;
+	bool _waitForUp;
 
 };
 
