@@ -25,7 +25,10 @@ const char CDAM_SERVER_RECEIVE_STORY[] = "Receiving story data...";
 const char CDAM_SERVER_REBOOT[] = "Complete! Rebooting...";
 //const char CDAM_SERVER_COMPLETE[] = "Complete!\nPress any button for menu.";
 
+#define BIZ_CARD true
+
 #ifndef DEBUG_BUILD
+#if BIZ_CARD
 const char CDAM_LINE[]          = "------------------------------";
 //const char CDAM_LINE_TOP[]    = "/------------------------------\\";
 const char CDAM_JERRY_ONE[]     = "|    Hi, Jerry Belich here.    |";
@@ -52,6 +55,7 @@ const char CDAM_BULLET7[]       = "|   & augmented experiences    |";
 //const char CDAM_LINE_SPACE[]    = "|                              |";
 //const char CDAM_BULLET8[]       = "| * classical theremin         |";
 //const char CDAM_BULLET9[]       = "| * comedy shows for events    |";
+#endif
 #endif
 
 }

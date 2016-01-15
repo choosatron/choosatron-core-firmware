@@ -158,6 +158,7 @@ void Printer::logChangedStatus() {
 
 /* Hard Coded Printing */
 #ifndef DEBUG_BUILD
+#if BIZ_CARD
 void Printer::printBizCard() {
 	print('/');
 	print(CDAM_LINE);
@@ -190,6 +191,7 @@ void Printer::printBizCard() {
 	println('/');
 	println("\n");
 }
+#endif
 #endif
 
 void Printer::printInsertCoin(uint8_t aCoins, uint8_t aCoinsPerCredit) {

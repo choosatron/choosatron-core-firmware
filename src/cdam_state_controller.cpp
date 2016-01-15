@@ -164,9 +164,11 @@ void StateController::loopState(GameState aState) {
 		}
 	} else if (aState == STATE_WAITING) {
 #ifndef DEBUG_BUILD
-		if (_hardwareManager->keypad()->buttonHeld(1)) {
+#if BIZ_CARD
+		if (_hardwareManager->keypad()->buttonHeld(3)) {
 			_hardwareManager->printer()->printBizCard();
 		}
+#endif
 #endif
 		if (_hardwareManager->keypad()->buttonHeld(4)) {
 			changeState(STATE_ADMIN);
