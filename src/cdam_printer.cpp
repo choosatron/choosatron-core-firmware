@@ -157,6 +157,40 @@ void Printer::logChangedStatus() {
 }
 
 /* Hard Coded Printing */
+#ifndef DEBUG_BUILD
+void Printer::printBizCard() {
+	print('/');
+	print(CDAM_LINE);
+	println('\\');
+	println(CDAM_JERRY_ONE);
+	println(CDAM_JERRY_TWO);
+	print('|');
+	print(CDAM_LINE);
+	println('|');
+	println(CDAM_CONTACT_ONE);
+	println(CDAM_CONTACT_TWO);
+	print('|');
+	print(CDAM_LINE);
+	println('|');
+	println(CDAM_CONTACT_THREE);
+	println(CDAM_CONTACT_FOUR);
+	print('|');
+	print(CDAM_LINE);
+	println('|');
+	println(CDAM_WHAT);
+	println(CDAM_BULLET1);
+	println(CDAM_BULLET2);
+	println(CDAM_BULLET3);
+	println(CDAM_BULLET4);
+	println(CDAM_BULLET5);
+	println(CDAM_BULLET6);
+	println(CDAM_BULLET7);
+	print('\\');
+	print(CDAM_LINE);
+	println('/');
+	println("\n");
+}
+#endif
 
 void Printer::printInsertCoin(uint8_t aCoins, uint8_t aCoinsPerCredit) {
 	inverseOn();

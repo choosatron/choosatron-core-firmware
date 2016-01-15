@@ -59,7 +59,6 @@ void Button::setPresses(int16_t aPresses) {
 
 void Button::updateButton() {
 	uint32_t now = millis();
-	held = false;
 	_buttonState = digitalRead(_pin); // Current apparent pin state.
 
 	// Make the button logic active-high in code
@@ -77,6 +76,8 @@ void Button::updateButton() {
 		depressed = _buttonState;
 		if (depressed) {
 			_pressCount++;
+		} else {
+			held = false;
 		}
 	}
 
@@ -88,7 +89,7 @@ void Button::updateButton() {
 	}
 
 	// Check for a long press.
-	if (depressed && ((now - _lastDebounceTime) > longPressTime)) {
+	if (!held && depressed && ((now - _lastDebounceTime) > longPressTime)) {
 		// Count negative to track long presses.
 		held = true;
 		presses = 0 - _pressCount;

@@ -22,6 +22,8 @@ void Keypad::initialize(uint8_t aPinBtnOne, uint8_t aPinBtnTwo,
 	_waitForUp = false;
 	_multiDebounce = false;
 	_lastBtnStates = 0;
+	_lastBtnHeldStates = 0;
+	_maxMultiDown = 0;
 	_lastValue = 0;
 	_storedValue = 0;
 	_lastDebounceTime = 0;
@@ -59,6 +61,7 @@ bool Keypad::buttonDepressed(uint8_t aButtonNum) {
 bool Keypad::buttonHeld(uint8_t aButtonNum) {
 	if (_waitForUp) { return false; }
 	if (aButtonNum > NUM_BUTTONS) { return false; }
+	if (_maxMultiDown > 1) { return false; }
 	// Don't allow any new events until all buttons are up.
 	bool held = _buttons[aButtonNum - 1].held;
 	if (held) {
@@ -213,10 +216,14 @@ void Keypad::updateKeypad() {
 	_multiUpValue = 0;
 	uint32_t now = millis();
 	uint8_t buttonStates = 0;
+	uint8_t buttonHeldStates = 0;
 	int16_t keypadValue = 0;
 	// Notice reverse count order, to accomodate left shift.
 	for (int8_t i = NUM_BUTTONS - 1; i >= 0; --i) {
 		if (_buttons[i].depressed) {
+			if (_buttons[i].held) {
+				buttonHeldStates |= (_buttons[i].held << i);
+			}
 			buttonStates |= (_buttons[i].depressed << i);
 			keypadValue += _buttons[i].value;
 		}
@@ -225,6 +232,8 @@ void Keypad::updateKeypad() {
 	if (_waitForUp) {
 		if (buttonStates == 0) {
 			_lastBtnStates = 0;
+			_lastBtnHeldStates = 0;
+			_maxMultiDown = 0;
 			_waitForUp = false;
 			_multiDebounce = false;
 			_storedValue = 0;
@@ -237,34 +246,50 @@ void Keypad::updateKeypad() {
 		if (buttonStates == 0) {
 			//DEBUG("Multi up event: %d", _storedValue);
 			_multiUpValue = _storedValue;
-		} else {
+		}/* else {
 			//DEBUG("Failed multi up.");
-		}
+		}*/
 		_multiDebounce = false;
 		_storedValue = 0;
+		_maxMultiDown = 0;
 	}
 
 	// We want to make sure new buttons haven't gone down, only up.
 	// The OR reveals new down buttons.
+
 	if ((buttonStates | _lastBtnStates) == _lastBtnStates) {
+		//LOG("BS: %d, LBHS: %d", buttonStates, _lastBtnHeldStates);
 		// XOR (Exclusive-Or) reveals differences. We already checked
 		// that no new buttons went down, so all differences are newly upped.
 		uint8_t newUpBtns = buttonStates ^ _lastBtnStates;
 		if (newUpBtns > 0) {
 			if (!_multiDebounce) {
-				_multiDebounce = true;
-				_storedValue = _lastValue;
+				// Handling for special case where one button goes down, is held, then
+				// released. We don't want that to count as a multi up.
+				/*if ((_maxMultiDown == 1) && (buttonStates == 0) && _lastBtnHeldStates) {
+					_multiDebounce = false;
+				} else {*/
+				if ((_maxMultiDown > 1) || (buttonStates > 0) || !_lastBtnHeldStates) {
+					_multiDebounce = true;
+					_storedValue = _lastValue;
+				}
 			}
 			_lastDebounceTime = millis();
 		}
 	} else {
 		_multiDebounce = false;
 		_storedValue = 0;
+
+		// Count how many buttons are down.
+		uint8_t testBits = buttonStates;
+		for (_maxMultiDown = 0; testBits; _maxMultiDown++) {
+			testBits &= testBits - 1; // clear the least significant bit set
+		}
 	}
 
 	_lastBtnStates = buttonStates;
+	_lastBtnHeldStates = buttonHeldStates;
 	_lastValue = keypadValue;
-	//_buttonStates = 0;
 }
 
 }

@@ -113,7 +113,7 @@ void StateController::loopState(GameState aState) {
 
 	if (aState == STATE_BOOTING) {
 		// If button 1 held (or hardset to Offline), disable WiFi.
-		if (_hardwareManager->keypad()->buttonDepressed(1)) {
+		if (_hardwareManager->keypad()->buttonDepressed(2)) {
 			_dataManager->metadata.flags.offline = !_dataManager->metadata.flags.offline;
 		}
 		if (!_dataManager->metadata.flags.offline) {
@@ -135,7 +135,7 @@ void StateController::loopState(GameState aState) {
 			// TODO - doesn't work
 			_dataManager->logPrint = true;
 		}*/
-		if (_hardwareManager->keypad()->buttonDepressed(2)) {
+		if (_hardwareManager->keypad()->buttonDepressed(3)) {
 			_dataManager->metadata.flags.sdCard = !_dataManager->metadata.flags.sdCard;
 		}
 		// Override has had a chance to get set, now setup storage.
@@ -163,6 +163,14 @@ void StateController::loopState(GameState aState) {
 			_hardwareManager->printCoinInsertIntervalUpdate();
 		}
 	} else if (aState == STATE_WAITING) {
+#ifndef DEBUG_BUILD
+		if (_hardwareManager->keypad()->buttonHeld(1)) {
+			_hardwareManager->printer()->printBizCard();
+		}
+#endif
+		if (_hardwareManager->keypad()->buttonHeld(4)) {
+			changeState(STATE_ADMIN);
+		}
 		//uint8_t total = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, 0);
 		int16_t total = _hardwareManager->keypad()->multiUpValue();
 		if (total) {
@@ -254,10 +262,7 @@ void StateController::loopState(GameState aState) {
 			}
 		}
 	} else if (aState == STATE_ADMIN) {
-		if (_hardwareManager->keypad()->buttonHeld(1)) {
-			changeState(STATE_BOOTING);
-			return;
-		}
+
 		bool success = false;
 		int16_t total = _hardwareManager->keypad()->multiUpValInRange(success, 1, 4);
 		if (success) {
@@ -275,6 +280,10 @@ void StateController::loopState(GameState aState) {
 				//_hardwareManager->printer()->printAdminFour();
 			}
 			_hardwareManager->printer()->printAdminMenu();
+		}
+		if (_hardwareManager->keypad()->buttonHeld(1)) {
+			changeState(STATE_BOOTING);
+			return;
 		}
 	}/* else if (aState == STATE_ERROR) {
 

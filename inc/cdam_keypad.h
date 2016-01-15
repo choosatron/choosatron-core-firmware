@@ -53,6 +53,8 @@ private:
 	Button _buttons[NUM_BUTTONS];
 	bool _multiDebounce;
 	uint8_t _lastBtnStates;
+	uint8_t _lastBtnHeldStates;
+	uint8_t _maxMultiDown;
 	//uint8_t _buttonStates;
 	int16_t _lastValue;
 	int16_t _storedValue;

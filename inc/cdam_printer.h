@@ -30,6 +30,9 @@ public:
 	bool statusChanged(PrinterStatus aStatus);
 	void logChangedStatus();
 
+#ifndef DEBUG_BUILD
+	void printBizCard();
+#endif
 	void printInsertCoin(uint8_t aCoins, uint8_t aCreditValue);
 	void printPressButton();
 	void printTitle();

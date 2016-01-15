@@ -24,7 +24,7 @@ namespace cdam
 
 const uint8_t kFirmwareVersionMajor = 1;
 const uint8_t kFirmwareVersionMinor = 0;
-const uint8_t kFirmwareVersionRevision = 2;
+const uint8_t kFirmwareVersionRevision = 1;
 
 typedef enum {
 	PIN_PIEZO = A0,
