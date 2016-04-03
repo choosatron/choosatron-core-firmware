@@ -345,7 +345,7 @@ void Printer::printAdminMenu() {
 	printAdminOne();
 	printAdminTwo();
 	printAdminThree();
-	printAdminFour();
+	//printAdminFour();
 	feed(2);
 }
 
@@ -376,14 +376,14 @@ void Printer::printAdminThree() {
 	}
 }
 
-void Printer::printAdminFour() {
+/*void Printer::printAdminFour() {
 	print("4. Arcade Mode:    ");
 	if (Manager::getInstance().dataManager->metadata.flags.arcade) {
 		println(CDAM_ADMIN_ON);
 	} else {
 		println(CDAM_ADMIN_OFF);
 	}
-}
+}*/
 
 /* END - Hard Coded Printing */
 

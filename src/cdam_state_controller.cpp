@@ -277,10 +277,10 @@ void StateController::loopState(GameState aState) {
 			} else if (total == 3) {
 				_dataManager->setFlag(0, 1, !_dataManager->metadata.flags.random);
 				//_hardwareManager->printer()->printAdminThree();
-			} else if (total == 4) {
+			}/* else if (total == 4) {
 				_dataManager->setFlag(0, 3, !_dataManager->metadata.flags.arcade);
 				//_hardwareManager->printer()->printAdminFour();
-			}
+			}*/
 			_hardwareManager->printer()->printAdminMenu();
 		}
 		if (_hardwareManager->keypad()->buttonHeld(1)) {
