@@ -103,7 +103,7 @@ void DataManager::handleSerialData() {
 			uint8_t cmd = Serial.read();
 
 			if (cmd == 'c') {
-				Serial.println("CM");
+				Serial.print("CM");
 				_serialTimeout = 0;
 				while (!Serial.available()) {
 					if (_serialTimeout >= kTimeoutSerialMillis) {
@@ -376,6 +376,7 @@ void DataManager::handleSerialData() {
 						break;
 					}
 				}
+				Serial.print('\n');
 			}
 		}
 	}
