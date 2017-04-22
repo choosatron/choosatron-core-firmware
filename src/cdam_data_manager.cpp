@@ -116,8 +116,8 @@ void DataManager::handleSerialData() {
 				switch (cmd)
 				{
 					case kSerialCmdGetInfo: {
-						Serial.write(PRODUCT_ID + '0');
-						Serial.write(':');
+						//Serial.write(PRODUCT_ID + '0');
+						//Serial.write(':');
 						Serial.print(Spark.deviceID());
 						Serial.write(':');
 					}

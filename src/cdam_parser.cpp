@@ -208,6 +208,7 @@ ParseState Parser::parsePassage() {
 		}
 	} else if (_state == PARSE_USER_INPUT) {
 		if (_dataManager->randomPlay) {
+			delay(100);
 			uint8_t value = random(1, _visibleCount + 1);
 			//_hardwareManager->keypad()->setKeypadEvent(KEYPAD_MULTI_UP_EVENT, value);
 			_hardwareManager->keypad()->setPressedValue(value);
