@@ -29,25 +29,27 @@ const char CDAM_SERVER_REBOOT[] = "Complete! Rebooting...";
 
 #ifndef DEBUG_BUILD
 #if BIZ_CARD
-const char CDAM_LINE[]          = "------------------------------";
-//const char CDAM_LINE_TOP[]    = "/------------------------------\\";
-const char CDAM_JERRY_ONE[]     = "|    Hi, Jerry Belich here.    |";
-const char CDAM_JERRY_TWO[]     = "| ~~Certified Mad Scientist~~  |";
-//const char CDAM_LINE[]        = "|------------------------------|";
-const char CDAM_CONTACT_ONE[]   = "|  @j3rrytron - jerrytron.com  |";
-const char CDAM_CONTACT_TWO[]   = "|   Press kit pages: ^/press   |";
-//const char CDAM_LINE[]        = "|------------------------------|";
-const char CDAM_CONTACT_THREE[] = "|  Email jerry@jerrytron.com   |";
-const char CDAM_CONTACT_FOUR[]  = "|    Phone +1 612-306-8258     |";
-//const char CDAM_LINE[]        = "|------------------------------|";
-const char CDAM_WHAT[]          = "|    What can I do for you?    |";
-const char CDAM_BULLET1[]       = "| * custom hardware toys/games |";
-const char CDAM_BULLET2[]       = "| * desktop/mobile game design |";
-const char CDAM_BULLET3[]       = "| * electronics/game workshops |";
-const char CDAM_BULLET4[]       = "| * talks/guest lecturing      |";
-const char CDAM_BULLET5[]       = "| * narrative & storytelling   |";
-const char CDAM_BULLET6[]       = "| * interactive installations  |";
-const char CDAM_BULLET7[]       = "|   & augmented experiences    |";
+const char CDAM_LINE[]        = "------------------------------";
+//const char CDAM_LINE_TOP[] = "/------------------------------\\";
+const char CDAM_JERRY_1[]    = "|    Hi, Jerry Belich here.    |";
+const char CDAM_JERRY_2[]    = "| ~~Mad Scientist Professor~~  |";
+const char CDAM_JERRY_3[]    = "|       Miami University       |";
+//const char CDAM_LINE[]     = "|------------------------------|";
+const char CDAM_CONTACT_1[]  = "|  @j3rrytron - jerrytron.com  |";
+const char CDAM_CONTACT_2[]  = "|   Press kit pages: ^/press   |";
+//const char CDAM_LINE[]     = "|------------------------------|";
+const char CDAM_CONTACT_3[]  = "|  Email jerry@jerrytron.com   |";
+//const char CDAM_CONTACT_4[]  = "|    Phone +1 612-306-8258     |";
+//const char CDAM_LINE[]     = "|------------------------------|";
+const char CDAM_WHAT_1[]     = "|  It was great to meet you!   |";
+//const char CDAM_WHAT_1[]     = "| You played @ IndieBits 2017! |";
+const char CDAM_WHAT_2[]     = "|  I can help you out with...  |";
+const char CDAM_BULLET_1[]   = "| * hardware/alt ctrl games    |";
+const char CDAM_BULLET_2[]   = "| * electronics/game workshops |";
+const char CDAM_BULLET_3[]   = "| * talks/guest lecturing      |";
+const char CDAM_BULLET_4[]   = "| * narrative & storytelling   |";
+const char CDAM_BULLET_5[]   = "| * interactive installations  |";
+const char CDAM_BULLET_6[]   = "|   & augmented experiences    |";
 //const char CDAM_LINE_BOTTOM[]= "\\------------------------------/";
 
 //const char CDAM_WHERE_ONE[]     = "|   We met on May 19th, 2015   |";

@@ -1,5 +1,7 @@
 # Choosatron README
 
+From ./main (makes ./main/applications/choosatron-core-firmware)
+
 make PRODUCT_ID=7 PRODUCT_FIRMWARE_VERSION=102 APP=choosatron-core-firmware TARGET_DIR=applications/choosatron-core-firmware/build DEBUG_BUILD=y v=1 program-dfu
 
 make PLATFORM=core PRODUCT_FIRMWARE_VERSION=102 APP=choosatron-core-firmware TARGET_DIR=applications/choosatron-core-firmware/build DEBUG_BUILD=y v=1 program-dfu
