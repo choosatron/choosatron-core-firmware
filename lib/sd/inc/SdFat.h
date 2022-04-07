@@ -23,7 +23,7 @@
  * \file
  * SdFile and SdVolume classes
  */
-#include <Application.h>
+#include <application.h>
 #include "SdFatUtil.h"
 #include "Sd2Card.h"
 #include "FatStructs.h"
