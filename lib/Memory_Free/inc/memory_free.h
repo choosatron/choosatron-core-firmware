@@ -7,22 +7,22 @@
 // Extended by Matthew Murdoch to include walking of the free list.
 
 //#ifdef __cplusplus
-    //extern "C" {
+   //extern "C" {
 //#endif
 
 class MemoryFree
 {
-	public:
-	int freeMemory();
+   public:
+   int freeMemory();
 
-	private:
-	int freeListSize();
+   private:
+   int freeListSize();
 };
 
 
 
 //#ifdef __cplusplus
-    //}
+   //}
 //#endif
 
 #endif

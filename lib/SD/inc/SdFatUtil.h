@@ -1,22 +1,22 @@
 /* Arduino SdFat Library
- * Copyright (C) 2008 by William Greiman
- *
- * This file is part of the Arduino SdFat Library
- *
- * This Library is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This Library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+* Copyright (C) 2008 by William Greiman
+*
+* This file is part of the Arduino SdFat Library
+*
+* This Library is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This Library is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
 
- * You should have received a copy of the GNU General Public License
- * along with the Arduino SdFat Library.  If not, see
- * <http://www.gnu.org/licenses/>.
- */
+* You should have received a copy of the GNU General Public License
+* along with the Arduino SdFat Library.  If not, see
+* <http://www.gnu.org/licenses/>.
+*/
 #ifndef SdFatUtil_h
 #define SdFatUtil_h
 /**
@@ -78,19 +78,19 @@ typedef const unsigned short prog_short;
 /** Return the number of bytes currently free in RAM. */
 #if 0
 static int FreeRam(void) {
-  extern int  __bss_end;
-  extern int* __brkval;
-  int free_memory;
-  if (reinterpret_cast<int>(__brkval) == 0) {
-    // if no heap use from end of bss section
-    free_memory = reinterpret_cast<int>(&free_memory)
+extern int  __bss_end;
+extern int* __brkval;
+int free_memory;
+if (reinterpret_cast<int>(__brkval) == 0) {
+   // if no heap use from end of bss section
+   free_memory = reinterpret_cast<int>(&free_memory)
                   - reinterpret_cast<int>(&__bss_end);
-  } else {
-    // use from top of stack to heap
-    free_memory = reinterpret_cast<int>(&free_memory)
+} else {
+   // use from top of stack to heap
+   free_memory = reinterpret_cast<int>(&free_memory)
                   - reinterpret_cast<int>(__brkval);
-  }
-  return free_memory;
+}
+return free_memory;
 }
 #endif
 //------------------------------------------------------------------------------
@@ -102,8 +102,8 @@ static int FreeRam(void) {
 /*
 #ifndef SerialPrint_P
 #define SerialPrint_P(str) { \
-	const char *p=str; \
-  for (uint8_t c; (c = pgm_read_byte(p)); p++) Serial.print((char)c); \
+   const char *p=str; \
+for (uint8_t c; (c = pgm_read_byte(p)); p++) Serial.print((char)c); \
 }
 #endif
 ------------------------------------------------------------------------------
@@ -116,8 +116,8 @@ static int FreeRam(void) {
 /* 
 #ifndef SerialPrintln_P
 #define SerialPrintln_P(str) { \
-  SerialPrint_P(str); \
-  Serial.println();   \
+SerialPrint_P(str); \
+Serial.println();   \
 }
 #endif
 */

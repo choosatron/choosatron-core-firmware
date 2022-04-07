@@ -29,16 +29,16 @@ const uint8_t kFirmwareVersionMinor = 0;
 const uint8_t kFirmwareVersionRevision = 4;
 
 typedef enum {
-	PIN_PIEZO = A0,
-	PIN_RED_LED = A1,
-	PIN_GREEN_LED = A6,
-	PIN_BLUE_LED = A7,
-	PIN_COIN = D6,
-	PIN_SD_CD = D7,
-	PIN_SD_SCK = A3,
-	PIN_SD_MISO = A4, // SD_DO
-	PIN_SD_MOSI = A5, // SD_DI
-	PIN_SD_CS = A2
+   PIN_PIEZO = A0,
+   PIN_RED_LED = A1,
+   PIN_GREEN_LED = A6,
+   PIN_BLUE_LED = A7,
+   PIN_COIN = D6,
+   PIN_SD_CD = D7,
+   PIN_SD_SCK = A3,
+   PIN_SD_MISO = A4, // SD_DO
+   PIN_SD_MOSI = A5, // SD_DI
+   PIN_SD_CS = A2
 } HardwarePin;
 
 }

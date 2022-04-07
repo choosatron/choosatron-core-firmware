@@ -27,47 +27,47 @@
 class ElapsedMillis
 {
 private:
-	unsigned long ms;
+   unsigned long ms;
 public:
-	ElapsedMillis(void) { ms = millis(); }
-	ElapsedMillis(unsigned long val) { ms = millis() - val; }
-	ElapsedMillis(const ElapsedMillis &orig) { ms = orig.ms; }
-	operator unsigned long () const { return millis() - ms; }
-	ElapsedMillis & operator = (const ElapsedMillis &rhs) { ms = rhs.ms; return *this; }
-	ElapsedMillis & operator = (unsigned long val) { ms = millis() - val; return *this; }
-	ElapsedMillis & operator -= (unsigned long val)      { ms += val ; return *this; }
-	ElapsedMillis & operator += (unsigned long val)      { ms -= val ; return *this; }
-	ElapsedMillis operator - (int val) const           { ElapsedMillis r(*this); r.ms += val; return r; }
-	ElapsedMillis operator - (unsigned int val) const  { ElapsedMillis r(*this); r.ms += val; return r; }
-	ElapsedMillis operator - (long val) const          { ElapsedMillis r(*this); r.ms += val; return r; }
-	ElapsedMillis operator - (unsigned long val) const { ElapsedMillis r(*this); r.ms += val; return r; }
-	ElapsedMillis operator + (int val) const           { ElapsedMillis r(*this); r.ms -= val; return r; }
-	ElapsedMillis operator + (unsigned int val) const  { ElapsedMillis r(*this); r.ms -= val; return r; }
-	ElapsedMillis operator + (long val) const          { ElapsedMillis r(*this); r.ms -= val; return r; }
-	ElapsedMillis operator + (unsigned long val) const { ElapsedMillis r(*this); r.ms -= val; return r; }
+   ElapsedMillis(void) { ms = millis(); }
+   ElapsedMillis(unsigned long val) { ms = millis() - val; }
+   ElapsedMillis(const ElapsedMillis &orig) { ms = orig.ms; }
+   operator unsigned long () const { return millis() - ms; }
+   ElapsedMillis & operator = (const ElapsedMillis &rhs) { ms = rhs.ms; return *this; }
+   ElapsedMillis & operator = (unsigned long val) { ms = millis() - val; return *this; }
+   ElapsedMillis & operator -= (unsigned long val)      { ms += val ; return *this; }
+   ElapsedMillis & operator += (unsigned long val)      { ms -= val ; return *this; }
+   ElapsedMillis operator - (int val) const           { ElapsedMillis r(*this); r.ms += val; return r; }
+   ElapsedMillis operator - (unsigned int val) const  { ElapsedMillis r(*this); r.ms += val; return r; }
+   ElapsedMillis operator - (long val) const          { ElapsedMillis r(*this); r.ms += val; return r; }
+   ElapsedMillis operator - (unsigned long val) const { ElapsedMillis r(*this); r.ms += val; return r; }
+   ElapsedMillis operator + (int val) const           { ElapsedMillis r(*this); r.ms -= val; return r; }
+   ElapsedMillis operator + (unsigned int val) const  { ElapsedMillis r(*this); r.ms -= val; return r; }
+   ElapsedMillis operator + (long val) const          { ElapsedMillis r(*this); r.ms -= val; return r; }
+   ElapsedMillis operator + (unsigned long val) const { ElapsedMillis r(*this); r.ms -= val; return r; }
 };
 
 class ElapsedMicros
 {
 private:
-	unsigned long us;
+   unsigned long us;
 public:
-	ElapsedMicros(void) { us = micros(); }
-	ElapsedMicros(unsigned long val) { us = micros() - val; }
-	ElapsedMicros(const ElapsedMicros &orig) { us = orig.us; }
-	operator unsigned long () const { return micros() - us; }
-	ElapsedMicros & operator = (const ElapsedMicros &rhs) { us = rhs.us; return *this; }
-	ElapsedMicros & operator = (unsigned long val) { us = micros() - val; return *this; }
-	ElapsedMicros & operator -= (unsigned long val)      { us += val ; return *this; }
-	ElapsedMicros & operator += (unsigned long val)      { us -= val ; return *this; }
-	ElapsedMicros operator - (int val) const           { ElapsedMicros r(*this); r.us += val; return r; }
-	ElapsedMicros operator - (unsigned int val) const  { ElapsedMicros r(*this); r.us += val; return r; }
-	ElapsedMicros operator - (long val) const          { ElapsedMicros r(*this); r.us += val; return r; }
-	ElapsedMicros operator - (unsigned long val) const { ElapsedMicros r(*this); r.us += val; return r; }
-	ElapsedMicros operator + (int val) const           { ElapsedMicros r(*this); r.us -= val; return r; }
-	ElapsedMicros operator + (unsigned int val) const  { ElapsedMicros r(*this); r.us -= val; return r; }
-	ElapsedMicros operator + (long val) const          { ElapsedMicros r(*this); r.us -= val; return r; }
-	ElapsedMicros operator + (unsigned long val) const { ElapsedMicros r(*this); r.us -= val; return r; }
+   ElapsedMicros(void) { us = micros(); }
+   ElapsedMicros(unsigned long val) { us = micros() - val; }
+   ElapsedMicros(const ElapsedMicros &orig) { us = orig.us; }
+   operator unsigned long () const { return micros() - us; }
+   ElapsedMicros & operator = (const ElapsedMicros &rhs) { us = rhs.us; return *this; }
+   ElapsedMicros & operator = (unsigned long val) { us = micros() - val; return *this; }
+   ElapsedMicros & operator -= (unsigned long val)      { us += val ; return *this; }
+   ElapsedMicros & operator += (unsigned long val)      { us -= val ; return *this; }
+   ElapsedMicros operator - (int val) const           { ElapsedMicros r(*this); r.us += val; return r; }
+   ElapsedMicros operator - (unsigned int val) const  { ElapsedMicros r(*this); r.us += val; return r; }
+   ElapsedMicros operator - (long val) const          { ElapsedMicros r(*this); r.us += val; return r; }
+   ElapsedMicros operator - (unsigned long val) const { ElapsedMicros r(*this); r.us += val; return r; }
+   ElapsedMicros operator + (int val) const           { ElapsedMicros r(*this); r.us -= val; return r; }
+   ElapsedMicros operator + (unsigned int val) const  { ElapsedMicros r(*this); r.us -= val; return r; }
+   ElapsedMicros operator + (long val) const          { ElapsedMicros r(*this); r.us -= val; return r; }
+   ElapsedMicros operator + (unsigned long val) const { ElapsedMicros r(*this); r.us -= val; return r; }
 };
 
 #endif

@@ -80,4 +80,3 @@ typedef struct ServerAddress {
 #endif
 
 #endif  /* CDAM_FLASH_HAL_H */
-

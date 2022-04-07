@@ -59,109 +59,109 @@ const uint16_t kMetadataSize = (kMetadataStoryStateOffset + kMetadataStoryStateS
 /* Generic Structures */
 
 typedef struct Version_t {
-	uint8_t major;
-	uint8_t minor;
-	uint8_t revision;
+   uint8_t major;
+   uint8_t minor;
+   uint8_t revision;
 } Version;
 
 /* Structure definitions for Metadata */
 
 typedef struct MetaFlags_t {
-	union {
-		uint8_t flag1;
-		struct {
-			uint8_t auth 			:1; // Bit 0
-			uint8_t random			:1;
-			uint8_t continues		:1;
-			uint8_t arcade			:1;
-			uint8_t multiplayer		:1;
-			uint8_t sdCard			:1;
-			uint8_t demo			:1;
-			uint8_t offline			:1; // Bit 7
-		};
-	};
-	union {
-		uint8_t flag2;
-		struct {
-			uint8_t rsvd2 			:4; // Bit 0
-			uint8_t logPrint		:1;
-			uint8_t logLive			:1;
-			uint8_t logLocal		:1;
-			uint8_t logging 		:1; // Bit 7
-		};
-	};
-	union {
-		uint8_t flag3;
-		struct {
-			uint8_t rsvd3 			:7;
-			uint8_t dictOffsetBytes	:1; // 0 = 2byte length dict codes, 1 = 3 bytes
-		};
-	};
-	union {
-		uint8_t flag4;
-		struct {
-			uint8_t rsvd4			:8;
-		};
-	};
-	union {
-		uint8_t flag5;
-		struct {
-			uint8_t rsvd5 			:8;
-		};
-	};
-	union {
-		uint8_t flag6;
-		struct {
-			uint8_t rsvd6			:8;
-		};
-	};
-	union {
-		uint8_t flag7;
-		struct {
-			uint8_t rsvd7 			:8;
-		};
-	};
-	union {
-		uint8_t flag8;
-		struct {
-			uint8_t rsvd8			:8;
-		};
-	};
+   union {
+      uint8_t flag1;
+      struct {
+         uint8_t auth 			:1; // Bit 0
+         uint8_t random			:1;
+         uint8_t continues		:1;
+         uint8_t arcade			:1;
+         uint8_t multiplayer		:1;
+         uint8_t sdCard			:1;
+         uint8_t demo			:1;
+         uint8_t offline			:1; // Bit 7
+      };
+   };
+   union {
+      uint8_t flag2;
+      struct {
+         uint8_t rsvd2 			:4; // Bit 0
+         uint8_t logPrint		:1;
+         uint8_t logLive			:1;
+         uint8_t logLocal		:1;
+         uint8_t logging 		:1; // Bit 7
+      };
+   };
+   union {
+      uint8_t flag3;
+      struct {
+         uint8_t rsvd3 			:7;
+         uint8_t dictOffsetBytes	:1; // 0 = 2byte length dict codes, 1 = 3 bytes
+      };
+   };
+   union {
+      uint8_t flag4;
+      struct {
+         uint8_t rsvd4			:8;
+      };
+   };
+   union {
+      uint8_t flag5;
+      struct {
+         uint8_t rsvd5 			:8;
+      };
+   };
+   union {
+      uint8_t flag6;
+      struct {
+         uint8_t rsvd6			:8;
+      };
+   };
+   union {
+      uint8_t flag7;
+      struct {
+         uint8_t rsvd7 			:8;
+      };
+   };
+   union {
+      uint8_t flag8;
+      struct {
+         uint8_t rsvd8			:8;
+      };
+   };
 } MetaFlags;
 
 typedef struct MetaValues_t {
-	uint16_t pcbVersion;
-	int16_t timezoneOffset;
-	uint16_t coinsPerCredit;
-	uint16_t coinDenomination;
-	uint16_t coinsToContinue;
-	uint16_t value6;
-	uint16_t value7;
-	uint16_t value8;
-	uint16_t value9;
-	uint16_t value10;
-	uint16_t value11;
-	uint16_t value12;
-	uint16_t value13;
-	uint16_t value14;
-	uint16_t value15;
-	uint16_t value16;
+   uint16_t pcbVersion;
+   int16_t timezoneOffset;
+   uint16_t coinsPerCredit;
+   uint16_t coinDenomination;
+   uint16_t coinsToContinue;
+   uint16_t value6;
+   uint16_t value7;
+   uint16_t value8;
+   uint16_t value9;
+   uint16_t value10;
+   uint16_t value11;
+   uint16_t value12;
+   uint16_t value13;
+   uint16_t value14;
+   uint16_t value15;
+   uint16_t value16;
 } MetaValues;
 
 typedef struct Metadata_t {
-	uint8_t soh;
-	Version firmwareVer;
-	MetaFlags flags;
-	MetaValues values;
-	char deviceName[kMetadataDeviceNameSize];
-	char ownerProfile[kMetadataOwnerProfileSize];
-	char ownerCloud[kMetadataOwnerCloudSize];
-	uint8_t storyCount;
-	uint8_t deletedStoryCount;
-	uint8_t usedStoryPages;
-	uint16_t storyOffsets[kMaxRandStoryCount];
-	uint8_t storyOrder[kMaxRandStoryCount];
-	uint8_t storyState[kMaxRandStoryCount]; // 0 = empty, 1 = normal, 2 = deleted
+   uint8_t soh;
+   Version firmwareVer;
+   MetaFlags flags;
+   MetaValues values;
+   char deviceName[kMetadataDeviceNameSize];
+   char ownerProfile[kMetadataOwnerProfileSize];
+   char ownerCloud[kMetadataOwnerCloudSize];
+   uint8_t storyCount;
+   uint8_t deletedStoryCount;
+   uint8_t usedStoryPages;
+   uint16_t storyOffsets[kMaxRandStoryCount];
+   uint8_t storyOrder[kMaxRandStoryCount];
+   uint8_t storyState[kMaxRandStoryCount]; // 0 = empty, 1 = normal, 2 = deleted
 } Metadata;
 
 
@@ -199,57 +199,57 @@ const uint16_t kStoryHeaderSize = (kStoryVarCountOffset + kStoryVarCountSize);
 
 typedef struct StoryFlags_t
 {
-	union {
-		uint8_t flag1;
-		struct {
-			uint8_t rsvd1 				:1; // UNUSED
-			uint8_t multiplayer			:1; // This is a multiplayer game. *REQUIRES WIFI* *NOT IMPLEMENTED*
-			uint8_t realtime			:1; // Uses the realtime clock. *REQUIRES WIFI* *NOT IMPLEMENTED*
-			uint8_t images				:1; // Uses bitmap printing. *NOT IMPLEMENTED*
-			uint8_t variables			:1; // Uses variables for logic.
-			uint8_t liveVars			:1; // Uses online variable. *REQUIRES WIFI* *NOT IMPLEMENTED*
-			uint8_t saveState			:1; // Stores variable states between sessions. *NOT IMPLEMENTED*
-			uint8_t scripting			:1; // Uses dynamic scripting (in copy). *NOT IMPLEMENTED*
-		};
-	};
-	union {
-		uint8_t flag2;
-		struct {
-			uint8_t rsvd2 			:6;
-			uint8_t hideUsed		:1; // At a given passage, hide choices already made. *NOT IMPLEMENTED*
-			uint8_t continues		:1; // Allows the ability to continue (jump back choices). *NOT IMPLEMENTED*
-		};
-	};
-	union {
-		uint8_t flag3;
-		struct {
-			uint8_t rsvd3 			:8;
-		};
-	};
-	union {
-		uint8_t flag4;
-		struct {
-			uint8_t rsvd4 			:8;
-		};
-	};
+   union {
+      uint8_t flag1;
+      struct {
+         uint8_t rsvd1 				:1; // UNUSED
+         uint8_t multiplayer			:1; // This is a multiplayer game. *REQUIRES WIFI* *NOT IMPLEMENTED*
+         uint8_t realtime			:1; // Uses the realtime clock. *REQUIRES WIFI* *NOT IMPLEMENTED*
+         uint8_t images				:1; // Uses bitmap printing. *NOT IMPLEMENTED*
+         uint8_t variables			:1; // Uses variables for logic.
+         uint8_t liveVars			:1; // Uses online variable. *REQUIRES WIFI* *NOT IMPLEMENTED*
+         uint8_t saveState			:1; // Stores variable states between sessions. *NOT IMPLEMENTED*
+         uint8_t scripting			:1; // Uses dynamic scripting (in copy). *NOT IMPLEMENTED*
+      };
+   };
+   union {
+      uint8_t flag2;
+      struct {
+         uint8_t rsvd2 			:6;
+         uint8_t hideUsed		:1; // At a given passage, hide choices already made. *NOT IMPLEMENTED*
+         uint8_t continues		:1; // Allows the ability to continue (jump back choices). *NOT IMPLEMENTED*
+      };
+   };
+   union {
+      uint8_t flag3;
+      struct {
+         uint8_t rsvd3 			:8;
+      };
+   };
+   union {
+      uint8_t flag4;
+      struct {
+         uint8_t rsvd4 			:8;
+      };
+   };
 } StoryFlags;
 
 typedef struct StoryHeader_t { // Total Size: 394 bytes
-	uint8_t soh;
-	Version binaryVer;
-	char uuid[kStoryUuidSize];
-	StoryFlags flags;
-    uint32_t storySize;
-    Version storyVer;
-    uint8_t rsvd;
-    char languageCode[kStoryLangCodeSize];
-    char title[kStoryTitleSize];
-    char subtitle[kStorySubtitleSize];
-    char author[kStoryAuthorSize];
-    char credits[kStoryCreditsSize];
-    char contact[kStoryContactSize];
-    time_t publishDate;
-    uint16_t variableCount;
+   uint8_t soh;
+   Version binaryVer;
+   char uuid[kStoryUuidSize];
+   StoryFlags flags;
+   uint32_t storySize;
+   Version storyVer;
+   uint8_t rsvd;
+   char languageCode[kStoryLangCodeSize];
+   char title[kStoryTitleSize];
+   char subtitle[kStorySubtitleSize];
+   char author[kStoryAuthorSize];
+   char credits[kStoryCreditsSize];
+   char contact[kStoryContactSize];
+   time_t publishDate;
+   uint16_t variableCount;
 } StoryHeader;
 
 const uint8_t kOpTypeRaw = 1;
@@ -280,39 +280,39 @@ const uint8_t kOpDiceRoll = 21; // Returns int16_t - take # of dice & # of sides
 const uint8_t kOpIfStatement = 22; // Returns 0 if false, result of right operand if true
 
 typedef struct Operation_t {
-	union {
-		uint8_t operandTypes;
-		struct {
-			uint8_t rightType :4;
-			uint8_t leftType  :4;
-		};
-	};
-	uint8_t operationType;
-	int16_t leftOperand;
-	int16_t rightOperand;
+   union {
+      uint8_t operandTypes;
+      struct {
+         uint8_t rightType :4;
+         uint8_t leftType  :4;
+      };
+   };
+   uint8_t operationType;
+   int16_t leftOperand;
+   int16_t rightOperand;
 } Operation;
 
 typedef struct Passage_t {
-	union {
-		uint8_t attribute;
-		struct {
-			uint8_t rsvd   :7;
-			uint8_t append :1;
-		};
-	};
+   union {
+      uint8_t attribute;
+      struct {
+         uint8_t rsvd   :7;
+         uint8_t append :1;
+      };
+   };
 } Passage;
 
 typedef struct Choice_t {
-	union {
-		uint8_t attribute;
-		struct {
-			uint8_t rsvd   :7;
-			uint8_t append :1;
-		};
-	};
-	int16_t visible;
-	uint32_t updatesOffset;
-	uint16_t passageIndex;
+   union {
+      uint8_t attribute;
+      struct {
+         uint8_t rsvd   :7;
+         uint8_t append :1;
+      };
+   };
+   int16_t visible;
+   uint32_t updatesOffset;
+   uint16_t passageIndex;
 } Choice;
 
 }

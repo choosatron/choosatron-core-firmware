@@ -1,29 +1,29 @@
 /**
  ******************************************************************************
- * @file    Ymodem.h
- * @author  Satish Nair
- * @version V1.0.0
- * @date    28-July-2014
- * @brief   Serial port using YMODEM protocol for flashing user firmware.
- *          Use a Terminal program(eg. TeraTerm) that supports ymodem protocol
- *          to update the firmware. Adapted from ST app note AN2557.
- ******************************************************************************
-  Copyright (c) 2013-14 Spark Labs, Inc.  All rights reserved.
+* @file    Ymodem.h
+* @author  Satish Nair
+* @version V1.0.0
+* @date    28-July-2014
+* @brief   Serial port using YMODEM protocol for flashing user firmware.
+*          Use a Terminal program(eg. TeraTerm) that supports ymodem protocol
+*          to update the firmware. Adapted from ST app note AN2557.
+******************************************************************************
+Copyright (c) 2013-14 Spark Labs, Inc.  All rights reserved.
 
-  This library is free software; you can redistribute it and/or
-  modify it under the terms of the GNU Lesser General Public
-  License as published by the Free Software Foundation, either
-  version 3 of the License, or (at your option) any later version.
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation, either
+version 3 of the License, or (at your option) any later version.
 
-  This library is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Lesser General Public License for more details.
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
 
-  You should have received a copy of the GNU Lesser General Public
-  License along with this library; if not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************
- */
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, see <http://www.gnu.org/licenses/>.
+******************************************************************************
+*/
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __LIB_YMODEM_H
@@ -73,15 +73,15 @@ using namespace spark;
  */
 static uint32_t Serial_KeyPressed(Stream *serialObj, uint8_t *key)
 {
-  if(serialObj->available())
-  {
-    *key = serialObj->read();
-    return 1;
-  }
-  else
-  {
-    return 0;
-  }
+if(serialObj->available())
+{
+   *key = serialObj->read();
+   return 1;
+}
+else
+{
+   return 0;
+}
 }
 
 /**
@@ -91,11 +91,11 @@ static uint32_t Serial_KeyPressed(Stream *serialObj, uint8_t *key)
  */
 static void Serial_PrintCharArray(Stream *serialObj, uint8_t *s)
 {
-  while (*s != '\0')
-  {
-    serialObj->write(*s);
-    s++;
-  }
+while (*s != '\0')
+{
+   serialObj->write(*s);
+   s++;
+}
 }
 
 /**
@@ -107,14 +107,14 @@ static void Serial_PrintCharArray(Stream *serialObj, uint8_t *s)
  */
 static int32_t Receive_Byte(Stream *serialObj, uint8_t *c, uint32_t timeout)
 {
-  while (timeout-- > 0)
-  {
-    if (Serial_KeyPressed(serialObj, c) == 1)
-    {
+while (timeout-- > 0)
+{
+   if (Serial_KeyPressed(serialObj, c) == 1)
+   {
       return 0;
-    }
-  }
-  return -1;
+   }
+}
+return -1;
 }
 
 /**
@@ -124,8 +124,8 @@ static int32_t Receive_Byte(Stream *serialObj, uint8_t *c, uint32_t timeout)
  */
 static uint32_t Send_Byte(Stream *serialObj, uint8_t c)
 {
-  serialObj->write(c);
-  return 0;
+serialObj->write(c);
+return 0;
 }
 
 /**
@@ -142,83 +142,83 @@ static uint32_t Send_Byte(Stream *serialObj, uint8_t c)
  */
 static int32_t Receive_Packet(Stream *serialObj, uint8_t *data, int32_t *length, uint32_t timeout)
 {
-  uint16_t i, packet_size;
-  uint8_t c;
-  *length = 0;
-  if (Receive_Byte(serialObj, &c, timeout) != 0)
-  {
-    return -1;
-  }
-  Serial1.write(c);
-  //bool isSoh = false;
-  switch (c)
-  {
-    case SOH:
+uint16_t i, packet_size;
+uint8_t c;
+*length = 0;
+if (Receive_Byte(serialObj, &c, timeout) != 0)
+{
+   return -1;
+}
+Serial1.write(c);
+//bool isSoh = false;
+switch (c)
+{
+   case SOH:
       packet_size = PACKET_SIZE;
       //isSoh = true;
       //Serial1.println("SOH - 128 size");
       break;
-    case STX:
+   case STX:
       packet_size = PACKET_1K_SIZE;
       //Serial1.println("STX - 1024 size");
       break;
-    case EOT:
+   case EOT:
       //Serial1.println("EOT");
       return 0;
-    case CA:
+   case CA:
       //Serial1.print("CA - ");
       if ((Receive_Byte(serialObj, &c, timeout) == 0) && (c == CA))
       {
-        Serial1.write(c);
-        *length = -1;
-        return 0;
+      Serial1.write(c);
+      *length = -1;
+      return 0;
       }
       else
       {
-        //Serial1.println("Bad second byte.");
-        return -1;
-      }
-    case ABORT1:
-    case ABORT2:
-      return 1;
-    default:
-    	//Serial1.println("Default");
+      //Serial1.println("Bad second byte.");
       return -1;
-  }
-  *data = c;
-  //int line = 0;
-  for (i = 1; i < (packet_size + PACKET_OVERHEAD); i ++)
-  {
-    if (Receive_Byte(serialObj, data + i, timeout) != 0)
-    {
+      }
+   case ABORT1:
+   case ABORT2:
+      return 1;
+   default:
+      //Serial1.println("Default");
+      return -1;
+}
+*data = c;
+//int line = 0;
+for (i = 1; i < (packet_size + PACKET_OVERHEAD); i ++)
+{
+   if (Receive_Byte(serialObj, data + i, timeout) != 0)
+   {
       //Serial1.println("Badness!");
       return -1;
-    }
-    Serial1.write(data[i]);
-    /*if (isSoh) {
-	    if (data[i]<0x10) {
-	    	Serial1.print("0");
-	    }
-	    Serial1.print(data[i], HEX);
-	    line++;
-	    if (line < 11) {
-	    	Serial1.print(" ");
-	  	} else {
-	  		line = 0;
-	  		Serial1.println("");
-	  	}
-  	}*/
-  }
-  /*if (isSoh) {
-  	Serial1.println("---");
-	}*/
-  if (data[PACKET_SEQNO_INDEX] != ((data[PACKET_SEQNO_COMP_INDEX] ^ 0xff) & 0xff))
-  {
-    //Serial1.println("Badness 2!");
-    return -1;
-  }
-  *length = packet_size;
-  return 0;
+   }
+   Serial1.write(data[i]);
+   /*if (isSoh) {
+      if (data[i]<0x10) {
+         Serial1.print("0");
+      }
+      Serial1.print(data[i], HEX);
+      line++;
+      if (line < 11) {
+         Serial1.print(" ");
+      } else {
+         line = 0;
+         Serial1.println("");
+      }
+   }*/
+}
+/*if (isSoh) {
+   Serial1.println("---");
+   }*/
+if (data[PACKET_SEQNO_INDEX] != ((data[PACKET_SEQNO_COMP_INDEX] ^ 0xff) & 0xff))
+{
+   //Serial1.println("Badness 2!");
+   return -1;
+}
+*length = packet_size;
+return 0;
 }
 
 /**
@@ -228,120 +228,120 @@ static int32_t Receive_Packet(Stream *serialObj, uint8_t *data, int32_t *length,
  */
 static int32_t Ymodem_Receive(Stream *serialObj, uint32_t sFlashAddress, uint8_t *buf, uint8_t* fileName)
 {
-  uint8_t packet_data[PACKET_1K_SIZE + PACKET_OVERHEAD], file_size[FILE_SIZE_LENGTH], *file_ptr, *buf_ptr;
-  int32_t i, packet_length, session_done, file_done, packets_received, errors, session_begin;
-  uint32_t size = 0;
-  uint16_t current_index = 0, saved_index = 0;
+uint8_t packet_data[PACKET_1K_SIZE + PACKET_OVERHEAD], file_size[FILE_SIZE_LENGTH], *file_ptr, *buf_ptr;
+int32_t i, packet_length, session_done, file_done, packets_received, errors, session_begin;
+uint32_t size = 0;
+uint16_t current_index = 0, saved_index = 0;
 
-  for (session_done = 0, errors = 0, session_begin = 0; ;)
-  {
-    for (packets_received = 0, file_done = 0, buf_ptr = buf; ;)
-    {
+for (session_done = 0, errors = 0, session_begin = 0; ;)
+{
+   for (packets_received = 0, file_done = 0, buf_ptr = buf; ;)
+   {
       //Serial1.println("Receive packet");
       switch (Receive_Packet(serialObj, packet_data, &packet_length, NAK_TIMEOUT))
       {
-        case 0:
-          errors = 0;
-          switch (packet_length)
-          {
+      case 0:
+         errors = 0;
+         switch (packet_length)
+         {
             /* Abort by sender */
             case -1:
-              Send_Byte(serialObj, ACK);
-              return 0;
-              /* End of transmission */
+            Send_Byte(serialObj, ACK);
+            return 0;
+            /* End of transmission */
             case 0:
-              Send_Byte(serialObj, ACK);
-              file_done = 1;
-              break;
-              /* Normal packet */
+            Send_Byte(serialObj, ACK);
+            file_done = 1;
+            break;
+            /* Normal packet */
             default:
-              if ((packet_data[PACKET_SEQNO_INDEX] & 0xff) != (packets_received & 0xff))
-              {
-                /*Serial1.print("NAK: ");
-                Serial1.print(packet_data[PACKET_SEQNO_INDEX] & 0xff);
-                Serial1.print(" - ");
-                Serial1.println(packets_received & 0xff);*/
-                Serial1.print("SENT NAK");
-                Send_Byte(serialObj, NAK);
-              }
-              else
-              {
-                if (packets_received == 0)
-                {
+            if ((packet_data[PACKET_SEQNO_INDEX] & 0xff) != (packets_received & 0xff))
+            {
+               /*Serial1.print("NAK: ");
+               Serial1.print(packet_data[PACKET_SEQNO_INDEX] & 0xff);
+               Serial1.print(" - ");
+               Serial1.println(packets_received & 0xff);*/
+               Serial1.print("SENT NAK");
+               Send_Byte(serialObj, NAK);
+            }
+            else
+            {
+               if (packets_received == 0)
+               {
                   /* Filename packet */
                   if (packet_data[PACKET_HEADER] != 0)
                   {
-                    /* Filename packet has valid data */
-                    for (i = 0, file_ptr = packet_data + PACKET_HEADER; (*file_ptr != 0) && (i < FILE_NAME_LENGTH);)
-                    {
-                      fileName[i++] = *file_ptr++;
-                    }
-                    fileName[i++] = '\0';
-                    for (i = 0, file_ptr ++; (*file_ptr != ' ') && (i < FILE_SIZE_LENGTH);)
-                    {
-                      file_size[i++] = *file_ptr++;
-                    }
-                    file_size[i++] = '\0';
-                    size = strtoul((const char *)file_size, NULL, 10);
+                  /* Filename packet has valid data */
+                  for (i = 0, file_ptr = packet_data + PACKET_HEADER; (*file_ptr != 0) && (i < FILE_NAME_LENGTH);)
+                  {
+                     fileName[i++] = *file_ptr++;
+                  }
+                  fileName[i++] = '\0';
+                  for (i = 0, file_ptr ++; (*file_ptr != ' ') && (i < FILE_SIZE_LENGTH);)
+                  {
+                     file_size[i++] = *file_ptr++;
+                  }
+                  file_size[i++] = '\0';
+                  size = strtoul((const char *)file_size, NULL, 10);
 
-                    //Serial1.print("filename: ");
-                    //Serial1.println(&fileName)
-                    //Serial_PrintCharArray(&Serial1, fileName);
+                  //Serial1.print("filename: ");
+                  //Serial1.println(&fileName)
+                  //Serial_PrintCharArray(&Serial1, fileName);
 
-                    /* Test the size of the image to be sent */
-                    /* Image size is greater than max OTA firmware size or max USER size */
-                    bool valid = false;
-                    if (CDAM_Write_To_Flashee()) {
-                    	/*Serial1.print("Addr: ");
-                    	Serial1.print(sFlashAddress);
-                    	Serial1.print(" - ");
-                    	Serial1.println(size);*/
-                      valid = CDAM_FLASH_CheckValidAddressRange(sFlashAddress, size);
-                    } else {
-                      valid = HAL_FLASH_CheckValidAddressRange(sFlashAddress, size);
-                    }
-                    if (valid != true)
-                    {
-                      /* End session */
-                      //Serial1.println("CA1");
-                      Send_Byte(serialObj, CA);
-                      Send_Byte(serialObj, CA);
-                      return -1;
-                    }
+                  /* Test the size of the image to be sent */
+                  /* Image size is greater than max OTA firmware size or max USER size */
+                  bool valid = false;
+                  if (CDAM_Write_To_Flashee()) {
+                     /*Serial1.print("Addr: ");
+                     Serial1.print(sFlashAddress);
+                     Serial1.print(" - ");
+                     Serial1.println(size);*/
+                     valid = CDAM_FLASH_CheckValidAddressRange(sFlashAddress, size);
+                  } else {
+                     valid = HAL_FLASH_CheckValidAddressRange(sFlashAddress, size);
+                  }
+                  if (valid != true)
+                  {
+                     /* End session */
+                     //Serial1.println("CA1");
+                     Send_Byte(serialObj, CA);
+                     Send_Byte(serialObj, CA);
+                     return -1;
+                  }
 
-                    RGB.control(true);
-                    RGB.color(RGB_COLOR_MAGENTA);
-                    SPARK_FLASH_UPDATE = 1;
-                    TimingFlashUpdateTimeout = 0;
-                    if (CDAM_Write_To_Flashee()) {
-                      CDAM_FLASH_Begin(sFlashAddress, size);
-                    } else {
-                      HAL_FLASH_Begin(sFlashAddress, size);
-                    }
+                  RGB.control(true);
+                  RGB.color(RGB_COLOR_MAGENTA);
+                  SPARK_FLASH_UPDATE = 1;
+                  TimingFlashUpdateTimeout = 0;
+                  if (CDAM_Write_To_Flashee()) {
+                     CDAM_FLASH_Begin(sFlashAddress, size);
+                  } else {
+                     HAL_FLASH_Begin(sFlashAddress, size);
+                  }
 
-                    Send_Byte(serialObj, ACK);
-                    Send_Byte(serialObj, CRC16);
+                  Send_Byte(serialObj, ACK);
+                  Send_Byte(serialObj, CRC16);
                   }
                   /* Filename packet is empty, end session */
                   else
                   {
-                    Send_Byte(serialObj, ACK);
-                    file_done = 1;
-                    session_done = 1;
-                    break;
+                  Send_Byte(serialObj, ACK);
+                  file_done = 1;
+                  session_done = 1;
+                  break;
                   }
-                }
-                /* Data packet */
-                else
-                {
+               }
+               /* Data packet */
+               else
+               {
                   memcpy(buf_ptr, packet_data + PACKET_HEADER, packet_length);
                   TimingFlashUpdateTimeout = 0;
                   /*Serial1.print("PL: ");
                   Serial1.println(packet_length);*/
                   if (CDAM_Write_To_Flashee()) {
-                    saved_index = CDAM_FLASH_Update(buf, packet_length);
+                  saved_index = CDAM_FLASH_Update(buf, packet_length);
                   } else {
-                    saved_index = HAL_FLASH_Update(buf, packet_length);
+                  saved_index = HAL_FLASH_Update(buf, packet_length);
                   }
                   /*Serial1.print("indexes: ");
                   Serial1.print(current_index);
@@ -350,54 +350,54 @@ static int32_t Ymodem_Receive(Stream *serialObj, uint32_t sFlashAddress, uint8_t
                   LED_Toggle(LED_RGB);
                   if(saved_index > current_index)
                   {
-                    current_index = saved_index;
-                    Send_Byte(serialObj, ACK);
-                    //Serial1.println("Sent ACK");
+                  current_index = saved_index;
+                  Send_Byte(serialObj, ACK);
+                  //Serial1.println("Sent ACK");
                   }
                   else
                   {
-                    /* End session if Spark_Save_Firmware_Chunk() fails */
-                    //Serial1.println("CA2");
-                    Send_Byte(serialObj, CA);
-                    Send_Byte(serialObj, CA);
-                    return -2;
+                  /* End session if Spark_Save_Firmware_Chunk() fails */
+                  //Serial1.println("CA2");
+                  Send_Byte(serialObj, CA);
+                  Send_Byte(serialObj, CA);
+                  return -2;
                   }
-                }
-                packets_received++;
-                session_begin = 1;
-              }
-          }
-          break;
-        case 1:
-          Send_Byte(serialObj, CA);
-          Send_Byte(serialObj, CA);
-          return -3;
-        default:
-          if (session_begin > 0)
-          {
+               }
+               packets_received++;
+               session_begin = 1;
+            }
+         }
+         break;
+      case 1:
+         Send_Byte(serialObj, CA);
+         Send_Byte(serialObj, CA);
+         return -3;
+      default:
+         if (session_begin > 0)
+         {
             errors++;
             Send_Byte(serialObj, CRC16);
-          }
-          if (errors > MAX_ERRORS)
-          {
+         }
+         if (errors > MAX_ERRORS)
+         {
             Send_Byte(serialObj, CA);
             Send_Byte(serialObj, CA);
             return 0;
-          }          
-          break;
+         }          
+         break;
 
       }
       if (file_done != 0)
       {
-        break;
-      }
-    }
-    if (session_done != 0)
-    {
       break;
-    }
-  }
-  return (int32_t)size;
+      }
+   }
+   if (session_done != 0)
+   {
+      break;
+   }
+}
+return (int32_t)size;
 }
 
 /**
@@ -407,48 +407,48 @@ static int32_t Ymodem_Receive(Stream *serialObj, uint32_t sFlashAddress, uint8_t
  */
 bool Ymodem_Serial_Flash_Update(Stream *serialObj, uint32_t sFlashAddress)
 {
-  int32_t Size = 0;
-  uint8_t fileName[FILE_NAME_LENGTH] = {0};
-  uint8_t buffer[1024] = {0};
+int32_t Size = 0;
+uint8_t fileName[FILE_NAME_LENGTH] = {0};
+uint8_t buffer[1024] = {0};
 
-  serialObj->println("Waiting for the binary file to be sent ... (press 'a' to abort)");
-  Size = Ymodem_Receive(serialObj, sFlashAddress, &buffer[0], fileName);
-  RGB.control(false);;
-  if (Size > 0)
-  {
-    serialObj->println("\r\nDownloaded file successfully!");
-    serialObj->print("Name: ");
-    Serial_PrintCharArray(serialObj, fileName);
-    serialObj->println("");
-    serialObj->print("Size: ");
-    serialObj->print(Size);
-    serialObj->println(" bytes");
+serialObj->println("Waiting for the binary file to be sent ... (press 'a' to abort)");
+Size = Ymodem_Receive(serialObj, sFlashAddress, &buffer[0], fileName);
+RGB.control(false);;
+if (Size > 0)
+{
+   serialObj->println("\r\nDownloaded file successfully!");
+   serialObj->print("Name: ");
+   Serial_PrintCharArray(serialObj, fileName);
+   serialObj->println("");
+   serialObj->print("Size: ");
+   serialObj->print(Size);
+   serialObj->println(" bytes");
 
-    if (CDAM_Write_To_Flashee()) {
+   if (CDAM_Write_To_Flashee()) {
       CDAM_FLASH_End(true);
-    }
-    return true;
-  }
-  else if (Size == -1)
-  {
-    serialObj->println("The file size is higher than the allowed space memory!");
-  }
-  else if (Size == -2)
-  {
-    serialObj->println("Verification failed!");
-  }
-  else if (Size == -3)
-  {
-    serialObj->println("Aborted by user.");
-  }
-  else
-  {
-    serialObj->println("Failed to receive the file!");
-  }
-  if (CDAM_Write_To_Flashee()) {
-    CDAM_FLASH_End(false);
-  }
-  return false;
+   }
+   return true;
+}
+else if (Size == -1)
+{
+   serialObj->println("The file size is higher than the allowed space memory!");
+}
+else if (Size == -2)
+{
+   serialObj->println("Verification failed!");
+}
+else if (Size == -3)
+{
+   serialObj->println("Aborted by user.");
+}
+else
+{
+   serialObj->println("Failed to receive the file!");
+}
+if (CDAM_Write_To_Flashee()) {
+   CDAM_FLASH_End(false);
+}
+return false;
 }
 
 #endif  /* __LIB_YMODEM_H */
