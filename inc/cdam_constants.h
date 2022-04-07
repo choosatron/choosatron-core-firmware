@@ -2,6 +2,8 @@
 #ifndef CDAM_CONSTANTS_H
 #define CDAM_CONSTANTS_H
 
+#define BIZ_CARD true
+
 #include "debug.h"
 #include "spark_wiring.h"
 #include "spark_wiring_usbserial.h"
@@ -24,7 +26,7 @@ namespace cdam
 
 const uint8_t kFirmwareVersionMajor = 1;
 const uint8_t kFirmwareVersionMinor = 0;
-const uint8_t kFirmwareVersionRevision = 2;
+const uint8_t kFirmwareVersionRevision = 4;
 
 typedef enum {
 	PIN_PIEZO = A0,

@@ -172,6 +172,7 @@ void StateController::loopState(GameState aState) {
 #endif
 		if (_hardwareManager->keypad()->buttonHeld(4)) {
 			changeState(STATE_ADMIN);
+			return;
 		}
 		//uint8_t total = _hardwareManager->keypad()->keypadEvent(KEYPAD_MULTI_UP_EVENT, 0);
 		int16_t total = _hardwareManager->keypad()->multiUpValue();
@@ -194,8 +195,13 @@ void StateController::loopState(GameState aState) {
 			//DEBUG("Story Count: %d", _dataManager->metadata.storyCount);
 			if (_dataManager->metadata.flags.random && (_dataManager->metadata.storyCount > 4)) {
 				storyCount = 4;
-			}
-			if (storyCount <= 4) {
+			} else if (storyCount == 1) { // If there is only one story, why print a menu?
+				_hardwareManager->printer()->feed(1);
+				_hardwareManager->printer()->println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+				_parser->initStory(0);
+				changeState(STATE_PLAY);
+				return;
+			} else if (storyCount <= 4) {
 				_hardwareManager->printer()->printStart();
 			}
 			// Buffer for title, max title size + 4 for numbering (ex: "10. Story Title")

@@ -69,6 +69,7 @@ public:
 	void setDefault();
 	void setTimes(uint32_t aPrintTime, uint32_t aFeedTime);
 	void setASB(bool aTurnOn);
+	void setCharSet(uint8_t aIndex);
 	void feed(uint8_t aLines = 1);
 	void feedRows(uint8_t aRows);
 	void flush();

@@ -642,6 +642,13 @@ void Printer::setASB(bool aTurnOn) {
 	writeBytes(29, 97, setting);
 }
 
+// 0:USA, 1:France, 2:Germany, 3:UK, 4:Denmark1
+// 5:Sweden, 6:Italy, 7:Spain1, 8:Japan, 9:Norway
+// 10:Denmark2, 11:Spain2, 12:Latin American, 13:Korea
+void Printer::setCharSet(uint8_t aIndex) {
+	writeBytes(27, 82, aIndex);
+}
+
 // Feed by the specified number of lines.
 void Printer::feed(uint8_t aLines) {
 	if (!Manager::getInstance().dataManager->logPrint) {
