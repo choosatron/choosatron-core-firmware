@@ -388,22 +388,22 @@ uint32_t Parser::parseOperation(uint32_t aOffset, int16_t &aResult) {
 
    switch (op.operationType)
    {
-      case kOpEqualTo:
+      case kOpEqual:
          result = (op.leftOperand == op.rightOperand) ? 1 : 0;
          break;
-      case kOpNotEqualTo:
+      case kOpNotEquals:
          result = (op.leftOperand != op.rightOperand) ? 1 : 0;
          break;
-      case kOpGreaterThan:
+      case kOpGreater:
          result = (op.leftOperand > op.rightOperand) ? 1 : 0;
          break;
-      case kOpLessThan:
+      case kOpLess:
          result = (op.leftOperand < op.rightOperand) ? 1 : 0;
          break;
-      case kOpEqualGreater:
+      case kOpGreaterThanOrEquals:
          result = (op.leftOperand >= op.rightOperand) ? 1 : 0;
          break;
-      case kOpEqualLess:
+      case kOpLessThanOrEquals:
          result = (op.leftOperand <= op.rightOperand) ? 1 : 0;
          break;
       case kOpAND:
@@ -433,16 +433,16 @@ uint32_t Parser::parseOperation(uint32_t aOffset, int16_t &aResult) {
             }
          }
          break;
-      case kOpModulus:
+      case kOpMod:
          result = op.leftOperand % op.rightOperand;
          break;
-      case kOpSet:
+      case kOpAssign:
          result = op.leftOperand = op.rightOperand;
          break;
-      case kOpPlus:
+      case kOpAdd:
          result = op.leftOperand + op.rightOperand;
          break;
-      case kOpMinus:
+      case kOpSubtract:
          result = op.leftOperand - op.rightOperand;
          break;
       case kOpMultiply:
@@ -455,7 +455,7 @@ uint32_t Parser::parseOperation(uint32_t aOffset, int16_t &aResult) {
          // Add 1 to max to make it inclusive.
          result = random(op.leftOperand, op.rightOperand + 1);
          break;
-      case kOpDiceRoll:
+      case kOpDice:
          for (int i = 0; i < op.leftOperand; ++i) {
             result += random(1, op.rightOperand + 1);
          }

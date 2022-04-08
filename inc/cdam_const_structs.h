@@ -256,12 +256,12 @@ const uint8_t kOpTypeRaw = 1;
 const uint8_t kOpTypeVar = 2;
 const uint8_t kOpTypeOperation  = 3;
 
-const uint8_t kOpEqualTo = 1; // Returns 0 or 1
-const uint8_t kOpNotEqualTo = 2; // Returns 0 or 1
-const uint8_t kOpGreaterThan = 3; // Returns 0 or 1
-const uint8_t kOpLessThan = 4; // Returns 0 or 1
-const uint8_t kOpEqualGreater = 5; // Returns 0 or 1
-const uint8_t kOpEqualLess = 6; // Returns 0 or 1
+const uint8_t kOpEqual = 1; // Returns 0 or 1
+const uint8_t kOpNotEquals = 2; // Returns 0 or 1
+const uint8_t kOpGreater = 3; // Returns 0 or 1
+const uint8_t kOpLess = 4; // Returns 0 or 1
+const uint8_t kOpGreaterThanOrEquals = 5; // Returns 0 or 1
+const uint8_t kOpLessThanOrEquals = 6; // Returns 0 or 1
 const uint8_t kOpAND = 7; // Returns 0 or 1
 const uint8_t kOpOR = 8; // Returns 0 or 1
 const uint8_t kOpXOR = 9; // Returns 0 or 1
@@ -269,15 +269,20 @@ const uint8_t kOpNAND = 10; // Returns 0 or 1
 const uint8_t kOpNOR = 11; // Returns 0 or 1
 const uint8_t kOpXNOR = 12; // Returns 0 or 1
 const uint8_t kOpChoiceVisible = 13; // Returns 0 or 1
-const uint8_t kOpModulus = 14; // Returns int16_t - remainder of division
-const uint8_t kOpSet = 15; // Returns int16_t - value of the right operand
-const uint8_t kOpPlus = 16; // Returns int16_t
-const uint8_t kOpMinus = 17; // Returns int16_t
+const uint8_t kOpMod = 14; // Returns int16_t - remainder of division
+const uint8_t kOpAssign = 15; // Returns int16_t - value of the right operand
+const uint8_t kOpAdd = 16; // Returns int16_t
+const uint8_t kOpSubtract = 17; // Returns int16_t
 const uint8_t kOpMultiply = 18; // Returns int16_t
 const uint8_t kOpDivide = 19; // Returns int16_t - non float, whole number
 const uint8_t kOpRandom = 20; // Returns int16_t - takes min & max (inclusive)
-const uint8_t kOpDiceRoll = 21; // Returns int16_t - take # of dice & # of sides per die
+const uint8_t kOpDice = 21; // Returns int16_t - take # of dice & # of sides per die
 const uint8_t kOpIfStatement = 22; // Returns 0 if false, result of right operand if true
+// TODO: New logic commands to support for Ink - 2022.04.08
+const uint8_t kOpNegate = 23; // Returns int16_t - positive val becomes negative, negative val becomes positive
+const uint8_t kOpNot = 24; // Returns 0 or 1 - if val not 0, returns 0, if val is 0, returns 1
+const uint8_t kOpMin = 25; // Returns int16_t - the smaller of the two numbers
+const uint8_t kOpMax = 26; // Returns int16_t - the larger of the two numbers
 
 typedef struct Operation_t {
    union {
