@@ -1,4 +1,5 @@
 build/
+binaries/
 *.pyc
 
 # OS generated files
