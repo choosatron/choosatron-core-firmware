@@ -254,7 +254,20 @@ typedef struct StoryHeader_t { // Total Size: 394 bytes
 
 const uint8_t kOpTypeRaw = 1;
 const uint8_t kOpTypeVar = 2;
-const uint8_t kOpTypeOperation  = 3;
+const uint8_t kOpTypeOperation = 3;
+const uint8_t kOpTypeChoiceCount = 4;
+const uint8_t kOpTypeTurns = 5;
+const uint8_t kOpTypePsgVisits = 6; // -- Returns the number of visits to the current passage (NOT IMPLEMENTED)
+
+static const char* const kDataTypeStr[] = {
+   "",
+   "RAW",
+   "VAR",
+   "OP",
+   "CC",
+   "TURNS",
+   "PSG_V"
+};
 
 const uint8_t kOpEqual = 1; // Returns 0 or 1
 const uint8_t kOpNotEquals = 2; // Returns 0 or 1
@@ -277,12 +290,99 @@ const uint8_t kOpMultiply = 18; // Returns int16_t
 const uint8_t kOpDivide = 19; // Returns int16_t - non float, whole number
 const uint8_t kOpRandom = 20; // Returns int16_t - takes min & max (inclusive)
 const uint8_t kOpDice = 21; // Returns int16_t - take # of dice & # of sides per die
-const uint8_t kOpIfStatement = 22; // Returns 0 if false, result of right operand if true
-// TODO: New logic commands to support for Ink - 2022.04.08
-const uint8_t kOpNegate = 23; // Returns int16_t - positive val becomes negative, negative val becomes positive
-const uint8_t kOpNot = 24; // Returns 0 or 1 - if val not 0, returns 0, if val is 0, returns 1
-const uint8_t kOpMin = 25; // Returns int16_t - the smaller of the two numbers
-const uint8_t kOpMax = 26; // Returns int16_t - the larger of the two numbers
+const uint8_t kOpIfStatement = 22; // If true, returns the result of right operand
+const uint8_t kOpElseStatement = 23;
+const uint8_t kOpNegate = 24; // Returns int16_t - positive val becomes negative, negative val becomes positive
+const uint8_t kOpNot = 25; // Returns 0 or 1 - if val greater than 0, returns 0, if val is 0 or less, returns 1
+const uint8_t kOpMin = 26; // Returns int16_t - the smaller of the two numbers
+const uint8_t kOpMax = 27; // Returns int16_t - the larger of the two numbers
+const uint8_t kOpPow = 28; // Returns int16_t - val a to the power of val b
+const uint8_t kOpChoiceCount = 29; // Returns int16_t - total choices already visible
+const uint8_t kOpTurns = 30; // Returns int16_t - the number of game turns since the game began
+
+static const char* const kOpStr[] = {
+   "",
+   "==",
+   "!=",
+   ">",
+   "<",
+   ">=",
+   "<=",
+   "AND",
+   "OR",
+   "XOR",
+   "NAND",
+   "NOR",
+   "XNOR",
+   "ChoiceVisible",
+   "%",
+   "=",
+   "+",
+   "-",
+   "*",
+   "/",
+   "Rand",
+   "DiceRoll",
+   "If",
+   "Else",
+   "Negate",
+   "!",
+   "Min",
+   "Max",
+   "Pow",
+};
+
+// Variable Text Logic
+const uint8_t kLogicCmd = 1;        //
+const uint8_t kLogicOpen = 2;       //
+const uint8_t kLogicClose = 3;      //
+const uint8_t kLogicVar = 4;        // Variable
+const uint8_t kLogicVarPsg = 5;     // Passage Count
+const uint8_t kLogicVarCond = 6;    // Variable Condition
+const uint8_t kLogicSequence = 7;   //
+const uint8_t kLogicSeqOnce = 8;    //
+const uint8_t kLogicSeqCycle = 9;   //
+const uint8_t kLogicSeqDelim = 10;  //
+const uint8_t kLogicShuffle = 11;   //
+
+// -- Based on Ink variable text.
+// -- https://github.com/inkle/ink/blob/master/Documentation/WritingWithInk.md#6-variable-text
+// local kLogicStr <const> = {
+//    -- '{.-}', -- Logic command match string.
+//    '{%s*(.-)%s*}', -- Match everything inside command curly brackets.
+//    '{%s*', -- Match left logic open curly + spaces.
+//    '%s*}', -- Match right logic closing curly + spaces.
+//    '[', -- Variable access. [idx] = var value
+//    '<', -- Passage visit variable access. <psg idx> = psg visit count
+//    ':', -- If after a variable, becomes a condition with optional '|' as an OR, IF VAR THEN A OR B
+//    '=', -- Sequence through content, end on final element.
+//    '!', -- Sequence through content, then blank.
+//    '&', -- Cycle and loop sequence content.
+//    '^', -- Fall through values. Continue using first element content until a next element has content, etc.
+//    '|', -- Delimiter for condition or sequences.
+//    '~', -- Shuffle, randomly select from the set.
+// }
+
+// -- local kLogicMatch <const> = "{.-}" -- Logic command match string.
+// local kLogicMatch <const> = '{%s*(.*)%s*}'--'{%s*(.-)%s*}' -- Match everything inside command curly brackets.
+// local kLogicOpen <const> = '{' -- Match left logic open curly + spaces.
+// local kLogicClose <const> = '}' -- Match right logic closing curly + spaces.
+// local kLogicVarOpen <const> = '[' -- Variable access. [idx] = var value
+// local kLogicVarMatch <const> = '%[%s*(%d-)%s*%]'
+// local kLogicVarClose <const> = ']'
+// local kLogicVarPsgOpen <const> = '<' -- Passage visit variable access. <psg idx> = psg visit count
+// local kLogicVarPsgMatch <const> = '<%s*(%d-)%s*>'
+// local kLogicVarPsgClose <const> = '>'
+// local kLogicCondition <const> = ':' -- If after a variable, becomes a condition with optional '|' as an OR, IF VAR THEN A OR B
+// local kLogicSeq <const> = '=' -- Sequence through content, end on final element.
+// local kLogicSeqOnce <const> = '!' -- Sequence through content, then blank.
+// local kLogicSeqCycle <const> = '&' -- Cycle / loop sequence content.
+// local kLogicSeqFall <const> = '^' -- First element used until another element with content, then that is used until another with content, etc.
+// local kLogicSeqDelim <const> = '|' -- Delimiter for condition or sequences.
+// local kLogicShuffle <const> = '~' -- Shuffle, randomly select from the set.
+
+
+
 
 typedef struct Operation_t {
    union {
@@ -301,8 +401,9 @@ typedef struct Passage_t {
    union {
       uint8_t attribute;
       struct {
-         uint8_t rsvd   :7;
-         uint8_t append :1;
+         uint8_t rsvd      :6;
+         uint8_t cont      :1;
+         uint8_t append    :1;
       };
    };
 } Passage;
@@ -311,8 +412,12 @@ typedef struct Choice_t {
    union {
       uint8_t attribute;
       struct {
-         uint8_t rsvd   :7;
-         uint8_t append :1;
+         uint8_t hasConditions         :1;
+         uint8_t hasStartContent       :1;
+         uint8_t hasChoiceOnlyContent  :1;
+         uint8_t isInvisibleDefault    :1;
+         uint8_t onceOnly              :1;
+         uint8_t rvsvd                 :3;
       };
    };
    int16_t visible;

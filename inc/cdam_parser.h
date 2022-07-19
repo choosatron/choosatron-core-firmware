@@ -38,7 +38,7 @@ private:
    void cleanupAfterPassage();
    uint32_t parseData(uint32_t aOffset, char* aBuffer, uint16_t aLength);
    uint32_t parseCommand(uint32_t aOffset, char* aBuffer, uint16_t aLength);
-   uint32_t parseOperation(uint32_t aOffset, int16_t &aResult);
+   uint32_t parseOperation(uint32_t aOffset, int16_t &aResult, bool aSetVars, bool &aAssigned);
    uint32_t parseValueUpdates(uint32_t aOffset);
    uint32_t parseConditions(uint32_t aOffset, int16_t &aResult);
 

@@ -509,6 +509,7 @@ void DataManager::unloadStory() {
    this->randomPlay = false;
    this->currentStory = -1;
    this->points = 0;
+   this->turns = 0;
    this->psgCount = 0;
    this->tocOffset = 0;
    this->startOffset = 0;

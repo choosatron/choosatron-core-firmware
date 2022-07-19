@@ -33,12 +33,12 @@ make PRODUCT_ID=7 PRODUCT_FIRMWARE_VERSION=1 APP=choosatron DEBUG_BUILD=y TARGET
 make DEBUG_BUILD=y
 make clean all SPARK_PRODUCT_ID=7 PRODUCT_FIRMWARE_VERSION=1 DEBUG_BUILD=y
 
-make PRODUCT_ID=7 PRODUCT_FIRMWARE_VERSION=101 APP=choosatron-core DEBUG_BUILD=y TARGET_DIR=applications/choosatron-core/build v=1
+make PRODUCT_ID=7 PRODUCT_FIRMWARE_VERSION=107 APP=choosatron-core DEBUG_BUILD=y TARGET_DIR=applications/choosatron-core/build v=1
 
-make PRODUCT_ID=7 PRODUCT_FIRMWARE_VERSION=101 APP=choosatron-core-firmware TARGET_DIR=applications/choosatron-core-firmware/build debug_build=y v=1 program-dfu
+make PRODUCT_ID=7 PRODUCT_FIRMWARE_VERSION=107 APP=choosatron-core-firmware TARGET_DIR=applications/choosatron-core-firmware/build debug_build=y v=1 program-dfu
 
 
-make PRODUCT_ID=7 PRODUCT_FIRMWARE_VERSION=101 APPDIR=../user/applications/choosatron-core-firmware TARGET_DIR=../user/applications/choosatron-core-firmware/build DEBUG_BUILD=y v=1
+make PRODUCT_ID=7 PRODUCT_FIRMWARE_VERSION=107 APPDIR=../user/applications/choosatron-core-firmware TARGET_DIR=../user/applications/choosatron-core-firmware/build DEBUG_BUILD=y v=1
 
 curl https://api.spark.io/v1/devices/48ff70065067555020101587/dfu -d access_token=3cbce66f21cd4e0ede781cbe95d558464515ef3c -m 2
 

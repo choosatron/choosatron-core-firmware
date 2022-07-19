@@ -1,4 +1,13 @@
+## 1.0.7
 
+Features:
+
+  - A bunch missed between this and 1.0.0!
+  - Logic features enhanced, support for custom Inky editor Choosatron story export.
+
+Bugfixed:
+
+  - The logic system worked for basic things previously, but now that I'm able to properly test, there were a lot of issues. They have been resolved.
 
 ## 1.0.0
 
@@ -6,7 +15,7 @@ Features:
 
   - Updated text for initial release.
 
-## 2.0.0a5 (unreleased)
+## 0.2.5 (unreleased)
 
 Features:
 
@@ -20,21 +29,21 @@ Features:
   - Increase 'Press any...' message delay from 30 secs to 40 (after a game ends)
   - Added feature to allow changing the keypad setup depending on PCB version.
 
-## 2.0.0a4 (unreleased)
+## 0.2.4 (unreleased)
 
 Features:
 
   - Added CHANGELOG.md
   - Unified Choosatron and original printer library to reduce space & update design.
 
-## 2.0.0a3 (unreleased)
+## 0.2.3 (unreleased)
 
 Bugfixes:
 
   - Fixed IF operation, was accepting 0 as true (now > 0 instead of >= 0).
   - Fixed edge case bugs for word wrap, including append scenario.
 
-## 2.0.0a2 (unreleased)
+## 0.2.2 (unreleased)
 
 Features:
 
@@ -45,7 +54,7 @@ Bugfixes:
 
   - Fixed spelling errors.
 
-## 2.0.0a1 (unreleased)
+## 0.2.1 (unreleased)
 
 Features:
 
@@ -55,7 +64,7 @@ Bugfixes:
 
   - WiFi loop bugs.
 
-## 2.0.0 (unreleased)
+## 0.2.0 (unreleased)
 
 Features:
 

@@ -2,7 +2,7 @@
  ******************************************************************************
  * @file    cdam_manager.h
  * @author  Jerry Belich
- * @version V1.0.0
+ * @version V1.0.7
  * @date    30-March-2014
  * @brief   Header for cdam_manager.cpp module
  ******************************************************************************

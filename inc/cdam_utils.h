@@ -15,6 +15,7 @@ public:
    //static const int kModTable[3];
 
    static void shuffle(uint8_t *aArray, uint8_t aElements);
+   static int16_t pow(int16_t aBase, int16_t aExponent);
    //static void shuffle(void *aArray, size_t aElements, size_t aArraySize);
    //static void uuidToString(const Uuid *uuid, char *str, size_t strsz);
    //static void base64Encode(char *aData, size_t aInputLength, char *aEncodedData);

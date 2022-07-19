@@ -2,12 +2,12 @@
 
 From ./main (makes ./main/applications/choosatron-core-firmware)
 
-make v=1 PRODUCT_ID=7 PRODUCT_FIRMWARE_VERSION=104 APP=choosatron TARGET_FILE=cdam-core-firmware GCC_ARM_PATH=/Users/jerry/Code/Particle/gcc-arm-none-eabi-4_8-2013q4/bin/ clean all
+make v=1 PRODUCT_ID=7 PRODUCT_FIRMWARE_VERSION=107 APP=choosatron TARGET_FILE=cdam-core-firmware GCC_ARM_PATH=/Users/jerry/Code/Particle/gcc-arm-none-eabi-4_8-2013q4/bin/ clean all
 
-make PRODUCT_ID=7 PRODUCT_FIRMWARE_VERSION=104 APP=choosatron-core-firmware TARGET_DIR=applications/choosatron-core-firmware/build GCC_ARM_PATH=/Users/jerry/Code/Particle/gcc-arm-none-eabi-4_8-2013q4/bin/ DEBUG_BUILD=y v=1 program-dfu
+make PRODUCT_ID=7 PRODUCT_FIRMWARE_VERSION=107 APP=choosatron-core-firmware TARGET_DIR=applications/choosatron-core-firmware/build GCC_ARM_PATH=/Users/jerry/Code/Particle/gcc-arm-none-eabi-4_8-2013q4/bin/ DEBUG_BUILD=y v=1 program-dfu
 
 IF YOU WANT BUSINESS CARDS
-make PRODUCT_ID=7 PRODUCT_FIRMWARE_VERSION=104 APP=choosatron-core-firmware TARGET_DIR=applications/choosatron-core-firmware/build GCC_ARM_PATH=/Users/jerry/Code/Particle/gcc-arm-none-eabi-4_8-2013q4/bin/ BIZ_CARD=y v=1 program-dfu
+make PRODUCT_ID=7 PRODUCT_FIRMWARE_VERSION=107 APP=choosatron-core-firmware TARGET_DIR=applications/choosatron-core-firmware/build GCC_ARM_PATH=/Users/jerry/Code/Particle/gcc-arm-none-eabi-4_8-2013q4/bin/ BIZ_CARD=y v=1 program-dfu
 
 dfu-util -d 1d50:607f -a 0 -s 0x08005000:leave -D firmware.bin
 

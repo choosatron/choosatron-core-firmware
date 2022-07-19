@@ -23,6 +23,20 @@ typedef enum GameState_t {
    STATE_ADMIN
 } GameState;
 
+static const char* const kStateStr[] = {
+   "NONE",
+   "BOOTING",
+   "INIT",
+   "CREDITS",
+   "WAITING",
+   "READY",
+   "IDLE",
+   "SELECT",
+   "PLAY",
+   "CONTINUE",
+   "ADMIN"
+};
+
 class DataManager;
 class HardwareManager;
 class ServerManager;

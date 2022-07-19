@@ -2,7 +2,7 @@
  ******************************************************************************
 * @file    cdam_data_manager.h
 * @author  Jerry Belich
-* @version V1.0.0
+* @version V1.0.7
 * @date    30-March-2014
 * @brief   Header for cdam_data_manager.cpp module
 ******************************************************************************
@@ -130,6 +130,8 @@ class DataManager
       int8_t currentStory;
       // The number of points accumulated in the current story.
       int16_t points;
+      // The number of turns taken this story.
+      uint16_t turns;
       // Passage count for current story.
       uint16_t psgCount;
       // Story passage table of contents memory offset.

@@ -52,7 +52,7 @@ void StateController::updateState() {
 /* Private Methods */
 
 void StateController::initState(GameState aState) {
-   LOG("Init State: %d", _state);
+   LOG("Init State: %s", kStateStr[_state]);
 
    if (aState == STATE_BOOTING) {
       Manager::getInstance().initialize(this);
@@ -300,7 +300,7 @@ void StateController::loopState(GameState aState) {
 
 
 void StateController::endState(GameState aState) {
-   LOG("End State: %d", _state);
+   LOG("End State: %s", kStateStr[_state]);
 
    if (aState == STATE_BOOTING) {
       _dataManager->logMetadata();

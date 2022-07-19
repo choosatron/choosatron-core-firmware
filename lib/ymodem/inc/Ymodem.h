@@ -2,7 +2,7 @@
  ******************************************************************************
 * @file    Ymodem.h
 * @author  Satish Nair
-* @version V1.0.0
+* @version V1.0.7
 * @date    28-July-2014
 * @brief   Serial port using YMODEM protocol for flashing user firmware.
 *          Use a Terminal program(eg. TeraTerm) that supports ymodem protocol

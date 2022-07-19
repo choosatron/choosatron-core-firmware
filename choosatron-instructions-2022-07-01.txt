@@ -1,0 +1,28 @@
+1. Install Homebrew (scroll to the bottom for instructions): http://brew.sh/ (http://brew.sh/)
+
+2. Install DFU-Util with this command: brew install dfu-util
+
+3. Downloaded and unzip the ﬁrmware and story ﬂash ﬁles: https://www.dropbox.com/s/pab8k37ty4u9o4n/choosatron-v104-firmflash.zip?dl=0
+
+4. Plug a USB cable from your computer, to the micro-USB connection on the Spark Core. Be gentle!
+
+5. Enter DFU mode by holding down both buttons and release the Reset button (the one on the left if the USB socket is facing you). Wait until the LED flashes yellow.
+
+6. Run the following command to ﬂash the ﬁrmware:
+	dfu-util -d 1d50:607f -a 0 -s 0x08005000:leave -D choosatron-core-v104.bin
+
+7. It should take about a minute or less. If it takes you out of DFU mode, get back into DFU mode for the next step (see step 5).
+
+8. In DFU mode once again, run the following command to ﬂash a set of 9 stories to play. These stories are on the internal memory. Additional stories will require a micro-SD card. (WARNING: This one takes 3-5 minutes, be patient.)
+	dfu-util -d 1d50:607f -a 1 -s 0x80000 -v -D choosatron-ﬂash-09-kids.bin
+
+9. Wait until it ﬁnishes. You may remove power (unplug from USB), or hit the reset button on the Spark Core.
+
+10. Plus the Spark Core into the Choosatron board (the USB should be facing out).
+
+11. Download this PDF for how to assemble your Choosatron: https://www.dropbox.com/s/uxxpiq30kolc3or/choosatron_assembly.pdf?dl=0
+
+12. For additional stories get a micro-sd card (the smallest and cheapest you’ve got!). Below are links to two sets of stories. A set that are kid friendly, and a set of stories that all include some kind of adult theme. I sorted them to the best of my ability but make your own judgements! For stories to be available, they must be at the root of the SD card. By default (I think) the Choosatron main menu will pick 4 randomly to pick from. There is an admin menu to alter this behavior. When you power up, hold down ‘4’ when it asks you to press any button. I wouldn’t mess with the wifi / online option.
+
+Kid Story Set: https://www.dropbox.com/s/226pbhytj69j5bt/choosatron-kid_friendly.zip?dl=0
+Mature Story Set: https://www.dropbox.com/s/9x1tfzyf63hm05l/choosatron-mature.zip?dl=0

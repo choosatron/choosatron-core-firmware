@@ -1,5 +1,6 @@
 #include "cdam_parser.h"
 #include "cdam_manager.h"
+// #include <regex>
 
 namespace cdam
 {
@@ -10,6 +11,10 @@ void Parser::initialize() {
    _dataManager = Manager::getInstance().dataManager;
    _hardwareManager = Manager::getInstance().hardwareManager;
    _state = PARSE_IDLE;
+
+   // if (std::regex_match ("subject", std::regex("(sub)(.*)") )) {
+
+   // }
 }
 
 bool Parser::initStory(uint8_t aStoryIndex) {
@@ -45,10 +50,10 @@ ParseState Parser::parsePassage() {
          if (_parsingChoices) {
             // Choice - 1 for index, get actual index from _choiceLinks which
             // compensates for potentially invisible choices.
-            //DEBUG("Choice selected: %d, link index: %d", _choiceSelected, _choiceLinks[_choiceSelected - 1]);
+            DEBUG("Choice selected: %d, link index: %d", _choiceSelected, _choiceLinks[_choiceSelected - 1]);
             Choice choice = _choices[_choiceLinks[_choiceSelected - 1]];
             _offset = _dataManager->startOffset + _dataManager->getPassageOffset(choice.passageIndex);
-            //DEBUG("Jumping to passage %d at offset: %lu", choice.passageIndex, _offset);
+            DEBUG("Jumping to passage %d at offset: %lu", choice.passageIndex, _offset);
             cleanupAfterPassage();
          } else {
             // Finished value updates, move on to passage body data.
@@ -105,7 +110,7 @@ ParseState Parser::parsePassage() {
          _lastIndent = _hardwareManager->printer()->wrapText(_buffer, kPrinterColumns, _lastIndent);
          // Print the text up to the command.
          _hardwareManager->printer()->print(_buffer);
-         DEBUG("%s", _buffer);
+         DEBUG("Buffer: %s", _buffer);
          _offset += processedBytes;
          _dataLength -= processedBytes;
       }
@@ -115,7 +120,7 @@ ParseState Parser::parsePassage() {
          _buffer = NULL;
          if (_parsingChoices) { // Passage Index is next.
             if (_dataManager->readData(&_choices[_choiceIndex].passageIndex, _offset, kPassageIndexSize)) {
-               //DEBUG("Passage Index: %d", _choices[_choiceIndex].passageIndex);
+               DEBUG("Passage Index: %d", _choices[_choiceIndex].passageIndex);
                _offset += kPassageIndexSize;
                _state = PARSE_CHOICE;
                // Don't parse updates yet, we need user input first.
@@ -162,10 +167,10 @@ ParseState Parser::parsePassage() {
          }
       } else {
          if (_passage->append) {
-            //DEBUG("Append to next passage!");
+            DEBUG("Append to next passage!");
             _appended = true;
             _offset = _dataManager->startOffset + _dataManager->getPassageOffset(_choices[0].passageIndex);
-            //DEBUG("Jumping to passage %d at offset: %lu", _choices[0].passageIndex, _offset);
+            DEBUG("Jumping to passage %d at offset: %lu", _choices[0].passageIndex, _offset);
             cleanupAfterPassage();
             _state = PARSE_UPDATES;
          } else {
@@ -176,10 +181,35 @@ ParseState Parser::parsePassage() {
       uint32_t processedBytes = 0;
       if ((processedBytes = parseConditions(_offset, _choices[_choiceIndex].visible))) {
          _offset += processedBytes;
-         //DEBUG("Choice #%d %s visible.", (_choiceIndex + 1), (_choices[_choiceIndex].visible ? "is" : "not"));
-         // Track variable update memory offset in case this choice is picked.
 
+         // Track variable update memory offset in case this choice is picked.
          uint16_t updatesLength = 0;
+   
+         // Is this choice an invisible default choice.
+         if (_choices[_choiceIndex].isInvisibleDefault) {
+            // Check that this is the last choice.
+            if (_choiceIndex == (_choiceCount - 1)) {
+               if (_visibleCount == 0) {
+                  // Forward to the passage index.
+                  _offset += 5;
+                  if (_dataManager->readData(&_choices[_choiceIndex].passageIndex, _offset, kPassageIndexSize)) {
+                     DEBUG("Append to next passage!");
+                     _offset = _dataManager->startOffset + _dataManager->getPassageOffset(_choices[_choiceIndex].passageIndex);
+                     DEBUG("Jumping to passage %d at offset: %lu", _choices[_choiceIndex].passageIndex, _offset);
+
+                     cleanupAfterPassage();
+                     _state = PARSE_UPDATES;
+                     return _state;
+                  } else {
+                     _state = PARSE_ERROR;
+                     return _state;
+                  }
+               }
+            }
+         }
+
+         DEBUG("Choice #%d %s visible.", (_choiceIndex + 1), (_choices[_choiceIndex].visible ? "is" : "not"));
+
          // Read two bytes of update length.
          _dataManager->readData(&updatesLength, _offset, kDataLengthSize);
          _offset += kDataLengthSize;
@@ -222,6 +252,7 @@ ParseState Parser::parsePassage() {
          _lastIndent = 0;
          // Choice has been selected.
          _offset = _choices[_choiceLinks[_choiceSelected - 1]].updatesOffset;
+         _dataManager->turns++;
          _state = PARSE_UPDATES;
       }
    } else if (_state == PARSE_ENDING) {
@@ -318,19 +349,22 @@ uint32_t Parser::parseValueUpdates(uint32_t aOffset) {
 
    int16_t address = 0;
    int16_t result = 0;
+   bool assigned = false;
    for (int i = 0; i < count; ++i) {
       // Jump ahead slightly to get the address of the left operand. This is base of
       // a potentially recursive set of operations, and the only variable to be set.
       _dataManager->readData(&address, offset + kOperationInfoSize, kOperationOperandSize);
       // Get the result of all the operations in result. Add the # of bytes read to the offset.
-      offset += parseOperation(offset, result);
-      //DEBUG("Address: %d, Result: %d", address, result);
+      offset += parseOperation(offset, result, true, assigned);
+      assigned = false;
+      // NEW BEHAVIOR: Result should simply indicate true / false.
+      // DEBUG("Address: %d, Result: %d", address, result);
       // Set the variable to the result.
-      //DEBUG("PreVal: %d", _dataManager->varAtIndex(address));
-      if (!_dataManager->setVarAtIndex(address, result)) {
-         return 0;
-      }
-      //DEBUG("PostVal: %d", _dataManager->varAtIndex(address));
+      // DEBUG("PreVal: %d", _dataManager->varAtIndex(address));
+      // if (!_dataManager->setVarAtIndex(address, result)) {
+      //    return 0;
+      // }
+      // DEBUG("PostVal: %d", _dataManager->varAtIndex(address));
    }
 
    return offset - aOffset;
@@ -343,46 +377,79 @@ uint32_t Parser::parseConditions(uint32_t aOffset, int16_t &aResult) {
    offset += kOperationCountSize;
 
    aResult = 1;
-   int16_t result = 1;
+   int16_t result = 0;
+   bool assigned = false;
    for (int i = 0; i < count; ++i) {
-      offset += parseOperation(offset, result);
-      //DEBUG("Final Result: %d, Result: %d", aResult, result);
-      aResult = (aResult ? result : 0);
+      offset += parseOperation(offset, result, false, assigned);
+      // DEBUG("Final Result: %d, Result: %d", aResult, result);
+      aResult = (aResult && result ? 1 : 0);
    }
 
    return offset - aOffset;
 }
 
-uint32_t Parser::parseOperation(uint32_t aOffset, int16_t &aResult) {
+uint32_t Parser::parseOperation(uint32_t aOffset, int16_t &aResult, bool aSetVars, bool &aAssigned) {
    int16_t result = 0;
    uint32_t offset = aOffset;
+   int16_t leftIdx = -1;
 
    Operation op;
    _dataManager->readData(&op, offset, kOperationInfoSize);
-   //DEBUG("lType: %d, rType: %d, op: %d", op.leftType, op.rightType, op.operationType);
+   // DEBUG("lType: %s, rType: %s, op: %s", kDataTypeStr[op.leftType], kDataTypeStr[op.rightType], kOpStr[op.operationType]);
    offset += kOperationInfoSize;
    if (op.leftType == kOpTypeOperation) {
-      offset += parseOperation(offset, op.leftOperand);
+      offset += parseOperation(offset, op.leftOperand, aSetVars, aAssigned);
    } else {
       _dataManager->readData(&op.leftOperand, offset, kOperationOperandSize);
       offset += kOperationOperandSize;
       if (op.leftType == kOpTypeVar) {
-         //DEBUG("lIndex: %d", op.leftOperand);
-         op.leftOperand = _dataManager->varAtIndex(op.leftOperand);
-      } else {
-         //DEBUG("lVal: %d", op.leftOperand);
+         leftIdx = op.leftOperand;
+         // DEBUG("lVar[%d] == %d", leftIdx, _dataManager->varAtIndex(leftIdx));
+         op.leftOperand = _dataManager->varAtIndex(leftIdx);
+      } else if (op.leftType == kOpTypeRaw) {
+         // DEBUG("lVal: %d", op.leftOperand);
+      } else if (op.leftType == kOpTypeChoiceCount) {
+         // DEBUG("lVis: %d", _visibleCount);
+         op.leftOperand = _visibleCount;
+      } else if (op.leftType == kOpTypeTurns) {
+         // DEBUG("lTurns: %d", _dataManager->turns);
+         op.leftOperand = _dataManager->turns;
+      } else if (op.leftType == kOpTypePsgVisits) {
+         // TODO: Not implemented.
       }
    }
+
+   // Special handling if operation is IF or ELSE.
+   if (op.operationType == kOpIfStatement) {
+      if (op.leftOperand <= 0) {
+         DEBUG("IF - SETVAR == false");
+         aSetVars = false;
+      }
+   } else if (op.operationType == kOpElseStatement) {
+      if (!aAssigned) {
+         DEBUG("ELSE - NOT ASSIGNED - SETVAR == true");
+         aSetVars = true;
+      }
+   }
+
    if (op.rightType == kOpTypeOperation) {
-      offset += parseOperation(offset, op.rightOperand);
+      offset += parseOperation(offset, op.rightOperand, aSetVars, aAssigned);
    } else {
       _dataManager->readData(&op.rightOperand, offset, kOperationOperandSize);
       offset += kOperationOperandSize;
       if (op.rightType == kOpTypeVar) {
-         //DEBUG("rIndex: %d", op.rightOperand);
+         // DEBUG("rVar[%d] == %d", op.rightOperand, _dataManager->varAtIndex(op.rightOperand));
          op.rightOperand = _dataManager->varAtIndex(op.rightOperand);
-      } else {
-         //DEBUG("rVal: %d", op.rightOperand);
+      } else if (op.rightType == kOpTypeRaw) {
+         // DEBUG("rVal: %d", op.rightOperand);
+      } else if (op.rightType == kOpTypeChoiceCount) {
+         // DEBUG("lVis: %d", _visibleCount);
+         op.rightOperand = _visibleCount;
+      } else if (op.rightType == kOpTypeTurns) {
+         // DEBUG("rTurns: %d", _dataManager->turns);
+         op.rightOperand = _dataManager->turns;
+      } else if (op.rightType == kOpTypePsgVisits) {
+         // TODO: Not implemented.
       }
    }
 
@@ -428,7 +495,8 @@ uint32_t Parser::parseOperation(uint32_t aOffset, int16_t &aResult) {
          result = 0;
          if ((op.leftOperand > 0) &&
             (op.leftOperand <= _choiceIndex)) {
-            if (_choices[op.leftOperand - 1].visible == op.rightOperand) {
+            if (_choices[op.leftOperand - 1].visible) {
+               DEBUG("Choice Idx Vis[%d]: %d", op.leftOperand - 1, _choices[op.leftOperand - 1].visible);
                result = 1;
             }
          }
@@ -437,7 +505,17 @@ uint32_t Parser::parseOperation(uint32_t aOffset, int16_t &aResult) {
          result = op.leftOperand % op.rightOperand;
          break;
       case kOpAssign:
-         result = op.leftOperand = op.rightOperand;
+         result = 1;
+         if (aSetVars && !aAssigned) {
+            if (!_dataManager->setVarAtIndex(leftIdx, op.rightOperand)) {
+               result = 0;
+            }
+            // DEBUG("ASSIGNED: [%d] = %d", leftIdx, op.rightOperand);
+            aAssigned = true;
+         } else {
+            result = 0;
+            // DEBUG("NOT ASSIGNED - aSetVars[%d] aAssigned[%d]", aSetVars, aAssigned); 
+         }
          break;
       case kOpAdd:
          result = op.leftOperand + op.rightOperand;
@@ -461,14 +539,52 @@ uint32_t Parser::parseOperation(uint32_t aOffset, int16_t &aResult) {
          }
          break;
       case kOpIfStatement:
+         result = 0;
+         if (op.leftOperand >= 1) {
+            result = 1;
+         }
+         break;
+      case kOpElseStatement:
+         result = 0;
+         if (op.leftOperand <= 0) {
+            result = 1;
+         }
+         break;
+      case kOpNegate:
+         // Returns int16_t - positive val becomes negative, negative val becomes positive
+         result = -op.leftOperand;
+         break;
+      case kOpNot:
+         // Returns 0 or 1 - if val greater than 0, returns 0, if val is 0 or less, returns 1
+         result = 1;
          if (op.leftOperand > 0) {
+            result = 0;
+         }
+         break;
+      case kOpMin:
+         if (op.leftOperand < op.rightOperand) {
+            result = op.leftOperand;
+         } else {
             result = op.rightOperand;
          }
          break;
-      default:
+      case kOpMax:
+         if (op.leftOperand > op.rightOperand) {
+            result = op.leftOperand;
+         } else {
+            result = op.rightOperand;
+         }
+         break;
+      case kOpPow:
+         result = Utils::pow(op.leftOperand, op.rightOperand);
          break;
    }
    aResult = result;
+   if (leftIdx == -1) {
+      DEBUG("Formula: %d %s %d -> %d", op.leftOperand, kOpStr[op.operationType], op.rightOperand, aResult);
+   } else {
+      DEBUG("Formula: [%d] %s %d -> %d", leftIdx, kOpStr[op.operationType], op.rightOperand, aResult);
+   }
    //DEBUG("Result: %d", aResult);
    return offset - aOffset;
 }

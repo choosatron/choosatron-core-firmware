@@ -18,6 +18,20 @@ void Utils::shuffle(uint8_t *aArray, uint8_t aElements)
    }
 }
 
+int16_t Utils::pow(int16_t aBase, int16_t aExponent)
+{
+    if (aExponent == 0) {
+        return 1;
+    } else if (aExponent < 0) {
+        return 1 / pow(aBase, -aExponent);
+    } else if (aExponent % 2 == 0) {
+        int16_t half_pow = pow(aBase, aExponent / 2);
+        return half_pow * half_pow;
+    } else {
+        return aBase * pow(aBase, aExponent - 1);
+    }
+}
+
 /*void Utils::shuffle(void *aArray, size_t aElements, size_t aArraySize) {
    // This if() is not needed functionally, but left per OP's style
    if (aElements > 1) {
