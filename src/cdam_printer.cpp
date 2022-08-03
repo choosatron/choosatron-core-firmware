@@ -175,6 +175,7 @@ void Printer::printBizCard() {
    print(CDAM_LINE);
    println('|');
    println(CDAM_CONTACT_3);
+   println(CDAM_CONTACT_4);
    print('|');
    print(CDAM_LINE);
    println('|');

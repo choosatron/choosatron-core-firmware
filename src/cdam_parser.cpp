@@ -583,7 +583,7 @@ uint32_t Parser::parseOperation(uint32_t aOffset, int16_t &aResult, bool aSetVar
    if (leftIdx == -1) {
       DEBUG("Formula: %d %s %d -> %d", op.leftOperand, kOpStr[op.operationType], op.rightOperand, aResult);
    } else {
-      DEBUG("Formula: [%d] %s %d -> %d", leftIdx, kOpStr[op.operationType], op.rightOperand, aResult);
+      DEBUG("Formula: [%d:%d] %s %d -> %d", leftIdx, op.leftOperand, kOpStr[op.operationType], op.rightOperand, aResult);
    }
    //DEBUG("Result: %d", aResult);
    return offset - aOffset;

@@ -1,15 +1,17 @@
+Instructions for Updating Your Choosatron Firmware
+
 1. Install Homebrew (scroll to the bottom for instructions): http://brew.sh/ (http://brew.sh/)
 
 2. Install DFU-Util with this command: brew install dfu-util
 
-3. Downloaded and unzip the ﬁrmware and story ﬂash ﬁles: https://www.dropbox.com/s/pab8k37ty4u9o4n/choosatron-v104-firmflash.zip?dl=0
+3. Downloaded and unzip the ﬁrmware and story ﬂash ﬁles: https://www.dropbox.com/s/zr1ee9z1o8fvn1s/choosatron-v107-firmflash.zip?dl=0 or get the firmware included in the compiler release for your OS: https://github.com/jerrytron/ink/releases
 
 4. Plug a USB cable from your computer, to the micro-USB connection on the Spark Core. Be gentle!
 
 5. Enter DFU mode by holding down both buttons and release the Reset button (the one on the left if the USB socket is facing you). Wait until the LED flashes yellow.
 
 6. Run the following command to ﬂash the ﬁrmware:
-	dfu-util -d 1d50:607f -a 0 -s 0x08005000:leave -D choosatron-core-v104.bin
+	dfu-util -d 1d50:607f -a 0 -s 0x08005000:leave -D choosatron-firmware-v107.bin
 
 7. It should take about a minute or less. If it takes you out of DFU mode, get back into DFU mode for the next step (see step 5).
 
