@@ -2,7 +2,7 @@
  ******************************************************************************
  * @file    application.cpp
  * @authors  Satish Nair, Zachary Crockett and Mohit Bhoite
- * @version V1.0.7
+ * @version V1.0.8
  * @date    05-November-2013
  * @brief   Tinker application
 ******************************************************************************

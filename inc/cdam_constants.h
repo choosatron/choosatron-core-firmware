@@ -24,11 +24,11 @@ namespace cdam
 
 #define BAUD_RATE 9600
 
-// BINARY SPEC VERSION REQUIRED: 1.0.7
+// BINARY SPEC VERSION REQUIRED: 1.0.8
 
 const uint8_t kFirmwareVersionMajor = 1;
 const uint8_t kFirmwareVersionMinor = 0;
-const uint8_t kFirmwareVersionRevision = 7;
+const uint8_t kFirmwareVersionRevision = 8;
 
 typedef enum {
    PIN_PIEZO = A0,

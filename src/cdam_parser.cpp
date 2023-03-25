@@ -159,10 +159,14 @@ ParseState Parser::parsePassage() {
          _offset++;
          _state = PARSE_CONDITIONALS;
          // Print spacing for the body passage, only makes sense if this is the first choice.
-         if (!_passage->append && (_choiceIndex == 0)) {
+         if (!_passage->append && !_passage->cont && (_choiceIndex == 0)) {
             _hardwareManager->printer()->feed(2);
             if (_choiceCount > 4) {
                _hardwareManager->printer()->printBigNumbers();
+            }
+         } else if (_passage->cont) {
+            if (_passage->cont) {
+               _hardwareManager->printer()->print("\n\n1. Continue...");
             }
          }
       } else {
