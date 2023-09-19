@@ -1,0 +1,91 @@
+{
+   "version": "2.0.0",
+   "command": "/bin/bash",
+   "args": ["-c"],
+   "type": "shell",
+   "presentation": {
+      "reveal": "always",
+   },
+   "suppresslabel": true,
+   "options": {
+      "cwd": "${workspaceRoot}/main",
+      "env": { 
+      }
+   },
+   "tasks": [
+      {
+         "label": "make app",
+         "command": "/bin/bash",
+         "group": {
+            "kind": "build",
+            "isDefault": true
+         },
+         "type": "shell",
+         "args": [
+            "make",
+            "PRODUCT_ID=7",
+            "PRODUCT_FIRMWARE_VERSION=108",
+            "APP=choosatron-core-firmware",
+            "TARGET_DIR=applications/choosatron-core-firmware/build",
+            "DEBUG_BUILD=y",
+            "v=1"
+         ],
+         "presentation": {
+            "reveal": "always"
+         },
+         "problemMatcher": {
+            "owner": "cpp",
+            "fileLocation": "absolute",
+            "pattern": {
+               "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+               "file": 1,
+               "line": 2,
+               "column": 3,
+               "severity": 4,
+               "message": 5
+            }
+         }
+      },
+      {
+         "label": "make & flash app",
+         "command": "/bin/bash",
+         "group": "build",
+         "type": "shell",
+         "args": [
+            "make",
+            "PRODUCT_ID=7",
+            "PRODUCT_FIRMWARE_VERSION=108",
+            "APP=choosatron-core-firmware",
+            "TARGET_DIR=applications/choosatron-core-firmware/build",
+            "DEBUG_BUILD=y",
+            "v=1",
+            "program-dfu"
+         ],
+         "presentation": {
+            "reveal": "always"
+         },
+         "problemMatcher": {
+            "owner": "cpp",
+            "fileLocation": "absolute",
+            "pattern": {
+               "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+               "file": 1,
+               "line": 2,
+               "column": 3,
+               "severity": 4,
+               "message": 5
+            }
+         }
+      },
+      {
+         "label": "clean app",
+         "command": "make",
+         "args": [
+            "clean"
+         ],
+         "presentation": {
+            "reveal": "always"
+         }
+      }
+   ]
+}
